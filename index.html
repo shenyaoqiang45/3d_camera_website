@@ -758,6 +758,7 @@
                     <button class="principle-tab" onclick="showPrinciple(1)">深度映射原理</button>
                     <button class="principle-tab" onclick="showPrinciple(2)">立体匹配算法</button>
                     <button class="principle-tab" onclick="showPrinciple(3)">数学模型</button>
+                    <button class="principle-tab" onclick="showPrinciple(4)">相机标定</button>
                 </div>
 
                 <!-- 双目视差演示 -->
@@ -917,6 +918,53 @@
                         <div class="calculation-display" id="depthCalculation">
                             深度 = (200 × 100) / 10 = 2000px
                         </div>
+                    </div>
+                </div>
+
+                <!-- 相机标定 -->
+                <div class="principle-content" id="principle-4">
+                    <h3 style="color: #fff; text-align: center; margin-bottom: 2rem;">相机标定原理与流程</h3>
+                    <div style="background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 10px; margin-bottom: 1.5rem;">
+                        <p style="color: #ccc; line-height: 1.8;">
+                            相机标定是获取摄像机内外参数的过程，包括焦距、主点、畸变系数等。通过标定，可以将像素坐标与真实世界坐标建立精确映射，是3D重建和测量的基础。常用方法有张正友标定法（棋盘格法）。
+                        </p>
+                        <ul style="color: #ccc; line-height: 1.8; margin-top: 1rem;">
+                            <li>1️⃣ 拍摄多张棋盘格图片</li>
+                            <li>2️⃣ 检测角点坐标</li>
+                            <li>3️⃣ 求解内参矩阵与畸变参数</li>
+                            <li>4️⃣ 评估重投影误差</li>
+                        </ul>
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 2rem; justify-content: center;">
+                        <div style="background: rgba(255,255,255,0.07); padding: 1rem 2rem; border-radius: 10px; min-width: 220px;">
+                            <h4 style="color: #667eea;">常见标定参数</h4>
+                            <ul style="color: #ccc; font-size: 0.95rem; line-height: 1.7;">
+                                <li>焦距 (f)</li>
+                                <li>主点 (cx, cy)</li>
+                                <li>畸变系数 (k1, k2, p1, p2)</li>
+                                <li>旋转/平移向量</li>
+                            </ul>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.07); padding: 1rem 2rem; border-radius: 10px; min-width: 220px;">
+                            <h4 style="color: #667eea;">典型应用</h4>
+                            <ul style="color: #ccc; font-size: 0.95rem; line-height: 1.7;">
+                                <li>3D测量与重建</li>
+                                <li>机器人定位</li>
+                                <li>AR/VR空间映射</li>
+                                <li>畸变校正</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div style="margin-top: 2rem; text-align: center; color: #aaa; font-size: 0.95rem;">
+                        <span>📷 <b>小知识：</b> 标定精度直接影响3D测量和重建的准确性。</span>
+                    </div>
+                    <!-- 交互演示：棋盘格角点点击高亮 -->
+                    <div style="margin-top:2.5rem; text-align:center;">
+                        <h4 style="color:#667eea; margin-bottom:1rem;">棋盘格角点检测演示</h4>
+                        <div id="calib-chessboard" style="display:inline-block; background:#222; padding:18px 18px 8px 18px; border-radius:12px;">
+                            <svg id="calibChessboardSVG" width="270" height="270" style="background:#fff; border-radius:8px; box-shadow:0 2px 8px #0002; cursor:pointer;"></svg>
+                        </div>
+                        <div style="color:#aaa; font-size:0.95rem; margin-top:0.7rem;">点击棋盘格交点，模拟角点检测与高亮</div>
                     </div>
                 </div>
             </div>
@@ -1310,6 +1358,54 @@
                     card.style.transform = 'translateY(0) scale(1)';
                 });
             });
+        });
+
+        // 棋盘格角点交互演示
+        function drawCalibChessboard() {
+            const svg = document.getElementById('calibChessboardSVG');
+            if (!svg) return;
+            svg.innerHTML = '';
+            const rows = 7, cols = 7, size = 30, margin = 15;
+            // 画格子
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    if ((r + c) % 2 === 0) {
+                        let rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                        rect.setAttribute('x', c * size);
+                        rect.setAttribute('y', r * size);
+                        rect.setAttribute('width', size);
+                        rect.setAttribute('height', size);
+                        rect.setAttribute('fill', '#333');
+                        svg.appendChild(rect);
+                    }
+                }
+            }
+            // 画角点
+            for (let r = 0; r <= rows; r++) {
+                for (let c = 0; c <= cols; c++) {
+                    let cx = c * size, cy = r * size;
+                    let circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    circle.setAttribute('cx', cx);
+                    circle.setAttribute('cy', cy);
+                    circle.setAttribute('r', 6);
+                    circle.setAttribute('fill', '#aaa');
+                    circle.setAttribute('stroke', '#667eea');
+                    circle.setAttribute('stroke-width', '1.5');
+                    circle.style.cursor = 'pointer';
+                    circle.addEventListener('click', function() {
+                        if (circle.getAttribute('fill') === '#ff6b6b') {
+                            circle.setAttribute('fill', '#aaa');
+                        } else {
+                            circle.setAttribute('fill', '#ff6b6b');
+                        }
+                    });
+                    svg.appendChild(circle);
+                }
+            }
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            // ...existing code...
+            drawCalibChessboard();
         });
     </script>
 </body>
