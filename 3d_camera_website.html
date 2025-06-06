@@ -301,9 +301,7 @@
             cursor: pointer;
             transition: all 0.3s ease;
             font-weight: 500;
-        }
-
-        .control-btn:hover, .control-btn.active {
+        }        .control-btn:hover, .control-btn.active {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             transform: translateY(-2px);
         }
@@ -353,71 +351,326 @@
             100% { transform: translate(-50%, -50%) rotateX(360deg) rotateY(360deg); }
         }
 
-        /* 技术规格表格 */
-        .spec-table {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            overflow: hidden;
-            margin: 2rem 0;
+        /* 基础原理子模块样式 */
+        .principle-detail {
+            margin: 4rem 0;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .spec-table table {
+        .principle-nav {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .principle-tab {
+            padding: 0.8rem 1.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ccc;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .principle-tab.active, .principle-tab:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .principle-content {
+            display: none;
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        .principle-content.active {
+            display: block;
+        }
+
+        /* 视差演示器 */
+        .parallax-demo {
             width: 100%;
-            border-collapse: collapse;
+            max-width: 600px;
+            height: 300px;
+            margin: 2rem auto;
+            position: relative;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 15px;
+            overflow: hidden;
+            border: 2px solid rgba(102, 126, 234, 0.3);
         }
 
-        .spec-table th, .spec-table td {
-            padding: 1rem;
-            text-align: left;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        .eye-container {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 100px;
         }
 
-        .spec-table th {
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
-            color: #fff;
-            font-weight: 600;
+        .eye {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            position: relative;
+            cursor: pointer;
         }
 
-        .spec-table td {
-            color: #ccc;
+        .eye::after {
+            content: '';
+            width: 20px;
+            height: 20px;
+            background: #333;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.3s ease;
         }
 
-        .spec-table tr:hover {
+        .target-object {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            position: absolute;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            cursor: grab;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .target-object:active {
+            cursor: grabbing;
+        }
+
+        .sight-line {
+            position: absolute;
+            height: 2px;
+            background: rgba(102, 126, 234, 0.6);
+            transform-origin: left center;
+            pointer-events: none;
+        }
+
+        .depth-indicator {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        /* 深度映射演示 */
+        .depth-map-demo {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .image-panel {
             background: rgba(255, 255, 255, 0.05);
-        }
-
-        /* 页脚 */
-        footer {
-            background: rgba(0, 0, 0, 0.9);
-            padding: 3rem 5%;
+            border-radius: 15px;
+            padding: 1.5rem;
             text-align: center;
+        }
+
+        .image-placeholder {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(45deg, #667eea20, #764ba220);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .depth-visualization {
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(90deg, 
+                    rgba(255,0,0,0.8) 0%, 
+                    rgba(255,255,0,0.8) 25%, 
+                    rgba(0,255,0,0.8) 50%, 
+                    rgba(0,255,255,0.8) 75%, 
+                    rgba(0,0,255,0.8) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        /* 立体匹配演示 */
+        .stereo-match-demo {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2rem;
+            border-radius: 15px;
+            margin: 2rem 0;
+        }
+
+        .match-visualization {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 2rem 0;
+        }
+
+        .camera-view {
+            width: 200px;
+            height: 150px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            border: 2px solid rgba(102, 126, 234, 0.5);
+        }
+
+        .camera-view::before {
+            content: attr(data-camera);
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #667eea;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .feature-point {
+            width: 12px;
+            height: 12px;
+            background: #667eea;
+            border-radius: 50%;
+            position: absolute;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .feature-point:hover {
+            transform: scale(1.5);
+            box-shadow: 0 0 10px #667eea;
+        }
+
+        .match-line {
+            height: 2px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            position: absolute;
+            top: 50%;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .match-line.active {
+            opacity: 1;
+        }
+
+        .calculation-display {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            font-family: 'Courier New', monospace;
+            color: #667eea;
+        }
+
+        /* 数学公式显示 */
+        .formula-box {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            text-align: center;
+            border-left: 4px solid #667eea;
+        }
+
+        .formula {
+            font-size: 1.2rem;
+            color: #fff;
+            margin: 0.5rem 0;
+        }
+
+        .formula-explanation {
+            font-size: 0.9rem;
             color: #ccc;
-            margin-top: 5rem;
+            margin-top: 0.5rem;
         }
 
-        .footer-content {
-            max-width: 1200px;
-            margin: 0 auto;
+        /* 交互式滑块 */
+        .parameter-control {
+            margin: 2rem 0;
         }
 
-        /* 动画 */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 1rem 0;
         }
 
-        .fade-in {
-            animation: fadeInUp 0.8s ease-out;
+        .slider-label {
+            min-width: 120px;
+            color: #ccc;
+            font-weight: 500;
+        }        .slider {
+            flex: 1;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
         }
 
-        /* 响应式设计 */
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+
+        .slider-value {
+            min-width: 60px;
+            color: #667eea;
+            font-weight: bold;
+        }
+
         @media (max-width: 768px) {
             .hero h1 {
                 font-size: 2.5rem;
@@ -434,6 +687,24 @@
             .demo-viewer {
                 width: 300px;
                 height: 200px;
+            }
+            
+            .depth-map-demo {
+                grid-template-columns: 1fr;
+            }
+            
+            .match-visualization {
+                flex-direction: column;
+                gap: 2rem;
+            }
+            
+            .principle-nav {
+                gap: 0.5rem;
+            }
+            
+            .principle-tab {
+                padding: 0.6rem 1rem;
+                font-size: 0.9rem;
             }
         }
     </style>
@@ -480,6 +751,173 @@
                     <div class="card-icon">🔬</div>
                     <h3>三角测量</h3>
                     <p>利用几何三角原理，已知两个观察点的距离和观察角度，就能计算出目标物体的距离和位置，这是3D相机测距的数学基础。</p>
+                </div>
+            </div>            <div class="principle-detail">
+                <div class="principle-nav">
+                    <button class="principle-tab active" onclick="showPrinciple(0)">双目视差演示</button>
+                    <button class="principle-tab" onclick="showPrinciple(1)">深度映射原理</button>
+                    <button class="principle-tab" onclick="showPrinciple(2)">立体匹配算法</button>
+                    <button class="principle-tab" onclick="showPrinciple(3)">数学模型</button>
+                </div>
+
+                <!-- 双目视差演示 -->
+                <div class="principle-content active" id="principle-0">
+                    <h3 style="color: #fff; text-align: center; margin-bottom: 2rem;">交互式视差演示</h3>
+                    <div class="parallax-demo" id="parallaxDemo">
+                        <div class="target-object" id="targetObject" draggable="true">📦</div>
+                        <div class="eye-container">
+                            <div class="eye" id="leftEye" data-eye="left"></div>
+                            <div class="eye" id="rightEye" data-eye="right"></div>
+                        </div>
+                        <div class="sight-line" id="leftSightLine"></div>
+                        <div class="sight-line" id="rightSightLine"></div>
+                        <div class="depth-indicator" id="depthIndicator">深度: 200px</div>
+                    </div>
+                    <p style="color: #ccc; text-align: center; margin-top: 1rem;">
+                        🎯 拖拽物体改变位置，观察视差变化。距离越近，视差越大。
+                    </p>
+                    
+                    <div class="parameter-control">
+                        <div class="slider-container">
+                            <span class="slider-label">基线距离:</span>
+                            <input type="range" class="slider" id="baselineSlider" min="50" max="150" value="100">
+                            <span class="slider-value" id="baselineValue">100px</span>
+                        </div>
+                        <div class="slider-container">
+                            <span class="slider-label">焦距:</span>
+                            <input type="range" class="slider" id="focalSlider" min="100" max="300" value="200">
+                            <span class="slider-value" id="focalValue">200px</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 深度映射原理 -->
+                <div class="principle-content" id="principle-1">
+                    <h3 style="color: #fff; text-align: center; margin-bottom: 2rem;">深度映射与颜色编码</h3>
+                    <div class="depth-map-demo">
+                        <div class="image-panel">
+                            <div class="image-placeholder">
+                                <span style="color: #ccc;">🎥 左摄像头视图</span>
+                            </div>
+                            <p style="color: #ccc;">原始灰度图像</p>
+                        </div>
+                        <div class="image-panel">
+                            <div class="image-placeholder">
+                                <div class="depth-visualization">📊 深度映射</div>
+                            </div>
+                            <p style="color: #ccc;">深度信息可视化</p>
+                        </div>
+                    </div>
+                    
+                    <div class="formula-box">
+                        <div class="formula">深度值 = (焦距 × 基线距离) ÷ 视差</div>
+                        <div class="formula-explanation">
+                            红色表示近距离物体，蓝色表示远距离物体
+                        </div>
+                    </div>
+
+                    <div style="background: rgba(255, 255, 255, 0.05); padding: 1.5rem; border-radius: 10px;">
+                        <h4 style="color: #667eea; margin-bottom: 1rem;">深度映射的应用:</h4>
+                        <ul style="color: #ccc; line-height: 1.8;">
+                            <li>🎮 AR/VR游戏中的环境理解</li>
+                            <li>🚗 自动驾驶的obstacle detection</li>
+                            <li>📱 手机人像模式背景虚化</li>
+                            <li>🤖 机器人路径规划与避障</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 立体匹配算法 -->
+                <div class="principle-content" id="principle-2">
+                    <h3 style="color: #fff; text-align: center; margin-bottom: 2rem;">立体匹配算法原理</h3>
+                    <div class="stereo-match-demo">
+                        <p style="color: #ccc; text-align: center; margin-bottom: 2rem;">
+                            点击特征点查看匹配过程
+                        </p>
+                        <div class="match-visualization">
+                            <div class="camera-view" data-camera="左摄像头" id="leftCamera">
+                                <div class="feature-point" style="top: 30%; left: 40%;" data-id="1"></div>
+                                <div class="feature-point" style="top: 60%; left: 30%;" data-id="2"></div>
+                                <div class="feature-point" style="top: 50%; left: 70%;" data-id="3"></div>
+                            </div>
+                            <div class="camera-view" data-camera="右摄像头" id="rightCamera">
+                                <div class="feature-point" style="top: 30%; left: 35%;" data-id="1"></div>
+                                <div class="feature-point" style="top: 60%; left: 25%;" data-id="2"></div>
+                                <div class="feature-point" style="top: 50%; left: 65%;" data-id="3"></div>
+                            </div>
+                        </div>
+                        <div class="calculation-display" id="matchCalculation">
+                            点击特征点开始匹配计算...
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin: 2rem 0;">
+                        <div style="background: rgba(255, 255, 255, 0.05); padding: 1rem; border-radius: 10px;">
+                            <h4 style="color: #667eea;">🔍 特征检测</h4>
+                            <p style="color: #ccc; font-size: 0.9rem;">识别图像中的角点、边缘等特征</p>
+                        </div>
+                        <div style="background: rgba(255, 255, 255, 0.05); padding: 1rem; border-radius: 10px;">
+                            <h4 style="color: #667eea;">📐 特征匹配</h4>
+                            <p style="color: #ccc; font-size: 0.9rem;">在左右图像间找到对应点</p>
+                        </div>
+                        <div style="background: rgba(255, 255, 255, 0.05); padding: 1rem; border-radius: 10px;">
+                            <h4 style="color: #667eea;">📊 视差计算</h4>
+                            <p style="color: #ccc; font-size: 0.9rem;">计算对应点间的像素差异</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 数学模型 -->
+                <div class="principle-content" id="principle-3">
+                    <h3 style="color: #fff; text-align: center; margin-bottom: 2rem;">立体视觉数学模型</h3>
+                    
+                    <div class="formula-box">
+                        <div class="formula">Z = (f × B) / d</div>
+                        <div class="formula-explanation">
+                            Z: 深度距离 | f: 焦距 | B: 基线距离 | d: 视差
+                        </div>
+                    </div>
+
+                    <div class="formula-box">
+                        <div class="formula">X = (u - cx) × Z / f</div>
+                        <div class="formula">Y = (v - cy) × Z / f</div>
+                        <div class="formula-explanation">
+                            将2D像素坐标转换为3D世界坐标
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin: 2rem 0;">
+                        <div style="background: rgba(255, 255, 255, 0.05); padding: 1.5rem; border-radius: 10px;">
+                            <h4 style="color: #667eea; margin-bottom: 1rem;">📐 几何关系</h4>
+                            <ul style="color: #ccc; line-height: 1.6;">
+                                <li>相似三角形原理</li>
+                                <li>极线几何约束</li>
+                                <li>摄像机标定矩阵</li>
+                                <li>图像校正与对齐</li>
+                            </ul>
+                        </div>
+                        <div style="background: rgba(255, 255, 255, 0.05); padding: 1.5rem; border-radius: 10px;">
+                            <h4 style="color: #667eea; margin-bottom: 1rem;">🔬 精度因素</h4>
+                            <ul style="color: #ccc; line-height: 1.6;">
+                                <li>基线距离越大，精度越高</li>
+                                <li>焦距影响测量范围</li>
+                                <li>像素分辨率限制精度</li>
+                                <li>标定误差的累积效应</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="parameter-control">
+                        <h4 style="color: #fff; margin-bottom: 1rem;">🎛️ 参数影响演示</h4>
+                        <div class="slider-container">
+                            <span class="slider-label">视差 (像素):</span>
+                            <input type="range" class="slider" id="disparitySlider" min="1" max="50" value="10">
+                            <span class="slider-value" id="disparityValue">10px</span>
+                        </div>
+                        <div class="calculation-display" id="depthCalculation">
+                            深度 = (200 × 100) / 10 = 2000px
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -639,9 +1077,204 @@
                     cube.style.animation = 'rotate3d 12s linear infinite';
                     break;
             }
+        }        // 基础原理子模块切换
+        function showPrinciple(principleId) {
+            // 切换内容显示
+            const contents = document.querySelectorAll('.principle-content');
+            contents.forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById('principle-' + principleId).classList.add('active');
+
+            // 切换标签样式
+            const tabs = document.querySelectorAll('.principle-tab');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
         }
 
-        // 卡片动画观察器
+        // 视差演示交互功能
+        let parallaxState = {
+            baseline: 100,
+            focal: 200,
+            targetX: 275,
+            targetY: 50
+        };
+
+        function initParallaxDemo() {
+            const targetObject = document.getElementById('targetObject');
+            const parallaxDemo = document.getElementById('parallaxDemo');
+            const depthIndicator = document.getElementById('depthIndicator');
+            const leftSightLine = document.getElementById('leftSightLine');
+            const rightSightLine = document.getElementById('rightSightLine');
+            const baselineSlider = document.getElementById('baselineSlider');
+            const focalSlider = document.getElementById('focalSlider');
+            const baselineValue = document.getElementById('baselineValue');
+            const focalValue = document.getElementById('focalValue');
+
+            // 拖拽功能
+            let isDragging = false;
+            let dragOffset = { x: 0, y: 0 };
+
+            targetObject.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                const rect = targetObject.getBoundingClientRect();
+                dragOffset.x = e.clientX - rect.left;
+                dragOffset.y = e.clientY - rect.top;
+                targetObject.style.cursor = 'grabbing';
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                
+                const demoRect = parallaxDemo.getBoundingClientRect();
+                let x = e.clientX - demoRect.left - dragOffset.x;
+                let y = e.clientY - demoRect.top - dragOffset.y;
+
+                // 限制在演示区域内
+                x = Math.max(0, Math.min(x, demoRect.width - 50));
+                y = Math.max(0, Math.min(y, demoRect.height - 70));
+
+                parallaxState.targetX = x;
+                parallaxState.targetY = y;
+                updateParallaxVisualization();
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isDragging) {
+                    isDragging = false;
+                    targetObject.style.cursor = 'grab';
+                }
+            });
+
+            // 滑块事件
+            baselineSlider.addEventListener('input', (e) => {
+                parallaxState.baseline = parseInt(e.target.value);
+                baselineValue.textContent = parallaxState.baseline + 'px';
+                updateEyePosition();
+                updateParallaxVisualization();
+            });
+
+            focalSlider.addEventListener('input', (e) => {
+                parallaxState.focal = parseInt(e.target.value);
+                focalValue.textContent = parallaxState.focal + 'px';
+                updateParallaxVisualization();
+            });
+
+            function updateEyePosition() {
+                const eyeContainer = document.querySelector('.eye-container');
+                const eyes = eyeContainer.querySelectorAll('.eye');
+                eyes[0].style.transform = `translateX(-${parallaxState.baseline/2}px)`;
+                eyes[1].style.transform = `translateX(${parallaxState.baseline/2}px)`;
+            }
+
+            function updateParallaxVisualization() {
+                const targetObject = document.getElementById('targetObject');
+                const depthIndicator = document.getElementById('depthIndicator');
+                const leftSightLine = document.getElementById('leftSightLine');
+                const rightSightLine = document.getElementById('rightSightLine');
+
+                // 更新物体位置
+                targetObject.style.left = parallaxState.targetX + 'px';
+                targetObject.style.top = parallaxState.targetY + 'px';
+
+                // 计算深度（简化版本）
+                const centerX = 275; // 演示区域中心
+                const distance = Math.abs(parallaxState.targetX - centerX);
+                const depth = Math.max(100, 500 - distance * 2);
+                depthIndicator.textContent = `深度: ${Math.round(depth)}px`;
+
+                // 计算视差
+                const disparity = (parallaxState.baseline * parallaxState.focal) / depth;
+                
+                // 更新视线
+                const eyeY = 250; // 眼睛的Y位置
+                const targetCenterX = parallaxState.targetX + 25;
+                const targetCenterY = parallaxState.targetY + 25;
+
+                // 左眼视线
+                const leftEyeX = centerX - parallaxState.baseline/2;
+                const leftAngle = Math.atan2(targetCenterY - eyeY, targetCenterX - leftEyeX);
+                const leftLength = Math.sqrt(Math.pow(targetCenterX - leftEyeX, 2) + Math.pow(targetCenterY - eyeY, 2));
+                
+                leftSightLine.style.left = leftEyeX + 'px';
+                leftSightLine.style.top = eyeY + 'px';
+                leftSightLine.style.width = leftLength + 'px';
+                leftSightLine.style.transform = `rotate(${leftAngle}rad)`;
+
+                // 右眼视线
+                const rightEyeX = centerX + parallaxState.baseline/2;
+                const rightAngle = Math.atan2(targetCenterY - eyeY, targetCenterX - rightEyeX);
+                const rightLength = Math.sqrt(Math.pow(targetCenterX - rightEyeX, 2) + Math.pow(targetCenterY - eyeY, 2));
+                
+                rightSightLine.style.left = rightEyeX + 'px';
+                rightSightLine.style.top = eyeY + 'px';
+                rightSightLine.style.width = rightLength + 'px';
+                rightSightLine.style.transform = `rotate(${rightAngle}rad)`;
+            }
+
+            // 初始化
+            updateEyePosition();
+            updateParallaxVisualization();
+        }
+
+        // 立体匹配演示
+        function initStereoMatchDemo() {
+            const featurePoints = document.querySelectorAll('.feature-point');
+            const matchCalculation = document.getElementById('matchCalculation');
+
+            featurePoints.forEach((point, index) => {
+                point.addEventListener('click', () => {
+                    // 重置所有点的样式
+                    featurePoints.forEach(p => p.style.backgroundColor = '#667eea');
+                    
+                    // 高亮当前点及其对应点
+                    const pointId = point.getAttribute('data-id');
+                    const correspondingPoints = document.querySelectorAll(`[data-id="${pointId}"]`);
+                    correspondingPoints.forEach(p => p.style.backgroundColor = '#ff6b6b');
+
+                    // 计算视差
+                    const leftPoint = document.querySelector(`#leftCamera [data-id="${pointId}"]`);
+                    const rightPoint = document.querySelector(`#rightCamera [data-id="${pointId}"]`);
+                    
+                    const leftX = parseFloat(leftPoint.style.left);
+                    const rightX = parseFloat(rightPoint.style.left);
+                    const disparity = Math.abs(leftX - rightX);
+                    
+                    // 显示计算过程
+                    matchCalculation.innerHTML = `
+                        <div>特征点 ${pointId} 匹配结果:</div>
+                        <div>左图位置: ${leftX.toFixed(1)}%</div>
+                        <div>右图位置: ${rightX.toFixed(1)}%</div>
+                        <div>视差: ${disparity.toFixed(1)}%</div>
+                        <div>深度 ≈ ${(1000 / (disparity + 1)).toFixed(0)}px</div>
+                    `;
+                });
+            });
+        }
+
+        // 数学模型演示
+        function initMathModelDemo() {
+            const disparitySlider = document.getElementById('disparitySlider');
+            const disparityValue = document.getElementById('disparityValue');
+            const depthCalculation = document.getElementById('depthCalculation');
+
+            disparitySlider.addEventListener('input', (e) => {
+                const disparity = parseInt(e.target.value);
+                disparityValue.textContent = disparity + 'px';
+                
+                // 计算深度
+                const focal = 200;
+                const baseline = 100;
+                const depth = (focal * baseline) / disparity;
+                
+                depthCalculation.innerHTML = `
+                    深度 = (${focal} × ${baseline}) / ${disparity} = ${depth.toFixed(0)}px
+                    <br><small style="opacity: 0.7;">视差越小，物体越远</small>
+                `;
+            });
+        }        // 卡片动画观察器
         const observerOptions = {
             threshold: 0.1,
             rootMargin: '0px 0px -50px 0px'
@@ -662,7 +1295,12 @@
 
         // 页面加载完成后的初始化
         document.addEventListener('DOMContentLoaded', () => {
-            // 添加一些交互效果
+            // 初始化基础原理子模块
+            initParallaxDemo();
+            initStereoMatchDemo();
+            initMathModelDemo();
+            
+            // 添加卡片交互效果
             const cards = document.querySelectorAll('.card');
             cards.forEach(card => {
                 card.addEventListener('mouseenter', () => {
