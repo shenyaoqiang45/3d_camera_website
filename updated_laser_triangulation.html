@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>激光三角测量原理图解</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            background: #f0f2f5;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+        }
+        
+        .step-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .step-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .formula-simple {
+            background: #3498db;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 1.2em;
+            text-align: center;
+            margin: 15px 0;
+            font-family: 'Times New Roman', serif;
+        }
+        
+        .explanation {
+            background: #e8f6f3;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 3px solid #27ae60;
+        }
+        
+        svg {
+            display: block;
+            margin: 20px auto;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .demo-controls {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: #fff3cd;
+            border-radius: 5px;
+        }
+        
+        .slider-group {
+            display: inline-block;
+            margin: 10px 15px;
+        }
+        
+        .slider-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #495057;
+        }
+        
+        input[type="range"] {
+            width: 120px;
+        }
+        
+        .value-show {
+            display: inline-block;
+            min-width: 40px;
+            font-weight: bold;
+            color: #e74c3c;
+        }
+        
+        .highlight-red { stroke: #e74c3c; stroke-width: 3; }
+        .highlight-blue { stroke: #3498db; stroke-width: 3; }
+        .highlight-green { stroke: #27ae60; stroke-width: 3; }
+        
+        .component-laser { fill: #e74c3c; stroke: #c0392b; stroke-width: 2; }
+        .component-detector { fill: #3498db; stroke: #2980b9; stroke-width: 2; }
+        .component-object { fill: #8b4513; stroke: #654321; stroke-width: 2; }
+        
+        .text-large { font-size: 14px; font-weight: bold; }
+        .text-medium { font-size: 12px; }
+        .text-small { font-size: 10px; }
+        
+        .angle-mark { fill: none; stroke: #666; stroke-width: 1; stroke-dasharray: 2,2; }
+        .distance-mark { stroke: #666; stroke-width: 1; stroke-dasharray: 3,3; }
+        
+        .calculation-box {
+            background: #f1f2f6;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .result-highlight {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 3px;
+            padding: 8px;
+            margin: 5px 0;
+            font-weight: bold;
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔺 激光三角测量原理 - 简单图解</h1>
+        
+        <!-- 步骤1：基本构成 -->
+        <div class="step-section">
+            <div class="step-title">步骤1：了解基本构成</div>
+            <svg width="700" height="300" id="basicDiagram">
+                <!-- 激光器 -->
+                <rect x="50" y="140" width="30" height="20" class="component-laser"/>
+                <text x="35" y="135" class="text-medium">激光器</text>
+                
+                <!-- 探测器 -->
+                <rect x="200" y="135" width="25" height="30" class="component-detector"/>  
+                <text x="185" y="130" class="text-medium">探测器</text>
+                
+                <!-- 被测物体 -->
+                <rect x="350" y="80" width="40" height="100" class="component-object"/>
+                <text x="340" y="75" class="text-medium">被测物体</text>
+                
+                <!-- 基线 -->
+                <line x1="65" y1="200" x2="212" y2="200" class="distance-mark"/>
+                <text x="130" y="220" class="text-large">基线距离 L</text>
+                
+                <!-- 测量距离 -->
+                <line x1="65" y1="240" x2="365" y2="240" class="distance-mark"/>
+                <text x="200" y="260" class="text-large">测量距离 D</text>
+                
+                <!-- 箭头指示 -->
+                <defs>
+                    <marker id="arrow1" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+                        <path d="M0,0 L0,6 L9,3 z" fill="#666"/>
+                    </marker>
+                </defs>
+                <line x1="65" y1="200" x2="65" y2="205" stroke="#666" marker-end="url(#arrow1)"/>
+                <line x1="212" y1="200" x2="212" y2="205" stroke="#666" marker-end="url(#arrow1)"/>
+                <line x1="65" y1="240" x2="65" y2="235" stroke="#666" marker-end="url(#arrow1)"/>
+                <line x1="365" y1="240" x2="365" y2="235" stroke="#666" marker-end="url(#arrow1)"/>
+            </svg>
+            
+            <div class="explanation">
+                <strong>系统组成：</strong><br>
+                • 红色方块：激光器（发射激光）<br>
+                • 蓝色方块：探测器（接收反射光）<br>
+                • 棕色方块：被测物体<br>
+                • L：激光器和探测器之间的距离（已知）<br>
+                • D：要测量的距离（未知）
+            </div>
+        </div>
+        
+        <!-- 步骤2：光路原理 -->
+        <div class="step-section">
+            <div class="step-title">步骤2：光路传播原理</div>
+            <svg width="700" height="350" id="opticalDiagram">
+                <!-- 激光器 -->
+                <rect x="50" y="160" width="25" height="15" class="component-laser"/>
+                <circle cx="62" cy="167" r="3" fill="#fff"/>
+                <text x="25" y="155" class="text-medium">激光器</text>
+                <text x="45" y="190" class="text-large">O</text>
+                
+                <!-- 探测器 -->
+                <rect x="180" y="150" width="20" height="35" class="component-detector"/>
+                <text x="160" y="145" class="text-medium">探测器</text>
+                
+                <!-- 物体 -->
+                <rect x="320" y="100" width="30" height="80" class="component-object"/>
+                <circle cx="320" cy="130" r="3" fill="#fff"/>
+                <text x="305" y="95" class="text-medium">物体</text>
+                <text x="310" y="125" class="text-large">P</text>
+                
+                <!-- 激光束（红色实线） -->
+                <line x1="75" y1="167" x2="320" y2="130" class="highlight-red"/>
+                <text x="180" y="140" class="text-medium" fill="#e74c3c">激光束</text>
+                
+                <!-- 反射光（绿色实线） -->
+                <line x1="320" y1="130" x2="190" y2="165" class="highlight-green"/>
+                <text x="230" y="155" class="text-medium" fill="#27ae60">反射光</text>
+                
+                <!-- 入射角α -->
+                <path d="M 95 167 A 20 20 0 0 0 105 155" class="angle-mark"/>
+                <text x="100" y="150" class="text-large">α</text>
+                
+                <!-- 接收角β -->
+                <path d="M 170 167 A 15 15 0 0 0 180 155" class="angle-mark"/>
+                <text x="175" y="150" class="text-large">β</text>
+                
+                <!-- 坐标系 -->
+                <line x1="30" y1="300" x2="80" y2="300" stroke="#333" marker-end="url(#arrow1)"/>
+                <line x1="30" y1="300" x2="30" y2="250" stroke="#333" marker-end="url(#arrow1)"/>
+                <text x="85" y="305" class="text-small">x</text>
+                <text x="25" y="245" class="text-small">y</text>
+            </svg>
+            
+            <div class="explanation">
+                <strong>光路原理：</strong><br>
+                1. 激光器在O点发出激光，以角度α照射到物体表面P点<br>
+                2. 光在P点发生反射，反射光被探测器接收<br>
+                3. 反射光与基线的夹角为β<br>
+                4. 通过测量β角，可以计算出距离D
+            </div>
+        </div>
+        
+        <!-- 步骤3：几何关系 -->
+        <div class="step-section">
+            <div class="step-title">步骤3：几何三角关系</div>
+            <svg width="700" height="300" id="geometryDiagram">
+                <!-- 坐标系原点 -->
+                <circle cx="120" cy="220" r="4" fill="#e74c3c"/>
+                <text x="110" y="240" class="text-large">O</text>
+                
+                <!-- 探测器位置 -->
+                <circle cx="400" cy="220" r="4" fill="#3498db"/>
+                <text x="410" y="225" class="text-large">Q</text>
+                
+                <!-- 物体位置 -->
+                <circle cx="280" cy="100" r="4" fill="#8b4513"/>
+                <text x="285" y="95" class="text-large">P</text>
+                
+                <!-- 锐角三角形 -->
+                <line x1="120" y1="220" x2="280" y2="100" stroke="#333" stroke-width="3"/>
+                <line x1="280" y1="100" x2="400" y2="220" stroke="#333" stroke-width="3"/>
+                <line x1="120" y1="220" x2="400" y2="220" stroke="#333" stroke-width="3"/>
+                
+                <!-- 标注边长 -->
+                <text x="190" y="155" class="text-large" fill="#e74c3c">D</text>
+                <text x="340" y="155" class="text-large" fill="#27ae60">d</text>
+                <text x="250" y="245" class="text-large" fill="#3498db">L</text>
+                
+                <!-- 角度标注 - 左下角 -->
+                <path d="M 145 220 A 25 25 0 0 0 135 195" class="angle-mark"/>
+                <text x="140" y="200" class="text-large">α</text>
+                
+                <!-- 角度标注 - 右下角 -->
+                <path d="M 375 220 A 25 25 0 0 1 385 195" class="angle-mark"/>
+                <text x="370" y="200" class="text-large">β</text>
+                
+                <!-- 角度标注 - 顶角 -->
+                <path d="M 265 115 A 15 15 0 0 0 275 125" class="angle-mark"/>
+                <path d="M 295 115 A 15 15 0 0 1 285 125" class="angle-mark"/>
+                <text x="275" y="125" class="text-large">γ</text>
+            </svg>
+            
+            <div class="explanation">
+                <strong>关键几何关系：</strong><br>
+                • 锐角三角形OPQ中，OP = D（待测距离）<br>
+                • OQ = L（已知基线距离）<br>
+                • PQ = d（反射光路径）<br>
+                • 角POQ = α（左底角，锐角）<br>
+                • 角PQO = β（右底角，锐角）<br>
+                • 角OPQ = γ（顶角，锐角）<br>
+                • 三个角度都小于90°，满足 α + β + γ = 180°
+            </div>
+        </div>
+        
+        <!-- 步骤4：公式推导 -->
+        <div class="step-section">
+            <div class="step-title">步骤4：核心公式推导</div>
+            
+            <p><strong>第一步：建立三角关系</strong></p>
+            <div class="formula-simple">
+                tan(β) = h / (L - D·cos(α))
+            </div>
+            <p>其中：h = D·sin(α)</p>
+            
+            <p><strong>第二步：代入得到</strong></p>
+            <div class="formula-simple">
+                tan(β) = (D·sin(α)) / (L - D·cos(α))
+            </div>
+            
+            <p><strong>第三步：光斑位置关系</strong></p>
+            <div class="formula-simple">
+                x = f·tan(β)
+            </div>
+            <p>其中：f 是透镜焦距，x 是光斑在探测器上的位置</p>
+            
+            <p><strong>第四步：最终测距公式</strong></p>
+            <div class="formula-simple" style="background: #e74c3c; font-size: 1.4em;">
+                D = (x·L) / (f·sin(α) + x·cos(α))
+            </div>
+        </div>
+        
+        <!-- 步骤5：交互演示 -->
+        <div class="step-section">
+            <div class="step-title">步骤5：交互式演示</div>
+            
+            <div class="demo-controls">
+                <div class="slider-group">
+                    <label>物体距离 D:</label>
+                    <input type="range" id="distanceDemo" min="60" max="150" value="100">
+                    <span class="value-show" id="distanceShow">100</span> mm
+                </div>
+                
+                <div class="slider-group">
+                    <label>入射角 α:</label>
+                    <input type="range" id="angleDemo" min="20" max="50" value="30">
+                    <span class="value-show" id="angleShow">30</span> °
+                </div>
+            </div>
+            
+            <svg width="700" height="250" id="demoDiagram">
+                <!-- 激光器 -->
+                <rect x="60" y="125" width="20" height="12" class="component-laser"/>
+                <text x="45" y="120" class="text-small">激光器</text>
+                
+                <!-- 探测器 -->
+                <rect x="160" y="120" width="15" height="20" class="component-detector"/>
+                <text x="145" y="115" class="text-small">探测器</text>
+                
+                <!-- 物体（可移动） -->
+                <rect x="250" y="80" width="25" height="60" class="component-object" id="demoObject"/>
+                
+                <!-- 激光束 -->
+                <line x1="80" y1="131" x2="262" y2="110" class="highlight-red" id="demoLaser"/>
+                
+                <!-- 反射光 -->
+                <line x1="262" y1="110" x2="167" y2="125" class="highlight-green" id="demoReflection"/>
+                
+                <!-- 基线 -->
+                <line x1="70" y1="180" x2="167" y2="180" class="distance-mark"/>
+                <text x="110" y="195" class="text-small">L = 60mm</text>
+            </svg>
+            
+            <div class="calculation-box">
+                <h4>实时计算结果：</h4>
+                <div class="result-highlight">
+                    接收角 β = <span id="betaResult">--</span>°
+                </div>
+                <div class="result-highlight">
+                    光斑位置 x = <span id="xResult">--</span> mm
+                </div>
+                <div class="result-highlight">
+                    计算距离 D = <span id="dResult">--</span> mm
+                </div>
+                <div class="result-highlight">
+                    误差 = <span id="errorResult">--</span>%
+                </div>
+            </div>
+        </div>
+        
+        <!-- 总结 -->
+        <div class="step-section">
+            <div class="step-title">📝 原理总结</div>
+            <div class="explanation">
+                <strong>激光三角测量的核心思想：</strong><br><br>
+                1. <strong>发射</strong>：激光器发出激光束照射物体<br>
+                2. <strong>反射</strong>：物体表面反射光线到探测器<br>
+                3. <strong>检测</strong>：探测器测量反射光的位置<br>
+                4. <strong>计算</strong>：根据光斑位置计算物体距离<br><br>
+                
+                <strong>关键优势：</strong><br>
+                • 非接触测量，不损伤物体<br>
+                • 测量速度快，可实时监测<br>
+                • 精度高，可达微米级<br>
+                • 结构简单，易于集成
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 演示参数
+        const f = 25; // 透镜焦距
+        const L = 60; // 基线长度
+        
+        // 获取控制元素
+        const distanceSlider = document.getElementById('distanceDemo');
+        const angleSlider = document.getElementById('angleDemo');
+        const distanceDisplay = document.getElementById('distanceShow');
+        const angleDisplay = document.getElementById('angleShow');
+        
+        // 获取结果显示元素
+        const betaResult = document.getElementById('betaResult');
+        const xResult = document.getElementById('xResult');
+        const dResult = document.getElementById('dResult');
+        const errorResult = document.getElementById('errorResult');
+        
+        // 获取SVG元素
+        const demoObject = document.getElementById('demoObject');
+        const demoLaser = document.getElementById('demoLaser');
+        const demoReflection = document.getElementById('demoReflection');
+        
+        function updateDemo() {
+            const D = parseFloat(distanceSlider.value);
+            const alphaDeg = parseFloat(angleSlider.value);
+            const alpha = alphaDeg * Math.PI / 180; // 转换为弧度
+            
+            // 更新显示
+            distanceDisplay.textContent = D;
+            angleDisplay.textContent = alphaDeg;
+            
+            // 计算物体位置（用于显示）
+            const scale = 1.5; // 显示缩放比例
+            const objX = 60 + D * scale;
+            const objY = 131 - D * Math.sin(alpha) * scale;
+            
+            // 更新物体位置
+            demoObject.setAttribute('x', objX);
+            demoObject.setAttribute('y', objY - 30);
+            
+            // 更新激光束
+            demoLaser.setAttribute('x2', objX + 12);
+            demoLaser.setAttribute('y2', objY);
+            
+            // 计算接收角β (修正为锐角)
+            const beta = Math.atan((D * Math.sin(alpha)) / (L - D * Math.cos(alpha)));
+            // 确保β为锐角
+            const betaDeg = Math.abs(beta * 180 / Math.PI);
+            
+            // 计算光斑位置x
+            const x = f * Math.tan(beta);
+            
+            // 用公式验证距离
+            const calculatedD = (x * L) / (f * Math.sin(alpha) + x * Math.cos(alpha));
+            const error = Math.abs((calculatedD - D) / D * 100);
+            
+            // 更新反射光
+            const reflectY = 131 + x * 0.3; // 显示用的位置偏移
+            demoReflection.setAttribute('x1', objX + 12);
+            demoReflection.setAttribute('y1', objY);
+            demoReflection.setAttribute('y2', reflectY);
+            
+            // 更新计算结果
+            betaResult.textContent = betaDeg.toFixed(2);
+            xResult.textContent = x.toFixed(2);
+            dResult.textContent = calculatedD.toFixed(1);
+            errorResult.textContent = error.toFixed(3);
+        }
+        
+        // 添加事件监听
+        distanceSlider.addEventListener('input', updateDemo);
+        angleSlider.addEventListener('input', updateDemo);
+        
+        // 初始化
+        updateDemo();
+    </script>
+</body>
+</html>

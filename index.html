@@ -671,6 +671,108 @@
             font-weight: bold;
         }
 
+        /* 激光三角测量相关样式 */
+        .laser-triangulation-section {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .step-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .step-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 15px;
+        }
+
+        .formula-simple {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.2em;
+            text-align: center;
+            margin: 15px 0;
+            font-family: 'Times New Roman', serif;
+        }
+
+        .explanation {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            border-left: 3px solid #667eea;
+            color: #e0e0e0;
+        }
+
+        .laser-demo-controls {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .laser-slider-group {
+            display: inline-block;
+            margin: 10px 15px;
+        }
+
+        .laser-slider-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #ccc;
+        }
+
+        .laser-value-show {
+            display: inline-block;
+            min-width: 40px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .highlight-red { stroke: #e74c3c; stroke-width: 3; }
+        .highlight-blue { stroke: #3498db; stroke-width: 3; }
+        .highlight-green { stroke: #27ae60; stroke-width: 3; }
+
+        .component-laser { fill: #e74c3c; stroke: #c0392b; stroke-width: 2; }
+        .component-detector { fill: #3498db; stroke: #2980b9; stroke-width: 2; }
+        .component-object { fill: #8b4513; stroke: #654321; stroke-width: 2; }
+
+        .text-large { font-size: 14px; font-weight: bold; fill: #fff; }
+        .text-medium { font-size: 12px; fill: #ccc; }
+        .text-small { font-size: 10px; fill: #aaa; }
+
+        .angle-mark { fill: none; stroke: #ccc; stroke-width: 1; stroke-dasharray: 2,2; }
+        .distance-mark { stroke: #ccc; stroke-width: 1; stroke-dasharray: 3,3; }
+
+        .laser-calculation-box {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .result-highlight {
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 5px;
+            padding: 8px;
+            margin: 5px 0;
+            font-weight: bold;
+            color: #667eea;
+        }
+
         @media (max-width: 768px) {
             .hero h1 {
                 font-size: 2.5rem;
@@ -715,10 +817,10 @@
     <nav>
         <div class="nav-container">
             <div class="logo">3D Camera World</div>
-            <ul class="nav-links">
-                <li><a href="#home">首页</a></li>
+            <ul class="nav-links">                <li><a href="#home">首页</a></li>
                 <li><a href="#basics">基础原理</a></li>
                 <li><a href="#types">相机类型</a></li>
+                <li><a href="#laser-triangulation">激光三角测量</a></li>
                 <li><a href="#demo">互动演示</a></li>
                 <li><a href="#applications">应用领域</a></li>
             </ul>
@@ -746,11 +848,15 @@
                     <div class="card-icon">📐</div>
                     <h3>视差原理</h3>
                     <p>当物体距离观察者较近时，左右眼看到的图像差异较大；距离较远时，差异较小。通过计算这种视差，可以精确测量物体的三维坐标。</p>
-                </div>
-                <div class="card fade-in">
+                </div>                <div class="card fade-in">
                     <div class="card-icon">🔬</div>
                     <h3>三角测量</h3>
                     <p>利用几何三角原理，已知两个观察点的距离和观察角度，就能计算出目标物体的距离和位置，这是3D相机测距的数学基础。</p>
+                    <div style="margin-top: 1rem; text-align: center;">
+                        <a href="updated_laser_triangulation.html" style="color: #667eea; text-decoration: none; font-size: 0.9rem; font-weight: bold;">
+                            🔺 激光三角测量详解 →
+                        </a>
+                    </div>
                 </div>
             </div>            <div class="principle-detail">
                 <div class="principle-nav">
@@ -1000,10 +1106,9 @@
                             <td>测量光飞行时间</td>
                             <td>实时性好，抗干扰</td>
                             <td>手势识别、AR/VR</td>
-                        </tr>
-                        <tr>
+                        </tr>                        <tr>
                             <td><strong>激光雷达</strong></td>
-                            <td>激光扫描测距</td>
+                            <td>激光扫描测距 <a href="updated_laser_triangulation.html" style="color: #667eea; text-decoration: none; font-size: 0.9rem;">[详细原理]</a></td>
                             <td>远距离，高精度</td>
                             <td>地形测绘、无人机</td>
                         </tr>
@@ -1068,6 +1173,66 @@
                     <div class="card-icon">🏗️</div>
                     <h3>建筑测绘</h3>
                     <p>3D激光扫描技术在建筑、考古和地理测绘中发挥重要作用，能够快速创建精确的三维模型，提高测量效率和精度。</p>
+                </div>
+            </div>
+        </section>        <section id="laser-triangulation" class="section">
+            <h2 class="section-title">激光三角测量原理</h2>
+            <div class="laser-triangulation-section">
+                <div class="step-section">
+                    <div class="step-title">1. 激光发射</div>
+                    <div class="explanation">
+                        激光三角测量利用激光器发射激光束，激光束照射到物体表面并反射回收。
+                    </div>
+                </div>
+                <div class="step-section">
+                    <div class="step-title">2. 位置测量</div>
+                    <div class="explanation">
+                        通过测量激光发射器和接收器之间的几何关系，计算出物体的三维坐标。
+                    </div>
+                </div>
+                <div class="step-section">
+                    <div class="step-title">3. 数据处理</div>
+                    <div class="explanation">
+                        将测得的激光点位置信息进行处理，生成高精度的三维模型或轮廓。
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin: 2rem 0;">
+                    <a href="updated_laser_triangulation.html" class="cta-button" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); display: inline-flex; align-items: center; gap: 0.5rem; font-size: 1.1rem;">
+                        🔺 查看详细激光三角测量原理图解
+                        <span style="font-size: 0.9rem;">→</span>
+                    </a>
+                    <p style="color: #ccc; margin-top: 0.5rem; font-size: 0.9rem;">
+                        包含交互式演示、公式推导和实时计算
+                    </p>
+                </div>
+
+                <div class="laser-demo-controls">
+                    <div class="laser-slider-group">
+                        <label for="laserDistance">激光距离:</label>
+                        <input type="range" id="laserDistance" min="100" max="500" value="250">
+                        <span class="laser-value-show" id="laserDistanceValue">250mm</span>
+                    </div>
+                    <div class="laser-slider-group">
+                        <label for="laserAngle">激光角度:</label>
+                        <input type="range" id="laserAngle" min="-30" max="30" value="0">
+                        <span class="laser-value-show" id="laserAngleValue">0°</span>
+                    </div>
+                </div>
+
+                <div class="formula-simple">
+                    Z = (f × B) / d
+                </div>
+                <div class="formula-simple">
+                    X = (u - cx) × Z / f
+                </div>
+                <div class="formula-simple">
+                    Y = (v - cy) × Z / f
+                </div>
+
+                <div class="laser-calculation-box" id="laserCalculation">
+                    <div>激光三角测量计算过程:</div>
+                    <div id="laserResult" style="color: #667eea; font-weight: bold;"></div>
                 </div>
             </div>
         </section>
