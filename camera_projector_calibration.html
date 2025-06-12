@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>相机投影仪系统标定详解</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #2c3e50;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            padding: 40px 0;
+            background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%);
+            border-radius: 15px;
+            margin-bottom: 40px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="40" r="1.5" fill="rgba(255,255,255,0.1)"/><circle cx="40" cy="70" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="70" cy="80" r="2.5" fill="rgba(255,255,255,0.1)"/></svg>');
+            animation: float 20s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .section {
+            margin-bottom: 40px;
+            padding: 30px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid #3498db;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 2em;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .section h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background: linear-gradient(to right, #3498db, #9b59b6);
+            border-radius: 2px;
+        }
+
+        .section h3 {
+            color: #e74c3c;
+            margin: 25px 0 15px 0;
+            font-size: 1.4em;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .section h3::before {
+            content: '▶';
+            position: absolute;
+            left: 0;
+            color: #3498db;
+            font-size: 0.8em;
+            top: 2px;
+        }
+
+        .section p, .section li {
+            margin-bottom: 15px;
+            text-align: justify;
+            font-size: 1.1em;
+        }
+
+        .section ul, .section ol {
+            margin-left: 20px;
+            margin-bottom: 20px;
+        }
+
+        .section li {
+            margin-bottom: 10px;
+            padding-left: 10px;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #e74c3c;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .highlight::before {
+            content: '💡';
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.5em;
+            opacity: 0.7;
+        }
+
+        .code-block {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            margin: 20px 0;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .code-block::before {
+            content: 'CODE';
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            font-size: 0.8em;
+            opacity: 0.5;
+            color: #95a5a6;
+        }
+
+        .step-card {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .step-card:hover {
+            transform: scale(1.02);
+        }
+
+        .step-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(180deg); }
+        }
+
+        .step-number {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 40px;
+            font-weight: bold;
+            margin-right: 15px;
+            font-size: 1.2em;
+        }
+
+        .warning {
+            background: linear-gradient(135deg, #fd79a8 0%, #fdcb6e 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            position: relative;
+            border-left: 4px solid #e17055;
+        }
+
+        .warning::before {
+            content: '⚠️';
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.5em;
+        }
+
+        .formula {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Times New Roman', serif;
+            text-align: center;
+            margin: 15px 0;
+            border: 2px dashed #6c757d;
+            font-size: 1.1em;
+        }
+
+        .summary {
+            background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .summary::before {
+            content: '✨';
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 2em;
+            opacity: 0.7;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .section {
+                padding: 20px;
+            }
+            
+            .section h2 {
+                font-size: 1.5em;
+            }
+        }
+
+        .flow-diagram {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .flow-step {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 25px;
+            margin: 10px;
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+
+        .flow-step:hover {
+            transform: translateY(-3px);
+        }
+
+        .flow-arrow {
+            display: inline-block;
+            font-size: 2em;
+            color: #3498db;
+            margin: 0 10px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 相机投影仪系统标定</h1>
+            <p>结构光三维测量技术的核心基础</p>
+        </div>
+
+        <div class="section">
+            <h2>🔍 系统概述</h2>
+            <p>相机投影仪系统标定是结构光三维测量技术的核心环节，目标是获取系统的精确几何参数，为后续的三维重建提供数学基础。</p>
+            
+            <div class="highlight">
+                <h3>核心目标</h3>
+                <ul>
+                    <li><strong>相机内参：</strong> 焦距、主点坐标、畸变系数</li>
+                    <li><strong>投影仪内参：</strong> 将投影仪视为"反向相机"的几何参数</li>
+                    <li><strong>系统外参：</strong> 相机与投影仪之间的相对位姿关系 (旋转矩阵R + 平移向量T)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📋 标定流程详解</h2>
+            
+            <div class="flow-diagram">
+                <div class="flow-step">准备标定板</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step">相机标定</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step">投影仪标定</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step">外参计算</div>
+            </div>
+
+            <div class="step-card">
+                <span class="step-number">1</span>
+                <h3>标定板获取与准备</h3>
+                <ul>
+                    <li>使用高精度物理标定板（棋盘格或圆点阵列）</li>
+                    <li>投影仪投射<strong>纯白光</strong>照明标定板</li>
+                    <li>相机从<strong>多个不同位置和角度</strong>拍摄标定板图像</li>
+                    <li>确保标定板在相机和投影仪的公共视野内</li>
+                </ul>
+            </div>
+
+            <div class="step-card">
+                <span class="step-number">2</span>
+                <h3>相机标定</h3>
+                <ul>
+                    <li>使用白光图像进行<strong>标准单相机标定</strong></li>
+                    <li>应用张正友标定法获得相机内参矩阵 K<sub>c</sub></li>
+                    <li>计算相机畸变系数 dist<sub>c</sub></li>
+                    <li>获得每幅图像的位姿参数 (R<sub>ci</sub>, T<sub>ci</sub>)</li>
+                </ul>
+                <div class="formula">
+                    相机内参矩阵: K<sub>c</sub> = [f<sub>x</sub>, 0, c<sub>x</sub>; 0, f<sub>y</sub>, c<sub>y</sub>; 0, 0, 1]
+                </div>
+            </div>
+
+            <div class="step-card">
+                <span class="step-number">3</span>
+                <h3>投影仪标定（关键步骤）</h3>
+                <div class="warning">
+                    <strong>重要：</strong> 拍摄白光图像和编码图像时，标定板、相机、投影仪的相对位置必须<strong>绝对保持不变</strong>！
+                </div>
+                
+                <h4>3.1 投射编码图案</h4>
+                <ul>
+                    <li>投影仪依次投射时空编码图案</li>
+                    <li>常用：格雷码 + 相移正弦条纹组合</li>
+                    <li>相机同步拍摄每个图案</li>
+                </ul>
+
+                <h4>3.2 计算相位图</h4>
+                <ul>
+                    <li>处理条纹图像，计算每个像素的<strong>绝对相位值</strong></li>
+                    <li>通过格雷码进行相位解包裹</li>
+                    <li>获得连续的相位分布</li>
+                </ul>
+
+                <h4>3.3 建立对应关系</h4>
+                <ul>
+                    <li>对每个标定板角点位置进行<strong>亚像素插值</strong></li>
+                    <li>获得角点的精确相位值 (φ<sub>x</sub>, φ<sub>y</sub>)</li>
+                    <li>利用投影仪<strong>预设的相位-像素映射关系</strong>反解投影仪坐标</li>
+                </ul>
+
+                <div class="code-block">
+                    关键理解：投影仪的相位映射是预先定义好的！
+                    Gen_Phase_X(u_p, v_p) = K_x * u_p + B_x
+                    Gen_Phase_Y(u_p, v_p) = K_y * v_p + B_y
+                    
+                    反解过程：
+                    u_pj = (φ_x^j - B_x) / K_x
+                    v_pj = (φ_y^j - B_y) / K_y
+                </div>
+            </div>
+
+            <div class="step-card">
+                <span class="step-number">4</span>
+                <h3>投影仪参数计算</h3>
+                <ul>
+                    <li>将投影仪视为<strong>逆向相机</strong></li>
+                    <li>使用3D点与投影仪像素点对应关系</li>
+                    <li>应用张正友标定法求解投影仪内参 K<sub>p</sub></li>
+                    <li>获得投影仪畸变系数 dist<sub>p</sub></li>
+                </ul>
+            </div>
+
+            <div class="step-card">
+                <span class="step-number">5</span>
+                <h3>系统外参计算与优化</h3>
+                <ul>
+                    <li>计算相机与投影仪间的相对位姿 (R, T)</li>
+                    <li>进行<strong>全局捆绑调整优化</strong></li>
+                    <li>最小化重投影误差</li>
+                    <li>提高整体标定精度和鲁棒性</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🔑 核心技术要点</h2>
+            
+            <div class="highlight">
+                <h3>相位一致性原理</h3>
+                <p>相位一致性是建立相机像素与投影仪像素对应关系的桥梁。通过测量物体表面反射光携带的相位信息，与投影仪预设的相位映射进行匹配，实现精确的点对应。</p>
+            </div>
+
+            <div class="warning">
+                <h3>关键注意事项</h3>
+                <ul>
+                    <li><strong>位置固定：</strong> 白光图与编码图拍摄期间设备绝对静止</li>
+                    <li><strong>数据充足：</strong> 建议拍摄15-30张不同姿态图像</li>
+                    <li><strong>视野覆盖：</strong> 确保覆盖测量区域的边缘和不同深度</li>
+                    <li><strong>同步精度：</strong> 相机曝光与图案切换精确同步</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📊 标定过程总结</h2>
+            
+            <div class="step-card">
+                <h3>第一阶段：张正友相机标定</h3>
+                <p>使用白光图像，应用经典的张正友标定法获取相机内参和畸变参数。这是纯粹的单目相机标定过程。</p>
+            </div>
+
+            <div class="step-card">
+                <h3>第二阶段：相位一致性投影仪标定</h3>
+                <p>通过编码图案建立相位对应关系，将投影仪视为虚拟相机进行标定。相位一致性是核心机制，实现从相机测量相位到投影仪像素坐标的映射。</p>
+            </div>
+
+            <div class="step-card">
+                <h3>第三阶段：双目外参标定</h3>
+                <p>将相机和投影仪视为立体视觉对，利用已知内参和共同观测的3D点，标定两者间的旋转矩阵和平移向量。</p>
+            </div>
+        </div>
+
+        <div class="summary">
+            <h2>🎉 标定输出结果</h2>
+            <div style="position: relative; z-index: 1;">
+                <ul>
+                    <li><strong>相机参数：</strong> 内参矩阵 K<sub>c</sub>，畸变系数 dist<sub>c</sub></li>
+                    <li><strong>投影仪参数：</strong> 内参矩阵 K<sub>p</sub>，畸变系数 dist<sub>p</sub></li>
+                    <li><strong>系统外参：</strong> 相对旋转矩阵 R 和平移向量 T</li>
+                </ul>
+                <p style="margin-top: 20px; font-size: 1.1em;">
+                    这套完整的参数组合 <strong>(K<sub>c</sub>, dist<sub>c</sub>, K<sub>p</sub>, R, T)</strong> 构成了结构光三维测量系统的数学基础，确保系统能够通过双目三角测量原理精确恢复物体的三维坐标信息。
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
