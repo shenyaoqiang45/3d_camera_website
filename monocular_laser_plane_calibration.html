@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>单目光平面标定系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .panel {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+        }
+        
+        .panel h2 {
+            color: #2a5298;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            border-bottom: 3px solid #2a5298;
+            padding-bottom: 10px;
+        }
+        
+        .visualization-area {
+            grid-column: span 2;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .canvas-container {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .canvas-wrapper {
+            text-align: center;
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        canvas {
+            border: 2px solid #2a5298;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            cursor: crosshair;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            background: linear-gradient(45deg, #2a5298, #1e3c72);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(42, 82, 152, 0.3);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(42, 82, 152, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            gap: 10px;
+        }
+        
+        .step {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .step.active {
+            background: #2a5298;
+            color: white;
+            transform: scale(1.2);
+        }
+        
+        .step.completed {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .info-panel {
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+            border-left: 5px solid #2a5298;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+        }
+        
+        .equation {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            text-align: center;
+            margin: 10px 0;
+            border: 1px solid #dee2e6;
+        }
+        
+        .calibration-results {
+            background: #e8f5e8;
+            border: 1px solid #4CAF50;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        
+        .results-table th,
+        .results-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+        
+        .results-table th {
+            background: #2a5298;
+            color: white;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #ddd;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .canvas-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>单目光平面标定系统</h1>
+            <p>Monocular Laser Plane Calibration System</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="panel">
+                <h2>标定原理</h2>
+                <div class="info-panel">
+                    <h3>基本原理</h3>
+                    <p>通过单个相机观察激光平面与标定板的交线，确定激光平面在相机坐标系中的精确位置和方向。</p>
+                    
+                    <h3>关键步骤</h3>
+                    <ol>
+                        <li>相机内参标定</li>
+                        <li>标定板位姿估计(PnP)</li>
+                        <li>激光条纹提取</li>
+                        <li>三维坐标计算</li>
+                        <li>光平面拟合</li>
+                    </ol>
+                </div>
+                
+                <div class="equation">
+                    光平面方程: Ax + By + Cz + D = 0
+                </div>
+                
+                <div class="equation">
+                    投影方程: s[u,v,1]ᵀ = K[R|t][X,Y,Z,1]ᵀ
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h2>系统状态</h2>
+                <div class="step-indicator">
+                    <div class="step active" id="step1">1</div>
+                    <div class="step" id="step2">2</div>
+                    <div class="step" id="step3">3</div>
+                    <div class="step" id="step4">4</div>
+                    <div class="step" id="step5">5</div>
+                </div>
+                
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                
+                <div id="statusText">
+                    <h3>当前状态: 准备标定</h3>
+                    <p>请点击开始标定按钮开始标定过程</p>
+                </div>
+                
+                <div class="calibration-results" id="results" style="display: none;">
+                    <h3>标定结果</h3>
+                    <table class="results-table">
+                        <tr>
+                            <th>参数</th>
+                            <th>数值</th>
+                            <th>单位</th>
+                        </tr>
+                        <tr>
+                            <td>平面法向量 A</td>
+                            <td id="paramA">-</td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td>平面法向量 B</td>
+                            <td id="paramB">-</td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td>平面法向量 C</td>
+                            <td id="paramC">-</td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td>平面距离 D</td>
+                            <td id="paramD">-</td>
+                            <td>mm</td>
+                        </tr>
+                        <tr>
+                            <td>标定精度</td>
+                            <td id="accuracy">-</td>
+                            <td>mm</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="visualization-area">
+            <h2>可视化演示</h2>
+            
+            <div class="canvas-container">
+                <div class="canvas-wrapper">
+                    <h3>相机图像</h3>
+                    <canvas id="cameraCanvas" width="400" height="300"></canvas>
+                    <p>显示标定板和激光条纹</p>
+                </div>
+                
+                <div class="canvas-wrapper">
+                    <h3>三维重建</h3>
+                    <canvas id="reconstructionCanvas" width="400" height="300"></canvas>
+                    <p>显示重建的三维点云和拟合平面</p>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button onclick="startCalibration()">开始标定</button>
+                <button onclick="addCalibrationData()">添加标定数据</button>
+                <button onclick="calculatePlane()">计算光平面</button>
+                <button onclick="resetCalibration()">重置系统</button>
+                <button onclick="exportResults()">导出结果</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 全局变量
+        let currentStep = 1;
+        let calibrationData = [];
+        let planeParameters = null;
+        let isCalibrating = false;
+        
+        // 获取canvas元素
+        const cameraCanvas = document.getElementById('cameraCanvas');
+        const reconstructionCanvas = document.getElementById('reconstructionCanvas');
+        const cameraCtx = cameraCanvas.getContext('2d');
+        const reconstructionCtx = reconstructionCanvas.getContext('2d');
+        
+        // 初始化
+        function init() {
+            drawCameraView();
+            drawReconstructionView();
+            updateStatus();
+        }
+        
+        // 绘制相机视图
+        function drawCameraView() {
+            cameraCtx.clearRect(0, 0, cameraCanvas.width, cameraCanvas.height);
+            
+            // 背景
+            cameraCtx.fillStyle = '#f0f0f0';
+            cameraCtx.fillRect(0, 0, cameraCanvas.width, cameraCanvas.height);
+            
+            // 绘制标定板
+            drawChessboard();
+            
+            // 绘制激光条纹
+            drawLaserStripe();
+            
+            // 绘制检测到的角点
+            drawCornerPoints();
+        }
+        
+        // 绘制棋盘格
+        function drawChessboard() {
+            const boardSize = 8;
+            const squareSize = 25;
+            const offsetX = 100;
+            const offsetY = 50;
+            
+            for (let i = 0; i < boardSize; i++) {
+                for (let j = 0; j < boardSize; j++) {
+                    const color = (i + j) % 2 === 0 ? '#ffffff' : '#000000';
+                    cameraCtx.fillStyle = color;
+                    cameraCtx.fillRect(
+                        offsetX + i * squareSize,
+                        offsetY + j * squareSize,
+                        squareSize,
+                        squareSize
+                    );
+                }
+            }
+            
+            // 边框
+            cameraCtx.strokeStyle = '#666';
+            cameraCtx.lineWidth = 2;
+            cameraCtx.strokeRect(offsetX, offsetY, boardSize * squareSize, boardSize * squareSize);
+        }
+        
+        // 绘制激光条纹
+        function drawLaserStripe() {
+            const gradient = cameraCtx.createLinearGradient(0, 0, cameraCanvas.width, 0);
+            gradient.addColorStop(0, 'rgba(255, 0, 0, 0.3)');
+            gradient.addColorStop(0.5, 'rgba(255, 0, 0, 0.8)');
+            gradient.addColorStop(1, 'rgba(255, 0, 0, 0.3)');
+            
+            cameraCtx.fillStyle = gradient;
+            
+            // 模拟激光条纹路径
+            cameraCtx.beginPath();
+            cameraCtx.moveTo(50, 80);
+            cameraCtx.quadraticCurveTo(200, 120, 350, 160);
+            cameraCtx.lineTo(350, 170);
+            cameraCtx.quadraticCurveTo(200, 130, 50, 90);
+            cameraCtx.closePath();
+            cameraCtx.fill();
+            
+            // 条纹中心线
+            cameraCtx.strokeStyle = '#ff0000';
+            cameraCtx.lineWidth = 3;
+            cameraCtx.beginPath();
+            cameraCtx.moveTo(50, 85);
+            cameraCtx.quadraticCurveTo(200, 125, 350, 165);
+            cameraCtx.stroke();
+        }
+        
+        // 绘制角点
+        function drawCornerPoints() {
+            cameraCtx.fillStyle = '#00ff00';
+            const corners = [
+                {x: 125, y: 75}, {x: 175, y: 75}, {x: 225, y: 75},
+                {x: 125, y: 125}, {x: 175, y: 125}, {x: 225, y: 125},
+                {x: 125, y: 175}, {x: 175, y: 175}, {x: 225, y: 175}
+            ];
+            
+            corners.forEach(corner => {
+                cameraCtx.beginPath();
+                cameraCtx.arc(corner.x, corner.y, 3, 0, 2 * Math.PI);
+                cameraCtx.fill();
+            });
+        }
+        
+        // 绘制三维重建视图
+        function drawReconstructionView() {
+            reconstructionCtx.clearRect(0, 0, reconstructionCanvas.width, reconstructionCanvas.height);
+            
+            // 背景
+            const gradient = reconstructionCtx.createLinearGradient(0, 0, 0, reconstructionCanvas.height);
+            gradient.addColorStop(0, '#1a1a2e');
+            gradient.addColorStop(1, '#16213e');
+            reconstructionCtx.fillStyle = gradient;
+            reconstructionCtx.fillRect(0, 0, reconstructionCanvas.width, reconstructionCanvas.height);
+            
+            // 绘制坐标轴
+            drawCoordinateAxes();
+            
+            // 绘制点云
+            drawPointCloud();
+            
+            // 绘制拟合平面
+            if (planeParameters) {
+                drawFittedPlane();
+            }
+        }
+        
+        // 绘制坐标轴
+        function drawCoordinateAxes() {
+            const centerX = reconstructionCanvas.width / 2;
+            const centerY = reconstructionCanvas.height / 2;
+            
+            // X轴 (红色)
+            reconstructionCtx.strokeStyle = '#ff0000';
+            reconstructionCtx.lineWidth = 2;
+            reconstructionCtx.beginPath();
+            reconstructionCtx.moveTo(centerX, centerY);
+            reconstructionCtx.lineTo(centerX + 100, centerY);
+            reconstructionCtx.stroke();
+            
+            // Y轴 (绿色)
+            reconstructionCtx.strokeStyle = '#00ff00';
+            reconstructionCtx.beginPath();
+            reconstructionCtx.moveTo(centerX, centerY);
+            reconstructionCtx.lineTo(centerX, centerY - 100);
+            reconstructionCtx.stroke();
+            
+            // Z轴 (蓝色)
+            reconstructionCtx.strokeStyle = '#0000ff';
+            reconstructionCtx.beginPath();
+            reconstructionCtx.moveTo(centerX, centerY);
+            reconstructionCtx.lineTo(centerX - 50, centerY + 50);
+            reconstructionCtx.stroke();
+            
+            // 标签
+            reconstructionCtx.fillStyle = '#ffffff';
+            reconstructionCtx.font = '12px Arial';
+            reconstructionCtx.fillText('X', centerX + 105, centerY + 5);
+            reconstructionCtx.fillText('Y', centerX + 5, centerY - 105);
+            reconstructionCtx.fillText('Z', centerX - 65, centerY + 65);
+        }
+        
+        // 绘制点云
+        function drawPointCloud() {
+            if (calibrationData.length === 0) return;
+            
+            const centerX = reconstructionCanvas.width / 2;
+            const centerY = reconstructionCanvas.height / 2;
+            const scale = 0.5;
+            
+            reconstructionCtx.fillStyle = '#ffff00';
+            calibrationData.forEach((data, index) => {
+                data.points3D.forEach(point => {
+                    const x = centerX + point.x * scale;
+                    const y = centerY - point.y * scale;
+                    
+                    reconstructionCtx.beginPath();
+                    reconstructionCtx.arc(x, y, 2 + index * 0.5, 0, 2 * Math.PI);
+                    reconstructionCtx.fill();
+                });
+            });
+        }
+        
+        // 绘制拟合平面
+        function drawFittedPlane() {
+            const centerX = reconstructionCanvas.width / 2;
+            const centerY = reconstructionCanvas.height / 2;
+            
+            // 简化的平面表示
+            reconstructionCtx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+            reconstructionCtx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+            reconstructionCtx.lineWidth = 2;
+            
+            reconstructionCtx.beginPath();
+            reconstructionCtx.moveTo(centerX - 100, centerY - 50);
+            reconstructionCtx.lineTo(centerX + 100, centerY - 30);
+            reconstructionCtx.lineTo(centerX + 80, centerY + 80);
+            reconstructionCtx.lineTo(centerX - 120, centerY + 60);
+            reconstructionCtx.closePath();
+            reconstructionCtx.fill();
+            reconstructionCtx.stroke();
+        }
+        
+        // 开始标定
+        function startCalibration() {
+            if (isCalibrating) return;
+            
+            isCalibrating = true;
+            currentStep = 1;
+            calibrationData = [];
+            planeParameters = null;
+            
+            updateStatus();
+            animateCalibrationProcess();
+        }
+        
+        // 标定过程动画
+        function animateCalibrationProcess() {
+            const steps = [
+                { step: 1, duration: 1000, message: "相机内参标定中..." },
+                { step: 2, duration: 1500, message: "检测标定板角点..." },
+                { step: 3, duration: 1200, message: "提取激光条纹..." },
+                { step: 4, duration: 1000, message: "计算三维坐标..." },
+                { step: 5, duration: 800, message: "拟合光平面..." }
+            ];
+            
+            let stepIndex = 0;
+            
+            function processStep() {
+                if (stepIndex >= steps.length) {
+                    completeCalibration();
+                    return;
+                }
+                
+                const step = steps[stepIndex];
+                currentStep = step.step;
+                updateStatus(step.message);
+                
+                setTimeout(() => {
+                    completeStep(step.step);
+                    stepIndex++;
+                    setTimeout(processStep, 300);
+                }, step.duration);
+            }
+            
+            processStep();
+        }
+        
+        // 完成单个步骤
+        function completeStep(step) {
+            document.getElementById(`step${step}`).classList.add('completed');
+            
+            const progress = (step / 5) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            
+            // 模拟添加标定数据
+            if (step >= 3) {
+                addMockCalibrationData();
+            }
+        }
+        
+        // 添加模拟标定数据
+        function addMockCalibrationData() {
+            const mockData = {
+                pose: Math.random() * 10,
+                points3D: []
+            };
+            
+            // 生成随机三维点
+            for (let i = 0; i < 20; i++) {
+                mockData.points3D.push({
+                    x: (Math.random() - 0.5) * 200,
+                    y: (Math.random() - 0.5) * 200,
+                    z: Math.random() * 100
+                });
+            }
+            
+            calibrationData.push(mockData);
+            drawReconstructionView();
+        }
+        
+        // 完成标定
+        function completeCalibration() {
+            isCalibrating = false;
+            
+            // 生成模拟的平面参数
+            planeParameters = {
+                A: (Math.random() - 0.5) * 2,
+                B: (Math.random() - 0.5) * 2,
+                C: Math.random() * 0.5 + 0.5,
+                D: Math.random() * 100 - 50
+            };
+            
+            // 归一化法向量
+            const norm = Math.sqrt(planeParameters.A ** 2 + planeParameters.B ** 2 + planeParameters.C ** 2);
+            planeParameters.A /= norm;
+            planeParameters.B /= norm;
+            planeParameters.C /= norm;
+            
+            showResults();
+            updateStatus("标定完成！");
+            drawReconstructionView();
+        }
+        
+        // 显示结果
+        function showResults() {
+            document.getElementById('paramA').textContent = planeParameters.A.toFixed(4);
+            document.getElementById('paramB').textContent = planeParameters.B.toFixed(4);
+            document.getElementById('paramC').textContent = planeParameters.C.toFixed(4);
+            document.getElementById('paramD').textContent = planeParameters.D.toFixed(2);
+            document.getElementById('accuracy').textContent = (Math.random() * 0.5 + 0.1).toFixed(3);
+            document.getElementById('results').style.display = 'block';
+        }
+        
+        // 添加标定数据
+        function addCalibrationData() {
+            if (isCalibrating) return;
+            
+            addMockCalibrationData();
+            updateStatus(`已添加 ${calibrationData.length} 组标定数据`);
+        }
+        
+        // 计算光平面
+        function calculatePlane() {
+            if (calibrationData.length < 3) {
+                updateStatus("需要至少3组标定数据才能计算光平面");
+                return;
+            }
+            
+            // 模拟计算过程
+            updateStatus("正在计算光平面参数...");
+            
+            setTimeout(() => {
+                completeCalibration();
+            }, 1500);
+        }
+        
+        // 重置标定
+        function resetCalibration() {
+            currentStep = 1;
+            calibrationData = [];
+            planeParameters = null;
+            isCalibrating = false;
+            
+            // 重置步骤指示器
+            for (let i = 1; i <= 5; i++) {
+                const step = document.getElementById(`step${i}`);
+                step.classList.remove('completed', 'active');
+                if (i === 1) step.classList.add('active');
+            }
+            
+            document.getElementById('progressFill').style.width = '0%';
+            document.getElementById('results').style.display = 'none';
+            
+            updateStatus("系统已重置");
+            drawCameraView();
+            drawReconstructionView();
+        }
+        
+        // 导出结果
+        function exportResults() {
+            if (!planeParameters) {
+                updateStatus("请先完成标定");
+                return;
+            }
+            
+            const results = {
+                timestamp: new Date().toISOString(),
+                planeParameters: planeParameters,
+                calibrationData: calibrationData,
+                accuracy: document.getElementById('accuracy').textContent
+            };
+            
+            const blob = new Blob([JSON.stringify(results, null, 2)], {
+                type: 'application/json'
+            });
+            
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'laser_plane_calibration_results.json';
+            a.click();
+            
+            URL.revokeObjectURL(url);
+            updateStatus("标定结果已导出");
+        }
+        
+        // 更新状态
+        function updateStatus(message) {
+            const statusText = document.getElementById('statusText');
+            const stepMessages = {
+                1: "准备标定 - 请确保相机和激光器已正确安装",
+                2: "标定板检测 - 正在检测标定板角点",
+                3: "激光条纹提取 - 正在提取激光条纹中心线",
+                4: "三维重建 - 正在计算三维坐标",
+                5: "平面拟合 - 正在拟合激光平面方程"
+            };
+            
+            if (message) {
+                statusText.innerHTML = `<h3>当前状态: ${message}</h3>`;
+            } else {
+                statusText.innerHTML = `
+                    <h3>步骤 ${currentStep}/5: ${stepMessages[currentStep].split(' - ')[0]}</h3>
+                    <p>${stepMessages[currentStep].split(' - ')[1]}</p>
+                `;
+            }
+            
+            // 更新步骤指示器
+            for (let i = 1; i <= 5; i++) {
+                const step = document.getElementById(`step${i}`);
+                step.classList.remove('active');
+                if (i === currentStep && !step.classList.contains('completed')) {
+                    step.classList.add('active');
+                }
+            }
+        }
+        
+        // 页面加载完成后初始化
+        window.onload = init;
+        
+        // 画布点击事件
+        cameraCanvas.addEventListener('click', function(e) {
+            const rect = cameraCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // 简单的交互效果
+            cameraCtx.fillStyle = 'rgba(0, 255, 0, 0.7)';
+            cameraCtx.beginPath();
+            cameraCtx.arc(x, y, 5, 0, 2 * Math.PI);
+            cameraCtx.fill();
+            
+            setTimeout(() => {
+                drawCameraView();
+            }, 1000);
+        });
+        
+        // 响应式处理
+        window.addEventListener('resize', function() {
+            drawCameraView();
+            drawReconstructionView();
+        });
+    </script>
+</body>
+</html>
