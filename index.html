@@ -824,6 +824,7 @@
                 <li><a href="updated_laser_triangulation.html">📡 激光三角</a></li>
                 <li><a href="camera_projector_calibration.html">📹 相机投影仪标定</a></li>
                 <li><a href="monocular_laser_plane_calibration.html">🔍 单目光平面标定</a></li>
+                <li><a href="fpga_clb_guide.html">🔧 FPGA CLB科普</a></li>
                 <li><a href="#demo">互动演示</a></li>
                 <li><a href="#applications">应用领域</a></li>
             </ul>
@@ -855,7 +856,7 @@
                             📐 深入了解四大坐标系统 →
                         </a>
                     </div>
-                </div><div class="card fade-in">
+                </div>                <div class="card fade-in">
                     <div class="card-icon">🔬</div>
                     <h3>三角测量</h3>
                     <p>利用几何三角原理，已知两个观察点的距离和观察角度，就能计算出目标物体的距离和位置，这是3D相机测距的数学基础。</p>
@@ -865,7 +866,17 @@
                         </a>
                     </div>
                 </div>
-            </div>            <div class="principle-detail">
+                <div class="card fade-in">
+                    <div class="card-icon">🔧</div>
+                    <h3>FPGA CLB技术</h3>
+                    <p>可配置逻辑块(CLB)是FPGA的核心组件，通过灵活的逻辑配置实现3D图像处理加速，为实时立体视觉计算提供强大的硬件支持。</p>
+                    <div style="margin-top: 1rem; text-align: center;">
+                        <a href="fpga_clb_guide.html" style="color: #667eea; text-decoration: none; font-size: 0.9rem; font-weight: bold;">
+                            🔧 深入了解FPGA CLB →
+                        </a>
+                    </div>
+                </div>
+            </div><div class="principle-detail">
                 <div class="principle-nav">
                     <button class="principle-tab active" onclick="showPrinciple(0)">双目视差演示</button>
                     <button class="principle-tab" onclick="showPrinciple(1)">深度映射原理</button>
@@ -1182,11 +1193,20 @@
                     <div class="card-icon">🏭</div>
                     <h3>工业检测</h3>
                     <p>制造业使用3D相机进行质量控制、尺寸测量和缺陷检测。相比传统2D检测，3D视觉能提供更全面、更精确的检测结果。</p>
-                </div>
-                <div class="card fade-in">
+                </div>                <div class="card fade-in">
                     <div class="card-icon">🏗️</div>
                     <h3>建筑测绘</h3>
                     <p>3D激光扫描技术在建筑、考古和地理测绘中发挥重要作用，能够快速创建精确的三维模型，提高测量效率和精度。</p>
+                </div>
+                <div class="card fade-in">
+                    <div class="card-icon">⚡</div>
+                    <h3>FPGA加速计算</h3>
+                    <p>FPGA的可配置逻辑块(CLB)为3D视觉处理提供专用硬件加速，实现毫秒级的实时图像处理和立体匹配算法，显著提升系统性能。</p>
+                    <div style="margin-top: 1rem; text-align: center;">
+                        <a href="fpga_clb_guide.html" style="color: #667eea; text-decoration: none; font-size: 0.9rem; font-weight: bold;">
+                            ⚡ 了解FPGA CLB技术 →
+                        </a>
+                    </div>
                 </div>
             </div>
         </section>        <section id="laser-triangulation" class="section">
