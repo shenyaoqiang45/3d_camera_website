@@ -1163,9 +1163,9 @@
                     </div>
                 </div>
                 <div class="demo-controls">
-                    <button class="control-btn active" onclick="changeDemo(1)">立体视觉</button>
-                    <button class="control-btn" onclick="changeDemo(2)">深度感知</button>
-                    <button class="control-btn" onclick="changeDemo(3)">3D重建</button>
+                                            <button class="control-btn active" onclick="changeDemo(1, this)">立体视觉</button>
+                        <button class="control-btn" onclick="changeDemo(2, this)">深度感知</button>
+                        <button class="control-btn" onclick="changeDemo(3, this)">3D重建</button>
                 </div>
                 <p style="color: #ccc; margin-top: 1rem;">观察3D立方体的旋转，体验立体视觉的魅力</p>
             </div>
@@ -1485,10 +1485,17 @@
         });
 
         // 演示切换功能
-        function changeDemo(demoId) {
+        function changeDemo(demoId, element) {
             const buttons = document.querySelectorAll('.control-btn');
             buttons.forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
+            // Use the passed element parameter instead of undefined event.target
+            if (element) {
+                element.classList.add('active');
+            } else {
+                // Fallback: find the button by demo ID
+                const targetButton = document.querySelector(`[onclick*="changeDemo(${demoId}"]`);
+                if (targetButton) targetButton.classList.add('active');
+            }
 
             const cube = document.querySelector('.cube');
             switch(demoId) {
