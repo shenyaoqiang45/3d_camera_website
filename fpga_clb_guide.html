@@ -1661,49 +1661,7 @@
             updateTimingDiagram();
         }
 
-        // Toggle input for LUT/FF
-        function toggleInput(input) {
-            if (input === 'D' || input === 'RST') {
-                // FF inputs
-                lutInputs[input] = 1 - lutInputs[input];
-                const btn = document.getElementById(`input${input}`);
-                btn.textContent = lutInputs[input];
-                btn.classList.toggle('active', lutInputs[input] === 1);
-                updateFFDisplay();
-            } else {
-                // LUT inputs
-                lutInputs[input] = 1 - lutInputs[input];
-                const btn = document.getElementById(`input${input}`);
-                btn.textContent = lutInputs[input];
-                btn.classList.toggle('active', lutInputs[input] === 1);
-                updateLUTDisplay();
-            }
-        }
-
-        // Toggle clock for FF
-        function toggleClock() {
-            const clockBtn = document.getElementById('inputCLK');
-            const isRising = !clockBtn.classList.contains('active');
-            
-            // Visual update
-            clockBtn.classList.toggle('active');
-            clockBtn.textContent = isRising ? '1' : '0';
-            
-            // On rising edge, update FF state
-           
-            const clkValue = document.getElementById('inputCLK').classList.contains('active') ? 1 : 0;
-            const dValue = lutInputs.D;
-            const qValue = ffState;
-            
-            timingData.push({ clk: clkValue, d: dValue, q: qValue });
-            
-            // Keep only last 10 points
-            if (timingData.length > 10) {
-                timingData.shift();
-            }
-            
-            updateTimingDiagram();
-        }
+        // Duplicate functions removed for performance optimization
 
         // Update timing diagram
         function updateTimingDiagram() {

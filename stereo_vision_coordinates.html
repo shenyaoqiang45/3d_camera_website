@@ -1482,11 +1482,35 @@
             const depth = parseFloat(document.getElementById('depthError').value);
             const disparityError = parseFloat(document.getElementById('disparityError').value);
             
+            // 输入验证
+            if (focal <= 0 || baseline <= 0 || depth <= 0 || disparityError < 0) {
+                document.getElementById('errorResult').innerHTML = `
+                    <div style="color: #FF6347; padding: 15px; background: rgba(255, 99, 71, 0.1); border-radius: 8px;">
+                        ⚠️ 错误：所有参数必须为正数，视差误差不能为负数
+                    </div>
+                `;
+                return;
+            }
+            
             // 更新显示值
             document.getElementById('focalErrorValue').textContent = focal;
             document.getElementById('baselineErrorValue').textContent = baseline;
             document.getElementById('depthErrorValue').textContent = depth;
             document.getElementById('disparityErrorValue').textContent = disparityError;
+            
+            // 计算视差值 (加入除零保护)
+            const disparity = (focal * baseline) / depth;
+            
+            // 除零保护：如果计算出的视差太小，给出警告
+            if (disparity < 0.1) {
+                document.getElementById('errorResult').innerHTML = `
+                    <div style="color: #FFA500; padding: 15px; background: rgba(255, 165, 0, 0.1); border-radius: 8px;">
+                        ⚠️ 警告：计算出的视差值过小 (${disparity.toFixed(4)} pixels)，测量精度可能极低。
+                        建议减小测量距离或增大基线距离。
+                    </div>
+                `;
+                return;
+            }
             
             // 计算深度测量误差
             const depthError = (depth * depth) / (focal * baseline) * disparityError;
@@ -1494,9 +1518,6 @@
             
             // 计算横向位置误差
             const lateralError = depth / focal * disparityError;
-            
-            // 计算视差值
-            const disparity = (focal * baseline) / depth;
             
             // 计算角分辨率
             const angularResolution = Math.atan(0.01 / focal) * 180 / Math.PI * 3600; // 角秒
