@@ -820,6 +820,11 @@
                 <li><a href="#home">首页</a></li>
                 <li><a href="#basics">基础原理</a></li>
                 <li><a href="#types">相机类型</a></li>
+                <li><a href="#calibration">📷 标定科普</a></li>
+                <li><a href="calibration/zhang_calibration_guide.html">📐 张正友标定</a></li>
+                <li><a href="calibration/camera_calibration_3d.html">🎯 3D立体标靶</a></li>
+                <li><a href="calibration/cross_ratio_calibration_guide.html">📊 交比不变标定</a></li>
+                <li><a href="calibration/radial_constraint_calibration.html">🔄 径向约束标定</a></li>
                 <li><a href="stereo_vision_coordinates.html">📐 坐标系统</a></li>
                 <li><a href="updated_laser_triangulation.html">📡 激光三角</a></li>
                 <li><a href="camera_projector_calibration.html">📹 相机投影仪标定</a></li>                <li><a href="monocular_laser_plane_calibration.html">🔍 单目光平面标定</a></li>
@@ -1209,7 +1214,180 @@
                     </div>
                 </div>
             </div>
-        </section>        <section id="laser-triangulation" class="section">
+        </section>        <section id="calibration" class="section">
+            <h2 class="section-title">相机标定科普</h2>
+            <div class="calibration-intro" style="background: rgba(255, 255, 255, 0.03); border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.1); padding: 3rem 2rem; margin-bottom: 3rem;">
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <h3 style="color: #fff; font-size: 2rem; margin-bottom: 1rem;">📷 什么是相机标定？</h3>
+                    <p style="color: #ccc; font-size: 1.2rem; line-height: 1.8; max-width: 800px; margin: 0 auto;">
+                        相机标定是3D视觉的基础工作，通过标定获取相机的内在参数（焦距、光心、畸变等）和外在参数（位置、姿态），
+                        建立像素坐标与真实世界坐标的精确映射关系，是实现精确3D测量和重建的前提。
+                    </p>
+                </div>
+
+                <div class="calibration-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin: 2rem 0;">
+                    <div class="calibration-card" style="background: rgba(255, 255, 255, 0.05); padding: 2rem; border-radius: 15px; border-left: 4px solid #667eea;">
+                        <h4 style="color: #667eea; margin-bottom: 1rem; font-size: 1.3rem;">🎯 为什么需要标定？</h4>
+                        <ul style="color: #ccc; line-height: 1.8;">
+                            <li>消除镜头畸变影响</li>
+                            <li>获取准确的焦距参数</li>
+                            <li>确定图像主点位置</li>
+                            <li>建立坐标变换关系</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="calibration-card" style="background: rgba(255, 255, 255, 0.05); padding: 2rem; border-radius: 15px; border-left: 4px solid #764ba2;">
+                        <h4 style="color: #764ba2; margin-bottom: 1rem; font-size: 1.3rem;">🔧 标定方法</h4>
+                        <ul style="color: #ccc; line-height: 1.8;">
+                            <li>张正友标定法（棋盘格）</li>
+                            <li>立体标定</li>
+                            <li>单目标定</li>
+                            <li>在线标定</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="calibration-card" style="background: rgba(255, 255, 255, 0.05); padding: 2rem; border-radius: 15px; border-left: 4px solid #e74c3c;">
+                        <h4 style="color: #e74c3c; margin-bottom: 1rem; font-size: 1.3rem;">📊 关键参数</h4>
+                        <ul style="color: #ccc; line-height: 1.8;">
+                            <li>内参矩阵 K</li>
+                            <li>畸变系数 D</li>
+                            <li>旋转矩阵 R</li>
+                            <li>平移向量 T</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="calibration-process" style="background: rgba(255, 255, 255, 0.05); padding: 2rem; border-radius: 15px; margin: 2rem 0;">
+                    <h4 style="color: #fff; text-align: center; margin-bottom: 1.5rem; font-size: 1.4rem;">🔄 标定流程</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+                        <div style="text-align: center; padding: 1rem;">
+                            <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.5rem;">1️⃣</div>
+                            <h5 style="color: #667eea; margin-bottom: 0.5rem;">准备标定板</h5>
+                            <p style="color: #ccc; font-size: 0.9rem;">制作或获取标准棋盘格</p>
+                        </div>
+                        <div style="text-align: center; padding: 1rem;">
+                            <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.5rem;">2️⃣</div>
+                            <h5 style="color: #667eea; margin-bottom: 0.5rem;">多角度拍摄</h5>
+                            <p style="color: #ccc; font-size: 0.9rem;">从不同位置和角度拍摄</p>
+                        </div>
+                        <div style="text-align: center; padding: 1rem;">
+                            <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.5rem;">3️⃣</div>
+                            <h5 style="color: #667eea; margin-bottom: 0.5rem;">角点检测</h5>
+                            <p style="color: #ccc; font-size: 0.9rem;">自动识别棋盘格角点</p>
+                        </div>
+                        <div style="text-align: center; padding: 1rem;">
+                            <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.5rem;">4️⃣</div>
+                            <h5 style="color: #667eea; margin-bottom: 0.5rem;">参数计算</h5>
+                            <p style="color: #ccc; font-size: 0.9rem;">求解内外参数和畸变</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="calibration-math" style="background: rgba(255, 255, 255, 0.05); padding: 2rem; border-radius: 15px; margin: 2rem 0;">
+                    <h4 style="color: #fff; text-align: center; margin-bottom: 1.5rem; font-size: 1.4rem;">📐 数学原理</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                        <div style="background: rgba(0, 0, 0, 0.3); padding: 1.5rem; border-radius: 10px;">
+                            <h5 style="color: #667eea; margin-bottom: 1rem;">内参矩阵 K</h5>
+                            <div class="formula-box" style="background: rgba(102, 126, 234, 0.1); padding: 1rem; border-radius: 8px; font-family: 'Courier New', monospace;">
+                                <div style="text-align: center; color: #fff; font-size: 1.1rem;">
+                                    K = [fx  0  cx]<br>
+                                    &nbsp;&nbsp;&nbsp;&nbsp;[0  fy  cy]<br>
+                                    &nbsp;&nbsp;&nbsp;&nbsp;[0   0   1]
+                                </div>
+                            </div>
+                            <p style="color: #ccc; font-size: 0.9rem; margin-top: 0.5rem;">fx, fy: 焦距  |  cx, cy: 主点</p>
+                        </div>
+                        
+                        <div style="background: rgba(0, 0, 0, 0.3); padding: 1.5rem; border-radius: 10px;">
+                            <h5 style="color: #764ba2; margin-bottom: 1rem;">投影变换</h5>
+                            <div class="formula-box" style="background: rgba(118, 75, 162, 0.1); padding: 1rem; border-radius: 8px; font-family: 'Courier New', monospace;">
+                                <div style="text-align: center; color: #fff; font-size: 1.1rem;">
+                                    s[u] = K[R|t][X]<br>
+                                    &nbsp;&nbsp;[v]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Y]<br>
+                                    &nbsp;&nbsp;[1]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Z]<br>
+                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[1]
+                                </div>
+                            </div>
+                            <p style="color: #ccc; font-size: 0.9rem; margin-top: 0.5rem;">3D世界坐标到2D像素坐标</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="calibration-applications" style="background: rgba(255, 255, 255, 0.05); padding: 2rem; border-radius: 15px; margin: 2rem 0;">
+                    <h4 style="color: #fff; text-align: center; margin-bottom: 1.5rem; font-size: 1.4rem;">🚀 应用场景</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                        <div style="background: rgba(102, 126, 234, 0.1); padding: 1.5rem; border-radius: 10px; text-align: center;">
+                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🤖</div>
+                            <h5 style="color: #667eea; margin-bottom: 0.5rem;">机器人视觉</h5>
+                            <p style="color: #ccc; font-size: 0.9rem;">精确抓取定位</p>
+                        </div>
+                        <div style="background: rgba(118, 75, 162, 0.1); padding: 1.5rem; border-radius: 10px; text-align: center;">
+                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🚗</div>
+                            <h5 style="color: #764ba2; margin-bottom: 0.5rem;">自动驾驶</h5>
+                            <p style="color: #ccc; font-size: 0.9rem;">距离测量判断</p>
+                        </div>
+                        <div style="background: rgba(231, 76, 60, 0.1); padding: 1.5rem; border-radius: 10px; text-align: center;">
+                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">📱</div>
+                            <h5 style="color: #e74c3c; margin-bottom: 0.5rem;">AR应用</h5>
+                            <p style="color: #ccc; font-size: 0.9rem;">虚实融合定位</p>
+                        </div>
+                        <div style="background: rgba(39, 174, 96, 0.1); padding: 1.5rem; border-radius: 10px; text-align: center;">
+                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🏭</div>
+                            <h5 style="color: #27ae60; margin-bottom: 0.5rem;">工业检测</h5>
+                            <p style="color: #ccc; font-size: 0.9rem;">尺寸质量控制</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin-top: 2rem;">
+                    <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem;">
+                        <a href="camera_projector_calibration.html" class="cta-button" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: inline-flex; align-items: center; gap: 0.5rem; font-size: 1rem;">
+                            📹 相机投影仪标定详解
+                            <span style="font-size: 0.9rem;">→</span>
+                        </a>
+                        <a href="monocular_laser_plane_calibration.html" class="cta-button" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); display: inline-flex; align-items: center; gap: 0.5rem; font-size: 1rem;">
+                            🔍 单目光平面标定
+                            <span style="font-size: 0.9rem;">→</span>
+                        </a>
+                    </div>
+                    
+                    <div style="background: rgba(255, 255, 255, 0.05); padding: 2rem; border-radius: 15px; margin: 1.5rem 0;">
+                        <h4 style="color: #fff; text-align: center; margin-bottom: 1.5rem; font-size: 1.3rem;">🎓 深度学习标定方法</h4>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                            <a href="calibration/zhang_calibration_guide.html" style="background: rgba(102, 126, 234, 0.1); padding: 1.5rem; border-radius: 10px; text-decoration: none; border: 1px solid rgba(102, 126, 234, 0.3); transition: all 0.3s ease; display: block;" onmouseover="this.style.transform='translateY(-5px)'; this.style.background='rgba(102, 126, 234, 0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(102, 126, 234, 0.1)'">
+                                <div style="font-size: 2rem; text-align: center; margin-bottom: 0.5rem;">📐</div>
+                                <h5 style="color: #667eea; margin-bottom: 0.5rem; text-align: center;">张正友标定方法</h5>
+                                <p style="color: #ccc; font-size: 0.9rem; text-align: center;">经典棋盘格标定算法</p>
+                            </a>
+                            
+                            <a href="calibration/camera_calibration_3d.html" style="background: rgba(118, 75, 162, 0.1); padding: 1.5rem; border-radius: 10px; text-decoration: none; border: 1px solid rgba(118, 75, 162, 0.3); transition: all 0.3s ease; display: block;" onmouseover="this.style.transform='translateY(-5px)'; this.style.background='rgba(118, 75, 162, 0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(118, 75, 162, 0.1)'">
+                                <div style="font-size: 2rem; text-align: center; margin-bottom: 0.5rem;">🎯</div>
+                                <h5 style="color: #764ba2; margin-bottom: 0.5rem; text-align: center;">3D立体标靶标定</h5>
+                                <p style="color: #ccc; font-size: 0.9rem; text-align: center;">基于立体标靶的高精度标定</p>
+                            </a>
+                            
+                            <a href="calibration/cross_ratio_calibration_guide.html" style="background: rgba(231, 76, 60, 0.1); padding: 1.5rem; border-radius: 10px; text-decoration: none; border: 1px solid rgba(231, 76, 60, 0.3); transition: all 0.3s ease; display: block;" onmouseover="this.style.transform='translateY(-5px)'; this.style.background='rgba(231, 76, 60, 0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(231, 76, 60, 0.1)'">
+                                <div style="font-size: 2rem; text-align: center; margin-bottom: 0.5rem;">📊</div>
+                                <h5 style="color: #e74c3c; margin-bottom: 0.5rem; text-align: center;">交比不变标定</h5>
+                                <p style="color: #ccc; font-size: 0.9rem; text-align: center;">射影几何的优雅应用</p>
+                            </a>
+                            
+                            <a href="calibration/radial_constraint_calibration.html" style="background: rgba(39, 174, 96, 0.1); padding: 1.5rem; border-radius: 10px; text-decoration: none; border: 1px solid rgba(39, 174, 96, 0.3); transition: all 0.3s ease; display: block;" onmouseover="this.style.transform='translateY(-5px)'; this.style.background='rgba(39, 174, 96, 0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(39, 174, 96, 0.1)'">
+                                <div style="font-size: 2rem; text-align: center; margin-bottom: 0.5rem;">🔄</div>
+                                <h5 style="color: #27ae60; margin-bottom: 0.5rem; text-align: center;">径向约束标定</h5>
+                                <p style="color: #ccc; font-size: 0.9rem; text-align: center;">基于径向约束的创新方法</p>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <p style="color: #ccc; margin-top: 1rem; font-size: 0.9rem;">
+                        深入了解不同类型的标定方法和实际应用案例
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section id="laser-triangulation" class="section">
             <h2 class="section-title">激光三角测量原理</h2>
             <div class="laser-triangulation-section">
                 <div class="step-section">

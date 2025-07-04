@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>基于3D立体标靶的摄像机标定</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+            padding: 40px 0;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section h2 {
+            color: #667eea;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .section h3 {
+            color: #764ba2;
+            font-size: 1.4em;
+            margin: 20px 0 10px 0;
+        }
+
+        .visual-demo {
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .demo-3d {
+            width: 200px;
+            height: 200px;
+            margin: 20px auto;
+            position: relative;
+            transform-style: preserve-3d;
+            animation: rotate3d 6s infinite linear;
+        }
+
+        .cube {
+            width: 200px;
+            height: 200px;
+            position: absolute;
+            transform-style: preserve-3d;
+        }
+
+        .cube-face {
+            width: 200px;
+            height: 200px;
+            position: absolute;
+            border: 3px solid #667eea;
+            background: rgba(102, 126, 234, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .cube-face::before {
+            content: '';
+            width: 10px;
+            height: 10px;
+            background: #ff6b6b;
+            border-radius: 50%;
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
+
+        .cube-face::after {
+            content: '';
+            width: 10px;
+            height: 10px;
+            background: #ff6b6b;
+            border-radius: 50%;
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+        }
+
+        .front { transform: rotateY(0deg) translateZ(100px); }
+        .back { transform: rotateY(180deg) translateZ(100px); }
+        .right { transform: rotateY(90deg) translateZ(100px); }
+        .left { transform: rotateY(-90deg) translateZ(100px); }
+        .top { transform: rotateX(90deg) translateZ(100px); }
+        .bottom { transform: rotateX(-90deg) translateZ(100px); }
+
+        @keyframes rotate3d {
+            0% { transform: rotateX(0deg) rotateY(0deg); }
+            100% { transform: rotateX(360deg) rotateY(360deg); }
+        }
+
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .comparison-item {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .comparison-item h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .advantage-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .advantage-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            transform: translateY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .advantage-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .advantage-card h4 {
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .process-flow {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+
+        .process-step {
+            background: white;
+            border: 3px solid #667eea;
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin: 10px;
+            position: relative;
+            animation: pulse 2s infinite;
+        }
+
+        .process-step::after {
+            content: '→';
+            position: absolute;
+            right: -30px;
+            font-size: 2em;
+            color: #667eea;
+        }
+
+        .process-step:last-child::after {
+            display: none;
+        }
+
+        .process-step .step-number {
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .interactive-demo {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .camera-view {
+            width: 300px;
+            height: 200px;
+            border: 3px solid #333;
+            border-radius: 10px;
+            background: linear-gradient(45deg, #000, #333);
+            margin: 20px auto;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .camera-view::before {
+            content: '📷';
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 2em;
+        }
+
+        .target-points {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 100px;
+        }
+
+        .point {
+            width: 8px;
+            height: 8px;
+            background: #ff6b6b;
+            border-radius: 50%;
+            position: absolute;
+            animation: blink 1s infinite;
+        }
+
+        .point:nth-child(1) { top: 10px; left: 10px; }
+        .point:nth-child(2) { top: 10px; right: 10px; }
+        .point:nth-child(3) { bottom: 10px; left: 10px; }
+        .point:nth-child(4) { bottom: 10px; right: 10px; }
+        .point:nth-child(5) { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            padding: 20px;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .comparison {
+                grid-template-columns: 1fr;
+            }
+            
+            .demo-3d {
+                width: 150px;
+                height: 150px;
+            }
+            
+            .cube, .cube-face {
+                width: 150px;
+                height: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 基于3D立体标靶的摄像机标定</h1>
+            <p>精密视觉测量技术的重要基础</p>
+        </div>
+
+        <div class="content">
+            <div class="section">
+                <h2>💡 什么是摄像机标定？</h2>
+                <p>摄像机标定是确定摄像机内外参数的过程，就像给摄像机配眼镜一样，让它能够准确理解三维世界。通过标定，我们可以：</p>
+                <ul style="margin: 15px 0; padding-left: 20px;">
+                    <li>消除镜头畸变</li>
+                    <li>建立图像坐标与世界坐标的对应关系</li>
+                    <li>实现精确的三维测量</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <h2>🎲 3D立体标靶演示</h2>
+                <div class="visual-demo">
+                    <h3>旋转的立方体标靶</h3>
+                    <div class="demo-3d">
+                        <div class="cube">
+                            <div class="cube-face front">前面</div>
+                            <div class="cube-face back">后面</div>
+                            <div class="cube-face right">右面</div>
+                            <div class="cube-face left">左面</div>
+                            <div class="cube-face top">上面</div>
+                            <div class="cube-face bottom">下面</div>
+                        </div>
+                    </div>
+                    <p>红色圆点代表特征点，分布在立方体的各个面上，形成三维空间约束</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>🔄 2D vs 3D标靶对比</h2>
+                <div class="comparison">
+                    <div class="comparison-item">
+                        <h4>2D平面标靶</h4>
+                        <div style="width: 150px; height: 150px; background: #f0f0f0; border: 2px solid #667eea; margin: 10px auto; display: flex; justify-content: center; align-items: center;">
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                                <div class="point"></div>
+                                <div class="point"></div>
+                                <div class="point"></div>
+                                <div class="point"></div>
+                                <div class="point"></div>
+                                <div class="point"></div>
+                                <div class="point"></div>
+                                <div class="point"></div>
+                                <div class="point"></div>
+                            </div>
+                        </div>
+                        <p>需要多次移动标靶拍摄</p>
+                    </div>
+                    <div class="comparison-item">
+                        <h4>3D立体标靶</h4>
+                        <div style="width: 150px; height: 150px; margin: 10px auto; transform-style: preserve-3d; animation: rotate3d 4s infinite linear;">
+                            <div style="width: 100px; height: 100px; background: rgba(102, 126, 234, 0.3); border: 2px solid #667eea; transform: rotateY(45deg) rotateX(45deg); margin: 25px auto; display: flex; justify-content: center; align-items: center;">
+                                <div class="point"></div>
+                            </div>
+                        </div>
+                        <p>一次拍摄即可完成标定</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>🔧 标定过程</h2>
+                <div class="process-flow">
+                    <div class="process-step">
+                        <div class="step-number">1</div>
+                        <div>特征点提取</div>
+                    </div>
+                    <div class="process-step">
+                        <div class="step-number">2</div>
+                        <div>空间对应</div>
+                    </div>
+                    <div class="process-step">
+                        <div class="step-number">3</div>
+                        <div>参数求解</div>
+                    </div>
+                    <div class="process-step">
+                        <div class="step-number">4</div>
+                        <div>精度评估</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>🎯 摄像机视角模拟</h2>
+                <div class="interactive-demo">
+                    <h3>摄像机看到的3D标靶</h3>
+                    <div class="camera-view">
+                        <div class="target-points">
+                            <div class="point"></div>
+                            <div class="point"></div>
+                            <div class="point"></div>
+                            <div class="point"></div>
+                            <div class="point"></div>
+                        </div>
+                    </div>
+                    <p>摄像机通过识别这些闪烁的特征点，建立三维空间与图像平面的对应关系</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>✨ 技术优势</h2>
+                <div class="advantage-grid">
+                    <div class="advantage-card">
+                        <h4>🎯 单次标定</h4>
+                        <p>一次拍摄即可获得足够的约束信息，大大提高标定效率</p>
+                    </div>
+                    <div class="advantage-card">
+                        <h4>📏 精度更高</h4>
+                        <p>3D空间约束比2D平面约束更强，理论上可获得更高的标定精度</p>
+                    </div>
+                    <div class="advantage-card">
+                        <h4>🛠️ 操作简便</h4>
+                        <p>减少了多次移动标靶的繁琐操作，降低人为误差</p>
+                    </div>
+                    <div class="advantage-card">
+                        <h4>🔒 稳定性好</h4>
+                        <p>空间分布的约束使标定结果更加稳定可靠</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>🔬 应用领域</h2>
+                <div style="background: linear-gradient(45deg, #f8f9fa, #e9ecef); padding: 20px; border-radius: 10px; margin: 20px 0;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 3em; margin-bottom: 10px;">🤖</div>
+                            <strong>机器人视觉</strong>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 3em; margin-bottom: 10px;">🏭</div>
+                            <strong>工业检测</strong>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 3em; margin-bottom: 10px;">📐</div>
+                            <strong>精密测量</strong>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 3em; margin-bottom: 10px;">🎬</div>
+                            <strong>动作捕捉</strong>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 3em; margin-bottom: 10px;">🚗</div>
+                            <strong>自动驾驶</strong>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 3em; margin-bottom: 10px;">🏥</div>
+                            <strong>医疗影像</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>🔮 技术发展趋势</h2>
+                <p>随着人工智能和计算机视觉技术的发展，3D立体标靶标定技术正朝着更加智能化、自动化的方向发展：</p>
+                <ul style="margin: 15px 0; padding-left: 20px;">
+                    <li><strong>自适应标定</strong>：根据应用场景自动调整标定参数</li>
+                    <li><strong>实时标定</strong>：在线实时更新标定参数</li>
+                    <li><strong>多传感器融合</strong>：结合多种传感器信息提高精度</li>
+                    <li><strong>深度学习优化</strong>：利用神经网络提高特征点检测精度</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>📸 精密视觉测量 • 让机器拥有精准的"眼睛" 📸</p>
+        </div>
+    </div>
+</body>
+</html>
