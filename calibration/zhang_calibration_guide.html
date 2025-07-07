@@ -422,6 +422,186 @@
             </div>
             
             <div class="card">
+                <h2>内参矩阵初始化方法</h2>
+                <p>张正友标定法通过多种策略来初始化相机内参矩阵，为后续优化提供良好的初值。</p>
+                
+                <h3>1. 线性方法（不考虑畸变）</h3>
+                <div class="highlight">
+                    <strong>DLT + SVD方法：</strong>将相机标定问题转化为线性最小二乘问题，通过奇异值分解（SVD）求解初始参数。
+                </div>
+                
+                <div class="formula-box">
+                    <strong>单应矩阵约束：</strong><br>
+                    H = K · [r₁ r₂ t]<br>
+                    其中 [r₁ r₂] 为旋转矩阵的前两列
+                </div>
+                
+                <div class="steps">
+                    <div class="step">
+                        <h4>计算单应矩阵</h4>
+                        <p>对每张标定图像，通过2D-3D点对应关系计算单应矩阵H，然后通过多组单应矩阵求解内参矩阵K。</p>
+                    </div>
+                    
+                    <div class="step">
+                        <h4>简单假设初始化</h4>
+                        <p>基于图像几何的简单假设：主点位于图像中心 (cx=w/2, cy=h/2)，焦距相等 (fx=fy=w)。</p>
+                    </div>
+                    
+                    <div class="step">
+                        <h4>几何信息利用</h4>
+                        <p>利用标定板的已知几何信息和相机的物理参数：fx=f/dx, fy=f/dy（其中f为物理焦距，dx/dy为像素尺寸）。</p>
+                    </div>
+                </div>
+                
+                <h3>2. 建立2D-3D对应关系</h3>
+                <div class="calibration-grid">
+                    <div class="feature-card">
+                        <h4>🎯 单应矩阵</h4>
+                        <p>建立平面到图像的投影变换</p>
+                        <p>要求特征点在同一平面上</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>📐 基础矩阵</h4>
+                        <p>描述两幅图像间的几何关系</p>
+                        <p>用于立体视觉系统</p>
+                    </div>
+                </div>
+                
+                <div class="math-equation">
+                    <strong>优化策略：</strong><br>
+                    先计算单应矩阵，然后通过多组单应矩阵求解K<br>
+                    线性优化初值 → 非线性优化精化
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>畸变校正与优化算法</h2>
+                <p>初始线性解只是起点，考虑镜头畸变后需要采用非线性优化方法获得高精度标定结果。</p>
+                
+                <h3>非线性最小二乘优化</h3>
+                <div class="advantages">
+                    <div class="advantage-card">
+                        <h4>🔄 Levenberg-Marquardt算法</h4>
+                        <p>最常用的非线性优化方法，结合了高斯-牛顿法和梯度下降法的优点</p>
+                    </div>
+                    <div class="advantage-card">
+                        <h4>🧬 遗传算法</h4>
+                        <p>全局优化算法，适用于复杂的多参数优化问题</p>
+                    </div>
+                    <div class="advantage-card">
+                        <h4>🔥 模拟退火算法</h4>
+                        <p>概率型全局优化算法，能够避免局部最优解</p>
+                    </div>
+                </div>
+                
+                <h3>重投影误差最小化</h3>
+                <div class="formula-box">
+                    <strong>目标函数：</strong><br>
+                    min Σᵢⱼ ||mᵢⱼ - m̂(K, Rᵢ, tᵢ, Mⱼ)||²<br>
+                    其中 mᵢⱼ 为观测点，m̂ 为重投影点
+                </div>
+                
+                <div class="highlight">
+                    <strong>影响精度的主要因素：</strong>
+                    <ul style="margin: 10px 0; padding-left: 20px;">
+                        <li>角点检测的亚像素精度</li>
+                        <li>标定板制作精度（误差应在1mm以内）</li>
+                        <li>拍摄角度的多样性分布</li>
+                        <li>图像质量和光照条件</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>标定精度分析</h2>
+                <p>不同相机分辨率下的标定精度表现，为实际应用提供参考数据。</p>
+                
+                <h3>精度标准与期望值</h3>
+                <div class="calibration-grid">
+                    <div class="feature-card">
+                        <h4>📷 130万像素相机</h4>
+                        <p><strong>圆心误差：</strong>0.06像素</p>
+                        <p><strong>标准差：</strong>0.04像素</p>
+                        <p><strong>适用场景：</strong>一般工业应用</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>📷 200万像素相机</h4>
+                        <p><strong>圆心误差：</strong>0.4像素</p>
+                        <p><strong>标准差：</strong>0.3像素</p>
+                        <p><strong>适用场景：</strong>高精度测量</p>
+                    </div>
+                </div>
+                
+                <h3>圆心亚像素提取技术</h3>
+                <div class="math-equation">
+                    <strong>亚像素定位算法：</strong><br>
+                    • Harris角点检测 + 二次曲面拟合<br>
+                    • 梯度法亚像素定位<br>
+                    • 模板匹配细化
+                </div>
+                
+                <div class="visual-demo">
+                    <h4>📊 拍摄角度对精度的影响</h4>
+                    <p>标定板的姿态分布直接影响参数估计的稳定性：</p>
+                    <div class="calibration-grid">
+                        <div class="feature-card">
+                            <h5>🎯 理想角度</h5>
+                            <p>15°-45° 倾斜角度</p>
+                            <p>覆盖图像各个区域</p>
+                        </div>
+                        <div class="feature-card">
+                            <h5>⚠️ 避免角度</h5>
+                            <p>正对相机 (0°)</p>
+                            <p>过大倾斜 (>60°)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>OpenCV实现详解</h2>
+                <p>张正友标定法在OpenCV中的具体实现和关键函数调用。</p>
+                
+                <h3>核心函数库</h3>
+                <div class="steps">
+                    <div class="step">
+                        <h4>cv::calibrateCamera</h4>
+                        <p><strong>功能：</strong>计算相机内参数矩阵、畸变系数和外参数</p>
+                        <p><strong>输入：</strong>世界坐标点、图像坐标点、图像尺寸</p>
+                        <p><strong>输出：</strong>内参矩阵K、畸变系数、旋转和平移向量</p>
+                    </div>
+                    
+                    <div class="step">
+                        <h4>cv::projectPoints</h4>
+                        <p><strong>功能：</strong>根据标定结果计算重投影点坐标</p>
+                        <p><strong>应用：</strong>验证标定精度，计算重投影误差</p>
+                    </div>
+                    
+                    <div class="step">
+                        <h4>cv::stereoCalibrate</h4>
+                        <p><strong>功能：</strong>计算双目相机系统的外参数</p>
+                        <p><strong>输出：</strong>两相机间的旋转矩阵R和平移向量t</p>
+                    </div>
+                </div>
+                
+                <div class="highlight">
+                    <strong>实现流程：</strong>
+                    <ol style="margin: 10px 0; padding-left: 20px;">
+                        <li>使用 cv::findChessboardCorners 检测角点</li>
+                        <li>用 cv::cornerSubPix 进行亚像素精化</li>
+                        <li>调用 cv::calibrateCamera 完成标定</li>
+                        <li>通过 cv::projectPoints 验证精度</li>
+                    </ol>
+                </div>
+                
+                <div class="math-equation">
+                    <strong>世界坐标系的坐标标定：</strong><br>
+                    相机的外参描述了从世界坐标系到相机坐标系的刚性转换<br>
+                    标定过程中确定的是相机相对于标定板的姿态
+                </div>
+            </div>
+            
+            <div class="card">
                 <h2>标定步骤详解</h2>
                 <div class="steps">
                     <div class="step">
@@ -528,25 +708,76 @@
             
             <div class="card">
                 <h2>技术要点与注意事项</h2>
-                <h3>标定板要求</h3>
-                <p>• 方格大小要精确已知（建议20-30mm）</p>
-                <p>• 黑白对比度要清晰</p>
-                <p>• 表面要平整，避免弯曲变形</p>
+                <h3>标定板制作规格</h3>
+                <div class="calibration-grid">
+                    <div class="feature-card">
+                        <h4>📏 尺寸精度</h4>
+                        <p><strong>方格大小：</strong>20-30mm</p>
+                        <p><strong>误差要求：</strong>≤ 1mm</p>
+                        <p><strong>平整度：</strong>≤ 0.1mm</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>🎨 视觉质量</h4>
+                        <p><strong>对比度：</strong>黑白清晰分明</p>
+                        <p><strong>打印精度：</strong>600dpi以上</p>
+                        <p><strong>材质：</strong>硬质板材</p>
+                    </div>
+                </div>
                 
-                <h3>图像采集要点</h3>
-                <p>• 标定板要充满整个图像的大部分区域</p>
-                <p>• 包含不同角度和位置的图像</p>
-                <p>• 避免图像模糊和过度曝光</p>
-                <p>• 至少需要3张图像，推荐10-20张</p>
+                <h3>图像采集策略</h3>
+                <div class="steps">
+                    <div class="step">
+                        <h4>拍摄角度控制</h4>
+                        <p><strong>推荐角度：</strong>15°-45° 倾斜范围</p>
+                        <p><strong>避免角度：</strong>正对相机(0°)或过大倾斜(>60°)</p>
+                        <p><strong>覆盖要求：</strong>图像各个区域都要有标定板出现</p>
+                    </div>
+                    
+                    <div class="step">
+                        <h4>图像质量要求</h4>
+                        <p><strong>充满程度：</strong>标定板占据图像2/3区域</p>
+                        <p><strong>图像数量：</strong>至少3张，推荐10-20张</p>
+                        <p><strong>光照条件：</strong>均匀无阴影，避免过曝和欠曝</p>
+                    </div>
+                </div>
                 
-                <h3>精度影响因素</h3>
-                <p>• 角点检测的精度</p>
-                <p>• 标定板制作的精度</p>
-                <p>• 图像质量和数量</p>
-                <p>• 标定板姿态的多样性</p>
+                <h3>精度影响因素分析</h3>
+                <div class="highlight">
+                    <strong>关键影响因素优先级：</strong>
+                    <ol style="margin: 10px 0; padding-left: 20px;">
+                        <li><strong>角点检测精度：</strong>亚像素级定位算法的选择</li>
+                        <li><strong>标定板规格：</strong>制作精度直接影响标定误差(±1mm内)</li>
+                        <li><strong>拍摄角度分布：</strong>多角度确保参数估计稳定性</li>
+                        <li><strong>圆心提取精度：</strong>影响重投影误差计算</li>
+                    </ol>
+                </div>
+                
+                <h3>精度期望值参考</h3>
+                <div class="math-equation">
+                    <strong>不同分辨率下的典型精度：</strong><br>
+                    • 130万像素：圆心误差 0.06px，标准差 0.04px<br>
+                    • 200万像素：圆心误差 0.4px，标准差 0.3px<br>
+                    • 500万像素：圆心误差 0.2px，标准差 0.15px
+                </div>
+                
+                <div class="visual-demo">
+                    <h4>🎯 标定质量评判准则</h4>
+                    <div class="calibration-grid">
+                        <div class="feature-card">
+                            <h5>✅ 优秀标定</h5>
+                            <p>重投影误差 < 0.3px</p>
+                            <p>可用于高精度测量</p>
+                        </div>
+                        <div class="feature-card">
+                            <h5>⚠️ 需要优化</h5>
+                            <p>重投影误差 > 0.7px</p>
+                            <p>建议重新采集数据</p>
+                        </div>
+                    </div>
+                </div>
                 
                 <div class="highlight">
-                    <strong>专业建议：</strong>标定是一个迭代优化的过程。初始标定后，可以通过添加更多图像或调整参数来进一步提高精度。在实际应用中，建议定期重新标定以保持最佳性能。
+                    <strong>专业建议：</strong>标定是一个迭代优化的过程。通过 DLT+SVD 获得线性初值后，使用 Levenberg-Marquardt 算法进行非线性优化。实际应用中建议定期重新标定以保持最佳性能，特别是在环境温度变化较大的场合。
                 </div>
             </div>
         </div>
@@ -671,6 +902,32 @@
                         <p>动作捕捉、虚拟现实、游戏开发</p>
                     </div>
                 </div>
+                
+                <h5 style="color: #667eea; margin: 25px 0 15px 0;">💻 OpenCV核心函数应用</h5>
+                <div class="calibration-grid">
+                    <div class="feature-card">
+                        <h5>📷 cv::calibrateCamera</h5>
+                        <p><strong>功能：</strong>计算相机参数</p>
+                        <p><strong>输出：</strong>内参、畸变、外参</p>
+                    </div>
+                    <div class="feature-card">
+                        <h5>🎯 cv::projectPoints</h5>
+                        <p><strong>功能：</strong>重投影验证</p>
+                        <p><strong>精度：</strong>计算重投影误差</p>
+                    </div>
+                    <div class="feature-card">
+                        <h5>👁️ cv::stereoCalibrate</h5>
+                        <p><strong>功能：</strong>双目标定</p>
+                        <p><strong>输出：</strong>立体视觉参数</p>
+                    </div>
+                </div>
+                
+                <div class="math-equation">
+                    <strong>📊 典型精度数据：</strong><br>
+                    • 130W相机：圆心误差 0.06px，标准差 0.04px<br>
+                    • 200W相机：圆心误差 0.4px，标准差 0.3px
+                </div>
+                
                 <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; margin-top: 20px; text-align: center;">
                     <h5>🌟 市场价值</h5>
                     <p>相机标定技术市场预计2025年达到45亿美元</p>
@@ -687,7 +944,7 @@
                 <h4>📊 张正友标定法数学原理深度解析</h4>
                 
                 <div class="math-equation">
-                    <strong>� 基本投影方程：</strong><br>
+                    <strong>基本投影方程：</strong><br>
                     s · [u, v, 1]ᵀ = K · [R | t] · [X, Y, Z, 1]ᵀ
                 </div>
                 
@@ -698,21 +955,22 @@
                     &nbsp;&nbsp;&nbsp;&nbsp;[0   0   1 ]
                 </div>
                 
+                <h5 style="color: #667eea; margin: 20px 0 10px 0;">🎯 初始化方法详解</h5>
                 <div class="calibration-grid">
                     <div class="feature-card">
-                        <h5>🎯 焦距参数</h5>
-                        <p><strong>fx, fy：</strong>像素单位的焦距</p>
-                        <p>通常 fx ≈ fy（方形像素）</p>
+                        <h5>📐 DLT + SVD</h5>
+                        <p>线性最小二乘问题</p>
+                        <p>通过奇异值分解求解</p>
                     </div>
                     <div class="feature-card">
-                        <h5>📍 主点坐标</h5>
-                        <p><strong>cx, cy：</strong>主点在图像中的坐标</p>
-                        <p>理想情况下在图像中心</p>
+                        <h5>� 单应矩阵约束</h5>
+                        <p>H = K · [r₁ r₂ t]</p>
+                        <p>多组单应矩阵求解K</p>
                     </div>
                     <div class="feature-card">
-                        <h5>📐 偏斜系数</h5>
-                        <p><strong>γ：</strong>像素非正交性</p>
-                        <p>现代相机通常 γ ≈ 0</p>
+                        <h5>� 简单假设</h5>
+                        <p>cx=w/2, cy=h/2</p>
+                        <p>fx=fy=w (焦距)</p>
                     </div>
                 </div>
                 
@@ -722,8 +980,33 @@
                     y' = y(1 + k₁r² + k₂r⁴) + [p₁(r² + 2y²) + 2p₂xy]
                 </div>
                 
+                <h5 style="color: #667eea; margin: 20px 0 10px 0;">⚙️ 优化算法对比</h5>
+                <div class="calibration-grid">
+                    <div class="feature-card">
+                        <h5>🔄 Levenberg-Marquardt</h5>
+                        <p>非线性最小二乘</p>
+                        <p>高斯-牛顿 + 梯度下降</p>
+                    </div>
+                    <div class="feature-card">
+                        <h5>🧬 遗传算法</h5>
+                        <p>全局优化</p>
+                        <p>避免局部最优</p>
+                    </div>
+                    <div class="feature-card">
+                        <h5>🔥 模拟退火</h5>
+                        <p>概率型优化</p>
+                        <p>温度递减策略</p>
+                    </div>
+                </div>
+                
+                <div class="math-equation">
+                    <strong>🎯 重投影误差最小化：</strong><br>
+                    min Σᵢⱼ ||mᵢⱼ - m̂(K, Rᵢ, tᵢ, Mⱼ)||²<br>
+                    目标：计算相机参数(内参、畸变、外参)
+                </div>
+                
                 <p style="text-align: center; margin-top: 20px; color: #667eea; font-weight: bold;">
-                    � 通过至少3张不同姿态的平面图像，即可求解所有参数！
+                    🎯 通过至少3张不同姿态的平面图像，即可求解所有参数！
                 </p>
             `;
         }
@@ -763,7 +1046,7 @@
                 </div>
                 
                 <div class="visual-demo">
-                    <h5>� 质量评价标准</h5>
+                    <h5>🎯 质量评价标准</h5>
                     <div style="text-align: left; max-width: 500px; margin: 0 auto;">
                         <p><span style="color: #28a745;">●</span> <strong>优秀 (&lt; 0.3px)：</strong>可用于高精度测量</p>
                         <p><span style="color: #ffc107;">●</span> <strong>良好 (0.3-0.5px)：</strong>适合一般应用</p>
@@ -790,7 +1073,7 @@
                         <div class="checkerboard" style="margin: 0; transform: perspective(600px) rotateX(25deg) rotateY(15deg);"></div>
                     </div>
                     <div>
-                        <h5>� 为什么选择棋盘格？</h5>
+                        <h5>🎯 为什么选择棋盘格？</h5>
                         <p>• <strong>高对比度：</strong>黑白相间便于角点检测</p>
                         <p>• <strong>规律性：</strong>已知的几何结构</p>
                         <p>• <strong>精确性：</strong>角点定位精度高</p>
