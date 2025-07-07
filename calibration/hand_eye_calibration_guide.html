@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>手眼标定科普指南</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .hero {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px 20px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            color: white;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 20px;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .card h2 {
+            color: #4a5568;
+            margin-bottom: 15px;
+            font-size: 1.8rem;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 5px;
+        }
+
+        .card h3 {
+            color: #2d3748;
+            margin: 20px 0 10px 0;
+            font-size: 1.3rem;
+        }
+
+        .card p {
+            margin-bottom: 15px;
+            color: #4a5568;
+            text-align: justify;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #667eea;
+        }
+
+        .demo-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .demo-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .robot-arm, .camera, .calibration-board {
+            width: 120px;
+            height: 120px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            font-weight: bold;
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+
+        .robot-arm {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+        }
+
+        .camera {
+            background: linear-gradient(45deg, #4834d4, #686de0);
+        }
+
+        .calibration-board {
+            background: linear-gradient(45deg, #00d2d3, #01a3a4);
+        }
+
+        .robot-arm:hover, .camera:hover, .calibration-board:hover {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .arrow {
+            font-size: 2rem;
+            color: #667eea;
+            margin: 0 10px;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 30px 0;
+            padding: 20px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 10px;
+        }
+
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            padding: 10px;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .step-text {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #4a5568;
+        }
+
+        .formula-box {
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            text-align: center;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .interactive-demo {
+            text-align: center;
+            padding: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .demo-container {
+                flex-direction: column;
+            }
+            
+            .arrow {
+                transform: rotate(90deg);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .mindmap-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .mindmap-legend {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            color: #4a5568;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+        }
+
+        .mindmap-container svg {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .coordinate-hierarchy {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(102, 126, 234, 0.05);
+            border-radius: 15px;
+        }
+
+        .coord-level {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 10px 0;
+        }
+
+        .coord-box {
+            padding: 12px 25px;
+            border-radius: 25px;
+            color: white;
+            font-weight: bold;
+            font-size: 1.1rem;
+            text-align: center;
+            min-width: 150px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .coord-box:hover {
+            transform: scale(1.05);
+        }
+
+        .coord-box.base {
+            background: linear-gradient(45deg, #2c3e50, #3498db);
+        }
+
+        .coord-box.flange {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+        }
+
+        .coord-box.tool {
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+        }
+
+        .coord-arrow {
+            font-size: 2rem;
+            color: #667eea;
+            margin: 5px 0;
+        }
+
+        .coord-note {
+            font-size: 0.9rem;
+            color: #666;
+            font-style: italic;
+            margin-top: 5px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .mindmap-container svg {
+                height: 400px;
+            }
+            
+            .mindmap-legend {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .coord-box {
+                min-width: 120px;
+                font-size: 1rem;
+                padding: 10px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero fade-in">
+            <h1>🤖 手眼标定 👁️</h1>
+            <p>Hand-Eye Calibration - 机器视觉与机械臂协同的关键技术</p>
+            <p>让机器人拥有精准的"手眼协调"能力</p>
+        </div>
+
+        <div class="content-grid">
+            <div class="card fade-in">
+                <h2>🎯 什么是手眼标定</h2>
+                <p>手眼标定是机器人视觉系统中的核心技术，它解决的是相机坐标系与机械臂坐标系之间的转换关系问题。</p>
+                
+                <div class="highlight">
+                    <strong>简单理解：</strong>就像人类需要通过大脑协调眼睛看到的位置和手部动作一样，机器人也需要建立相机"看到"的位置与机械臂"抓取"位置之间的精确对应关系。
+                </div>
+
+                <h3>🔍 核心问题</h3>
+                <p>相机看到物体在图像中的位置是(x, y)像素坐标，但机械臂需要知道物体在三维空间中的真实位置(X, Y, Z)才能准确抓取。</p>
+            </div>
+
+            <div class="card fade-in">
+                <h2>🏗️ 技术原理</h2>
+                <h3>坐标系转换</h3>
+                <p>手眼标定建立了多个坐标系之间的转换关系：</p>
+                
+                <p><strong>图像坐标系 → 相机坐标系 → 世界坐标系 → 机械臂坐标系</strong></p>
+
+                <div class="formula-box">
+                    <p><strong>核心变换矩阵：</strong></p>
+                    <p>P<sub>robot</sub> = T<sub>hand-eye</sub> × P<sub>camera</sub></p>
+                    <p>其中 T<sub>hand-eye</sub> 是4×4的齐次变换矩阵</p>
+                </div>
+
+                <h3>🎲 标定过程</h3>
+                <p>1. 使用标定板（棋盘格）作为已知参考</p>
+                <p>2. 机械臂移动到多个不同位置</p>
+                <p>3. 相机在每个位置拍摄标定板</p>
+                <p>4. 计算变换矩阵参数</p>
+            </div>
+
+            <div class="card fade-in">
+                <h2>🤖 机器人坐标系详解</h2>
+                
+                <h3>🔧 法兰坐标系 (Flange Coordinate System)</h3>
+                <div class="highlight">
+                    <p><strong>定义：</strong>建立在机器人末端法兰盘上的坐标系</p>
+                    <p><strong>特点：</strong></p>
+                    <p>• 需要开启绝对精度补偿</p>
+                    <p>• 位姿要精确到2位小数</p>
+                    <p>• 随机械臂运动而变化</p>
+                </div>
+                
+                <h3>🛠️ 工具坐标系 (Tool Coordinate Point - TCP)</h3>
+                <div class="highlight">
+                    <p><strong>定义：</strong>建立在实际工具末端的坐标系</p>
+                    <p><strong>变换关系：</strong></p>
+                    <div class="formula-box">
+                        法兰坐标系 → [X/Y/Z偏移 + Rx/Ry/Rz旋转] → 工具坐标系(TCP)
+                    </div>
+                    <p><strong>重要性：</strong>每个工具有自己的TCP参数</p>
+                </div>
+
+                <h3>📐 坐标系层次结构</h3>
+                <div class="coordinate-hierarchy">
+                    <div class="coord-level">
+                        <div class="coord-box base">基座坐标系</div>
+                        <div class="coord-arrow">↓</div>
+                    </div>
+                    <div class="coord-level">
+                        <div class="coord-box flange">法兰坐标系</div>
+                        <div class="coord-arrow">↓</div>
+                        <div class="coord-note">绝对精度补偿</div>
+                    </div>
+                    <div class="coord-level">
+                        <div class="coord-box tool">工具坐标系 (TCP)</div>
+                        <div class="coord-note">X/Y/Z + Rx/Ry/Rz</div>
+                    </div>
+                </div>
+
+                <h3>⚙️ 实际应用要点</h3>
+                <p><strong>精度要求：</strong></p>
+                <p>• 法兰坐标系精度：±0.01mm</p>
+                <p>• TCP定义精度：±0.05mm</p>
+                <p>• 重复定位精度：±0.02mm</p>
+                
+                <p><strong>标定意义：</strong></p>
+                <p>• 确保机器人准确到达目标位置</p>
+                <p>• 不同工具可使用不同TCP参数</p>
+                <p>• 提高作业精度和效率</p>
+            </div>
+
+            <div class="card fade-in">
+                <h2>🔧 标定方法详解</h2>
+                
+                <h3>📐 AXB标定法</h3>
+                <div class="highlight">
+                    <p><strong>核心方程：</strong> AX = XB</p>
+                    <p>其中：</p>
+                    <p>• A：机器人连续未端位姿在机器人坐标系下的位姿数据组</p>
+                    <p>• B：标定板在相机坐标系下的位姿数据组</p>
+                    <p>• X：待求解的手眼变换矩阵</p>
+                </div>
+                
+                <h3>👁️‍🗨️ Eye-in-Hand配置</h3>
+                <p><strong>数学模型：</strong></p>
+                <div class="formula-box">
+                    Xb = T(b/g) × T(g/c) × Xc
+                </div>
+                <p>• 标定板圆心和机器人基座为固定值 Xb</p>
+                <p>• 求解相机到夹具的变换矩阵 T(g/c)</p>
+                
+                <h3>🔍 Eye-to-Hand配置</h3>
+                <p><strong>数学模型：</strong></p>
+                <div class="formula-box">
+                    Xg = T(g/b) × T(b/c) × Xc
+                </div>
+                <p>• 标定板和夹具为固定值 Xg</p>
+                <p>• 求解相机到基座的变换矩阵 T(b/c)</p>
+            </div>
+
+            <div class="card fade-in">
+                <h2>🔧 分类方法</h2>
+                <h3>Eye-in-Hand (眼在手上)</h3>
+                <p>相机安装在机械臂末端，随着机械臂一起运动。适合精密操作和近距离检测。</p>
+                
+                <h3>Eye-to-Hand (眼在手外)</h3>
+                <p>相机固定在机械臂外部，观察整个工作空间。适合大范围监控和引导。</p>
+
+                <div class="highlight">
+                    <strong>选择依据：</strong>
+                    <br>• 工作空间大小
+                    <br>• 精度要求
+                    <br>• 作业环境
+                    <br>• 成本考虑
+                </div>
+            </div>
+
+            <div class="card fade-in">
+                <h2>🎯 应用场景</h2>
+                <h3>🏭 工业制造</h3>
+                <p>• 自动化装配线上的零件抓取</p>
+                <p>• 质量检测与分拣</p>
+                <p>• 焊接路径引导</p>
+
+                <h3>🏥 医疗领域</h3>
+                <p>• 手术机器人定位</p>
+                <p>• 药品分拣系统</p>
+                <p>• 康复训练设备</p>
+
+                <h3>🏠 服务机器人</h3>
+                <p>• 家用清洁机器人</p>
+                <p>• 餐饮服务机器人</p>
+                <p>• 物流配送机器人</p>
+            </div>
+        </div>
+
+        <div class="demo-section fade-in">
+            <h2 style="text-align: center; color: #4a5568; margin-bottom: 30px;">🧠 手眼标定思维导图</h2>
+            
+            <div class="mindmap-container">
+                <svg width="100%" height="500" viewBox="0 0 1000 500">
+                    <!-- 中心节点 -->
+                    <g class="mindmap-node central-node">
+                        <circle cx="500" cy="250" r="60" fill="#667eea" stroke="#4a5568" stroke-width="3"/>
+                        <text x="500" y="250" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="16" font-weight="bold">手眼标定</text>
+                    </g>
+                    
+                    <!-- 主分支1: AXB标定法 -->
+                    <g class="mindmap-branch">
+                        <line x1="440" y1="220" x2="200" y2="100" stroke="#667eea" stroke-width="3"/>
+                        <circle cx="200" cy="100" r="45" fill="#ff6b6b" stroke="#4a5568" stroke-width="2"/>
+                        <text x="200" y="100" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="12" font-weight="bold">AXB标定法</text>
+                        
+                        <!-- AXB子分支A -->
+                        <line x1="155" y1="100" x2="50" y2="50" stroke="#ff6b6b" stroke-width="2"/>
+                        <rect x="10" y="25" width="80" height="50" rx="10" fill="#ffa502" stroke="#4a5568"/>
+                        <text x="50" y="45" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="10" font-weight="bold">A为机器人</text>
+                        <text x="50" y="58" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="10" font-weight="bold">连续位姿</text>
+                        
+                        <!-- AXB子分支B -->
+                        <line x1="155" y1="100" x2="50" y2="150" stroke="#ff6b6b" stroke-width="2"/>
+                        <rect x="10" y="125" width="80" height="50" rx="10" fill="#ff6348" stroke="#4a5568"/>
+                        <text x="50" y="145" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="10" font-weight="bold">B为标定板</text>
+                        <text x="50" y="158" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="10" font-weight="bold">位姿数据</text>
+                    </g>
+                    
+                    <!-- 主分支2: Eye-in-Hand -->
+                    <g class="mindmap-branch">
+                        <line x1="440" y1="280" x2="200" y2="350" stroke="#667eea" stroke-width="3"/>
+                        <circle cx="200" cy="350" r="45" fill="#4834d4" stroke="#4a5568" stroke-width="2"/>
+                        <text x="200" y="350" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="12" font-weight="bold">Eye-in-Hand</text>
+                        
+                        <!-- Eye-in-Hand公式 -->
+                        <line x1="245" y1="350" x2="400" y2="320" stroke="#4834d4" stroke-width="2"/>
+                        <rect x="350" y="300" width="140" height="40" rx="8" fill="#686de0" stroke="#4a5568"/>
+                        <text x="420" y="320" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="10" font-weight="bold">Xb = T(b/g) T(g/c) Xc</text>
+                        
+                        <!-- Eye-in-Hand描述 -->
+                        <line x1="245" y1="350" x2="400" y2="380" stroke="#4834d4" stroke-width="2"/>
+                        <rect x="350" y="360" width="140" height="40" rx="8" fill="#5f27cd" stroke="#4a5568"/>
+                        <text x="420" y="380" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="10" font-weight="bold">标定板固定Xb</text>
+                    </g>
+                    
+                    <!-- 主分支3: Eye-to-Hand -->
+                    <g class="mindmap-branch">
+                        <line x1="560" y1="280" x2="800" y2="350" stroke="#667eea" stroke-width="3"/>
+                        <circle cx="800" cy="350" r="45" fill="#00d2d3" stroke="#4a5568" stroke-width="2"/>
+                        <text x="800" y="350" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="12" font-weight="bold">Eye-to-Hand</text>
+                        
+                        <!-- Eye-to-Hand公式 -->
+                        <line x1="755" y1="350" x2="600" y2="320" stroke="#00d2d3" stroke-width="2"/>
+                        <rect x="510" y="300" width="140" height="40" rx="8" fill="#01a3a4" stroke="#4a5568"/>
+                        <text x="580" y="320" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="10" font-weight="bold">Xg = T(g/b) T(b/c) Xc</text>
+                        
+                        <!-- Eye-to-Hand描述 -->
+                        <line x1="755" y1="350" x2="600" y2="380" stroke="#00d2d3" stroke-width="2"/>
+                        <rect x="510" y="360" width="140" height="40" rx="8" fill="#0abde3" stroke="#4a5568"/>
+                        <text x="580" y="380" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="10" font-weight="bold">标定板夹具固定Xg</text>
+                    </g>
+                    
+                    <!-- 主分支4: 机器人坐标系 -->
+                    <g class="mindmap-branch">
+                        <line x1="500" y1="190" x2="500" y2="80" stroke="#667eea" stroke-width="3"/>
+                        <circle cx="500" cy="80" r="45" fill="#e74c3c" stroke="#4a5568" stroke-width="2"/>
+                        <text x="500" y="80" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="12" font-weight="bold">机器人</text>
+                        
+                        <!-- 机器人子分支1: 绝对精度补偿 -->
+                        <line x1="455" y1="80" x2="350" y2="30" stroke="#e74c3c" stroke-width="2"/>
+                        <rect x="280" y="5" width="140" height="50" rx="10" fill="#c0392b" stroke="#4a5568"/>
+                        <text x="350" y="25" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="10" font-weight="bold">需要开启绝对</text>
+                        <text x="350" y="38" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="10" font-weight="bold">精度补偿</text>
+                        
+                        <!-- 机器人子分支2: 位姿精确度 -->
+                        <line x1="500" y1="35" x2="500" y2="5" stroke="#e74c3c" stroke-width="2"/>
+                        <rect x="430" y="-15" width="140" height="40" rx="10" fill="#e55039" stroke="#4a5568"/>
+                        <text x="500" y="5" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="10" font-weight="bold">位姿要精确到2位小数</text>
+                        
+                        <!-- 机器人子分支3: 法兰坐标系 -->
+                        <line x1="545" y1="80" x2="650" y2="30" stroke="#e74c3c" stroke-width="2"/>
+                        <rect x="580" y="5" width="140" height="50" rx="10" fill="#eb4d4b" stroke="#4a5568"/>
+                        <text x="650" y="20" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="10" font-weight="bold">法兰坐标系 →</text>
+                        <text x="650" y="35" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="10" font-weight="bold">[X/Y/Z偏移 + Rx/Ry/Rz旋转]</text>
+                        <text x="650" y="48" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="10" font-weight="bold">→ 工具坐标系(TCP)</text>
+                        
+                        <!-- 机器人子分支4: TCP参数 -->
+                        <line x1="500" y1="125" x2="500" y2="155" stroke="#e74c3c" stroke-width="2"/>
+                        <rect x="430" y="140" width="140" height="30" rx="10" fill="#f0932b" stroke="#4a5568"/>
+                        <text x="500" y="155" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="10" font-weight="bold">每个工具有自己的tcp参数</text>
+                    </g>
+                    
+                    <!-- 主分支5: 获取变换矩阵 -->
+                    <g class="mindmap-branch">
+                        <line x1="560" y1="220" x2="800" y2="100" stroke="#667eea" stroke-width="3"/>
+                        <circle cx="800" cy="100" r="45" fill="#27ae60" stroke="#4a5568" stroke-width="2"/>
+                        <text x="800" y="100" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="12" font-weight="bold">变换矩阵</text>
+                        
+                        <!-- 变换矩阵子分支1 -->
+                        <line x1="845" y1="100" x2="950" y2="50" stroke="#27ae60" stroke-width="2"/>
+                        <rect x="900" y="25" width="100" height="50" rx="10" fill="#2ecc71" stroke="#4a5568"/>
+                        <text x="950" y="45" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="10" font-weight="bold">求解相机到夹具</text>
+                        <text x="950" y="58" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="10" font-weight="bold">T(g/c)</text>
+                        
+                        <!-- 变换矩阵子分支2 -->
+                        <line x1="845" y1="100" x2="950" y2="150" stroke="#27ae60" stroke-width="2"/>
+                        <rect x="900" y="125" width="100" height="50" rx="10" fill="#00b894" stroke="#4a5568"/>
+                        <text x="950" y="145" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="10" font-weight="bold">求解相机到基座</text>
+                        <text x="950" y="158" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="10" font-weight="bold">T(b/c)</text>
+                    </g>
+                    
+                    <!-- 连接线动画 -->
+                    <style>
+                        .mindmap-branch line {
+                            stroke-dasharray: 1000;
+                            stroke-dashoffset: 1000;
+                            animation: drawLine 2s ease-in-out forwards;
+                        }
+                        
+                        .mindmap-node circle, .mindmap-node rect {
+                            opacity: 0;
+                            animation: fadeInScale 1s ease-in-out 0.5s forwards;
+                        }
+                        
+                        @keyframes drawLine {
+                            to {
+                                stroke-dashoffset: 0;
+                            }
+                        }
+                        
+                        @keyframes fadeInScale {
+                            0% {
+                                opacity: 0;
+                                transform: scale(0.5);
+                            }
+                            100% {
+                                opacity: 1;
+                                transform: scale(1);
+                            }
+                        }
+                        
+                        .mindmap-branch:hover circle,
+                        .mindmap-branch:hover rect {
+                            transform: scale(1.1);
+                            transition: transform 0.3s ease;
+                        }
+                        
+                        .mindmap-branch:hover line {
+                            stroke-width: 4;
+                            transition: stroke-width 0.3s ease;
+                        }
+                    </style>
+                </svg>
+            </div>
+            
+            <div class="mindmap-legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #ff6b6b;"></div>
+                    <span>AXB标定法 - 数学模型建立</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #e74c3c;"></div>
+                    <span>机器人坐标系 - 法兰与TCP</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #4834d4;"></div>
+                    <span>Eye-in-Hand - 相机安装在机械臂上</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #00d2d3;"></div>
+                    <span>Eye-to-Hand - 相机固定在外部</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #27ae60;"></div>
+                    <span>变换矩阵 - 最终求解目标</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-section fade-in">
+            <h2 style="text-align: center; color: #4a5568; margin-bottom: 30px;">🎮 标定流程演示</h2>
+            
+            <div class="step-indicator">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-text">准备标定板</div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-text">机械臂移动</div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-text">拍摄图像</div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-text">计算变换</div>
+                </div>
+                <div class="step">
+                    <div class="step-number">5</div>
+                    <div class="step-text">验证精度</div>
+                </div>
+            </div>
+
+            <div class="demo-container">
+                <div class="robot-arm" onclick="animateElement(this)">🦾</div>
+                <div class="arrow">→</div>
+                <div class="camera" onclick="animateElement(this)">📷</div>
+                <div class="arrow">→</div>
+                <div class="calibration-board" onclick="animateElement(this)">⚏</div>
+            </div>
+
+            <div class="interactive-demo">
+                <button class="btn" onclick="startCalibration()">开始标定演示</button>
+                <button class="btn" onclick="showResults()">查看结果</button>
+                <div id="demo-result" style="margin-top: 20px; padding: 20px; background: #f0f8ff; border-radius: 10px; display: none;">
+                    <h3 style="color: #2d3748;">🎉 标定完成！</h3>
+                    <p>变换矩阵已计算完成，机械臂现在可以根据相机图像精确定位物体了！</p>
+                    <p><strong>精度：</strong> ± 0.1mm</p>
+                    <p><strong>标定点数：</strong> 15个</p>
+                    <p><strong>重投影误差：</strong> 0.05像素</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card fade-in" style="margin-top: 30px;">
+            <h2>💡 技术要点</h2>
+            <h3>🎯 精度影响因素</h3>
+            <p>• 相机标定精度 - 内参和畸变参数</p>
+            <p>• 机械臂重复定位精度</p>
+            <p>• 标定板制造精度</p>
+            <p>• 环境光照稳定性</p>
+
+            <h3>🔧 优化建议</h3>
+            <p>• 选择合适的标定板尺寸</p>
+            <p>• 确保充足的标定位姿数量</p>
+            <p>• 标定位姿应覆盖整个工作空间</p>
+            <p>• 定期进行标定维护</p>
+
+            <div class="highlight">
+                <strong>💭 小贴士：</strong>好的手眼标定是机器人视觉应用成功的基础，投入时间做好标定工作，后续应用会事半功倍！
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 添加页面加载动画
+        window.addEventListener('load', function() {
+            const elements = document.querySelectorAll('.fade-in');
+            elements.forEach((el, index) => {
+                setTimeout(() => {
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateY(0)';
+                }, index * 200);
+            });
+        });
+
+        // 初始化元素样式
+        document.querySelectorAll('.fade-in').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        });
+
+        // 元素动画函数
+        function animateElement(element) {
+            element.style.transform = 'scale(1.2) rotate(360deg)';
+            setTimeout(() => {
+                element.style.transform = 'scale(1) rotate(0deg)';
+            }, 500);
+        }
+
+        // 标定演示函数
+        function startCalibration() {
+            const robotArm = document.querySelector('.robot-arm');
+            const camera = document.querySelector('.camera');
+            const board = document.querySelector('.calibration-board');
+            
+            // 创建动画序列
+            setTimeout(() => animateElement(robotArm), 0);
+            setTimeout(() => animateElement(camera), 500);
+            setTimeout(() => animateElement(board), 1000);
+            
+            // 显示进度消息
+            const button = event.target;
+            button.textContent = '标定中...';
+            button.disabled = true;
+            
+            setTimeout(() => {
+                button.textContent = '标定完成!';
+                button.style.background = 'linear-gradient(45deg, #27ae60, #2ecc71)';
+                setTimeout(() => {
+                    button.textContent = '开始标定演示';
+                    button.disabled = false;
+                    button.style.background = 'linear-gradient(45deg, #667eea, #764ba2)';
+                }, 2000);
+            }, 2000);
+        }
+
+        // 显示结果函数
+        function showResults() {
+            const resultDiv = document.getElementById('demo-result');
+            if (resultDiv.style.display === 'none') {
+                resultDiv.style.display = 'block';
+                resultDiv.style.animation = 'fadeIn 0.6s ease-in';
+                event.target.textContent = '隐藏结果';
+            } else {
+                resultDiv.style.display = 'none';
+                event.target.textContent = '查看结果';
+            }
+        }
+
+        // 添加鼠标悬停效果
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+    </script>
+</body>
+</html>
