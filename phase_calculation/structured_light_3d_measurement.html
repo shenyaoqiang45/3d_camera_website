@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>结构光三维测量技术科普</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+        
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+            padding: 30px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border-left: 5px solid #4facfe;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .section h2 {
+            color: #2c3e50;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e74c3c;
+            position: relative;
+        }
+        
+        .section h2::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 50px;
+            height: 2px;
+            background: #4facfe;
+        }
+        
+        .section h3 {
+            color: #34495e;
+            font-size: 1.4em;
+            margin: 25px 0 15px 0;
+            padding-left: 15px;
+            border-left: 3px solid #3498db;
+        }
+        
+        .section p {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+        
+        .formula-box {
+            background: linear-gradient(145deg, #f8f9fa, #e9ecef);
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 25px 0;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+            position: relative;
+            overflow-x: auto;
+        }
+        
+        .formula-box::before {
+            content: '公式';
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: #4facfe;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+        
+        .formula-box h4 {
+            margin-top: 0;
+            color: #2c3e50;
+            font-size: 1.1em;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 8px;
+        }
+        
+        .formula-box .MathJax {
+            font-size: 1.1em !important;
+        }
+        
+        .formula-box p {
+            margin: 10px 0;
+            font-style: italic;
+        }
+        
+        /* 特殊样式的公式框 */
+        .formula-box.result-box {
+            background: linear-gradient(145deg, #e8f5e8, #f0f8ff);
+            border-left: 4px solid #27ae60;
+        }
+        
+        .formula-box.result-box::before {
+            content: '重要结果';
+            background: #27ae60;
+        }
+        
+        .formula-box.process-box {
+            background: linear-gradient(145deg, #fff3e0, #fef7f0);
+            border-left: 4px solid #ff9800;
+        }
+        
+        .formula-box.process-box::before {
+            content: '计算过程';
+            background: #ff9800;
+        }
+        
+        .formula-box.analysis-box {
+            background: linear-gradient(145deg, #f0f8ff, #e6f3ff);
+            border-left: 4px solid #2196f3;
+        }
+        
+        .formula-box.analysis-box::before {
+            content: '分析';
+            background: #2196f3;
+        }
+        
+        .steps {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .steps ol {
+            padding-left: 20px;
+        }
+        
+        .steps li {
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .highlight {
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border-left: 4px solid #ff6b6b;
+        }
+        
+        .advantages {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .advantage-item {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            border-top: 4px solid #2ecc71;
+            transition: transform 0.3s ease;
+        }
+        
+        .advantage-item:hover {
+            transform: translateY(-3px);
+        }
+        
+        .advantage-item h4 {
+            color: #27ae60;
+            margin-bottom: 10px;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: bold;
+        }
+        
+        tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .interactive-demo {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            text-align: center;
+        }
+        
+        .demo-button {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+        
+        .demo-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .footer {
+            background: #2c3e50;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #4facfe, #00f2fe);
+            z-index: 1000;
+            transition: width 0.3s ease;
+        }
+        
+        /* 导航链接样式 */
+        .nav-link {
+            text-decoration: none;
+            color: #2c3e50;
+            background: #f8f9fa;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border-left: 4px solid #4facfe;
+            transition: all 0.3s ease;
+            display: block;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .nav-link:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .nav-link.overview { border-left-color: #4facfe; }
+        .nav-link.eight-step { border-left-color: #27ae60; }
+        .nav-link.three-freq { border-left-color: #e74c3c; }
+        .nav-link.recon { border-left-color: #ff9800; }
+        .nav-link.precision { border-left-color: #2196f3; }
+        .nav-link.quick-ref { border-left-color: #9c27b0; }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .section {
+                padding: 20px;
+            }
+            
+            .advantages {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>结构光三维测量技术</h1>
+            <p>八步相移+三频法详解</p>
+        </div>
+        
+        <div class="content">
+            <div class="section">
+                <h2>目录导航</h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0;">
+                    <a href="#overview" class="nav-link overview">📋 技术概述</a>
+                    <a href="#eight-step" class="nav-link eight-step">🔢 八步相移法</a>
+                    <a href="#three-freq" class="nav-link three-freq">🔀 三频法解包裹</a>
+                    <a href="#3d-recon" class="nav-link recon">🏗️ 三维重建</a>
+                    <a href="#precision" class="nav-link precision">📊 精度分析</a>
+                    <a href="#quick-ref" class="nav-link quick-ref">⚡ 快速参考</a>
+                </div>
+            </div>
+            
+            <div class="section" id="overview">
+                <h2>技术概述</h2>
+                <p>结构光三维测量技术是一种基于主动光投射的非接触式三维测量方法。通过向被测物体投射特定的结构光图案，分析光图案在物体表面的变形来重建物体的三维形貌。</p>
+                
+                <div class="highlight">
+                    <strong>核心原理：</strong>八步相移法提供高精度相位提取，三频法解决相位模糊问题，两者结合实现高精度、大范围的三维测量。
+                    
+                    <div style="margin-top: 15px; padding: 10px; background: rgba(255,255,255,0.7); border-radius: 5px;">
+                        <strong>关键公式速览：</strong>
+                        <ul style="margin: 8px 0; padding-left: 20px;">
+                            <li>八步相移：φ = arctan2(分子, 分母)</li>
+                            <li>三频解包裹：Φ₃ = φ₃ + 2πk₃</li>
+                            <li>三维重建：z = dΦ₃/(2πf₃ + Φ₃tanθ)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section" id="eight-step">
+                <h2>八步相移法</h2>
+                <h3>基本原理</h3>
+                <p>八步相移法通过投射8幅具有不同相移的正弦条纹图案，提取高精度的相位信息。相移步长为π/4，能够有效抑制谐波误差。</p>
+                
+                <h3>条纹强度表达式</h3>
+                <div class="formula-box">
+                    $$I_k(x,y) = A(x,y) + B(x,y)\cos\left[\phi(x,y) + \frac{k\pi}{4}\right]$$
+                    <p style="margin-top: 10px; font-size: 0.9em; color: #666;">其中：k = 0, 1, 2, ..., 7</p>
+                </div>
+                
+                <h3>相位计算公式</h3>
+                <div class="formula-box">
+                    $$\phi(x,y) = \arctan2\left(\sum_{k=0}^{7} I_k(x,y) \sin\left(\frac{k\pi}{4}\right), \sum_{k=0}^{7} I_k(x,y) \cos\left(\frac{k\pi}{4}\right)\right)$$
+                </div>
+                
+                <h3>三角函数值计算</h3>
+                <div class="table-container">
+                    <table>
+                        <tr>
+                            <th>k</th>
+                            <th>相位角</th>
+                            <th>sin(kπ/4)</th>
+                            <th>cos(kπ/4)</th>
+                            <th>对应图像</th>
+                        </tr>
+                        <tr>
+                            <td>0</td>
+                            <td>0</td>
+                            <td>0</td>
+                            <td>1</td>
+                            <td>I₀</td>
+                        </tr>
+                        <tr>
+                            <td>1</td>
+                            <td>π/4</td>
+                            <td>√2/2</td>
+                            <td>√2/2</td>
+                            <td>I₁</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>π/2</td>
+                            <td>1</td>
+                            <td>0</td>
+                            <td>I₂</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>3π/4</td>
+                            <td>√2/2</td>
+                            <td>-√2/2</td>
+                            <td>I₃</td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td>π</td>
+                            <td>0</td>
+                            <td>-1</td>
+                            <td>I₄</td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td>5π/4</td>
+                            <td>-√2/2</td>
+                            <td>-√2/2</td>
+                            <td>I₅</td>
+                        </tr>
+                        <tr>
+                            <td>6</td>
+                            <td>3π/2</td>
+                            <td>-1</td>
+                            <td>0</td>
+                            <td>I₆</td>
+                        </tr>
+                        <tr>
+                            <td>7</td>
+                            <td>7π/4</td>
+                            <td>-√2/2</td>
+                            <td>√2/2</td>
+                            <td>I₇</td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <h3>展开计算</h3>
+                
+                <div class="formula-box">
+                    <h4 style="color: #2c3e50; margin-bottom: 15px;">分子（正弦项）计算：</h4>
+                    $$\text{分子} = \sum_{k=0}^{7} I_k \sin\left(\frac{k\pi}{4}\right)$$
+                    
+                    <p style="margin: 15px 0; font-size: 0.95em; color: #34495e;">展开各项：</p>
+                    $$\begin{align}
+                    &= I_0 \cdot 0 + I_1 \cdot \frac{\sqrt{2}}{2} + I_2 \cdot 1 + I_3 \cdot \frac{\sqrt{2}}{2} \\
+                    &\quad + I_4 \cdot 0 + I_5 \cdot \left(-\frac{\sqrt{2}}{2}\right) + I_6 \cdot (-1) + I_7 \cdot \left(-\frac{\sqrt{2}}{2}\right)
+                    \end{align}$$
+                    
+                    <p style="margin: 15px 0; font-size: 0.95em; color: #34495e;">化简结果：</p>
+                    $$\boxed{\text{分子} = \frac{\sqrt{2}}{2}(I_1 + I_3 - I_5 - I_7) + I_2 - I_6}$$
+                </div>
+                
+                <div class="formula-box">
+                    <h4 style="color: #2c3e50; margin-bottom: 15px;">分母（余弦项）计算：</h4>
+                    $$\text{分母} = \sum_{k=0}^{7} I_k \cos\left(\frac{k\pi}{4}\right)$$
+                    
+                    <p style="margin: 15px 0; font-size: 0.95em; color: #34495e;">展开各项：</p>
+                    $$\begin{align}
+                    &= I_0 \cdot 1 + I_1 \cdot \frac{\sqrt{2}}{2} + I_2 \cdot 0 + I_3 \cdot \left(-\frac{\sqrt{2}}{2}\right) \\
+                    &\quad + I_4 \cdot (-1) + I_5 \cdot \left(-\frac{\sqrt{2}}{2}\right) + I_6 \cdot 0 + I_7 \cdot \frac{\sqrt{2}}{2}
+                    \end{align}$$
+                    
+                    <p style="margin: 15px 0; font-size: 0.95em; color: #34495e;">化简结果：</p>
+                    $$\boxed{\text{分母} = I_0 - I_4 + \frac{\sqrt{2}}{2}(I_1 - I_3 - I_5 + I_7)}$$
+                </div>
+                
+                <div class="formula-box result-box">
+                    <h4 style="color: #27ae60; margin-bottom: 15px;">最终相位公式：</h4>
+                    $$\phi(x,y) = \arctan2\left(\frac{\sqrt{2}}{2}(I_1 + I_3 - I_5 - I_7) + I_2 - I_6, I_0 - I_4 + \frac{\sqrt{2}}{2}(I_1 - I_3 - I_5 + I_7)\right)$$
+                </div>
+                
+                <div class="highlight">
+                    <strong>重要说明：</strong>I₁前面的符号取决于所使用的相位提取算法。上述公式是标准的离散傅里叶变换（DFT）方法，在某些文献中可能采用不同的符号约定或算法变种。
+                </div>
+                
+                <div class="steps">
+                    <h4>测量步骤：</h4>
+                    <ol>
+                        <li>投射8幅相移图案：相移量分别为0, π/4, π/2, 3π/4, π, 5π/4, 3π/2, 7π/4</li>
+                        <li>采集对应的8幅变形图像</li>
+                        <li>应用八步相移算法计算包裹相位</li>
+                        <li>相位范围：(-π, π]</li>
+                    </ol>
+                </div>
+            </div>
+            
+            <div class="section" id="three-freq">
+                <h2>三频法相位解包裹</h2>
+                <h3>频率设计</h3>
+                <p>选择三种不同频率的条纹图案，频率比通常为简单整数比，如1:3:9或1:4:16。</p>
+                
+                <div class="table-container">
+                    <table>
+                        <tr>
+                            <th>频率类型</th>
+                            <th>频率值</th>
+                            <th>周期数</th>
+                            <th>作用</th>
+                        </tr>
+                        <tr>
+                            <td>低频 f₁</td>
+                            <td>基准频率</td>
+                            <td>1个周期</td>
+                            <td>粗略测量，范围确定</td>
+                        </tr>
+                        <tr>
+                            <td>中频 f₂</td>
+                            <td>8f₁</td>
+                            <td>8个周期</td>
+                            <td>中等精度测量</td>
+                        </tr>
+                        <tr>
+                            <td>高频 f₃</td>
+                            <td>64f₁</td>
+                            <td>64个周期</td>
+                            <td>高精度测量</td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <h3>1:8:64频率比例的相位解包裹算法</h3>
+                <p><strong>频率关系：</strong>f₂ = 8f₁, f₃ = 64f₁ = 8f₂</p>
+                
+                <div class="formula-box">
+                    <h4 style="color: #2c3e50; margin-bottom: 15px;">算法流程：</h4>
+                    
+                    <p><strong>步骤1：</strong>计算低频和中频的相位差</p>
+                    $$\Delta\phi_{12}(x,y) = \phi_2(x,y) - 8\phi_1(x,y)$$
+                    $$\Delta\phi_{12}(x,y) = \text{wrap}(\Delta\phi_{12}(x,y)) \quad \text{归一化到}(-\pi, \pi]$$
+                    
+                    <p><strong>步骤2：</strong>确定中频相位的周期序号</p>
+                    $$k_2(x,y) = \text{round}\left(\frac{8\phi_1(x,y) - \phi_2(x,y) + \Delta\phi_{12}(x,y)}{2\pi}\right)$$
+                    
+                    <p><strong>步骤3：</strong>计算中频绝对相位</p>
+                    $$\boxed{\Phi_2(x,y) = \phi_2(x,y) + 2\pi k_2(x,y)}$$
+                </div>
+                
+                <div class="formula-box">
+                    <p><strong>步骤4：</strong>计算中频和高频的相位差</p>
+                    $$\Delta\phi_{23}(x,y) = \phi_3(x,y) - 8\Phi_2(x,y)$$
+                    $$\Delta\phi_{23}(x,y) = \text{wrap}(\Delta\phi_{23}(x,y)) \quad \text{归一化到}(-\pi, \pi]$$
+                    
+                    <p><strong>步骤5：</strong>确定高频相位的周期序号</p>
+                    $$k_3(x,y) = \text{round}\left(\frac{8\Phi_2(x,y) - \phi_3(x,y) + \Delta\phi_{23}(x,y)}{2\pi}\right)$$
+                    
+                    <p><strong>步骤6：</strong>计算高频绝对相位</p>
+                    $$\boxed{\Phi_3(x,y) = \phi_3(x,y) + 2\pi k_3(x,y)}$$
+                </div>
+                
+                <div class="highlight">
+                    <strong>1:8:64频率比例的优势：</strong>
+                    <ul style="margin-top: 10px;">
+                        <li>理论测量范围扩大64倍</li>
+                        <li>相位解包裹更加稳定可靠</li>
+                        <li>适合大尺寸物体的高精度测量</li>
+                        <li>8倍关系使得计算更加简洁</li>
+                    </ul>
+                </div>
+                
+                <h3>解包裹可靠性分析</h3>
+                
+                <div class="formula-box">
+                    <h4 style="color: #2c3e50; margin-bottom: 15px;">相位差范围限制：</h4>
+                    $$|\Delta\phi_{12}(x,y)| < \pi \quad \text{(低频-中频解包裹条件)}$$
+                    $$|\Delta\phi_{23}(x,y)| < \pi \quad \text{(中频-高频解包裹条件)}$$
+                    
+                    <p style="margin: 15px 0; font-size: 0.95em; color: #34495e;">这确保了相位解包裹的唯一性和可靠性</p>
+                </div>
+                
+                <div class="formula-box">
+                    <h4 style="color: #2c3e50; margin-bottom: 15px;">最大可解包裹梯度：</h4>
+                    $$\left|\frac{d\phi_1}{dx}\right| < \frac{\pi}{8} \quad \text{(低频梯度限制)}$$
+                    $$\left|\frac{d\Phi_2}{dx}\right| < \frac{\pi}{8} \quad \text{(中频梯度限制)}$$
+                    
+                    <p style="margin: 15px 0; font-size: 0.95em; color: #34495e;">梯度限制确保在物体边缘和不连续区域的解包裹稳定性</p>
+                </div>
+            </div>
+            
+            <div class="section" id="3d-recon">
+                <h2>三维重建</h2>
+                <h3>相位-高度转换</h3>
+                <p>通过标定得到的参数，将绝对相位转换为三维坐标。</p>
+                
+                <div class="formula-box">
+                    <h4 style="color: #2c3e50; margin-bottom: 15px;">高度计算公式：</h4>
+                    $$z(x,y) = \frac{d \cdot \Phi_3(x,y)}{2\pi f_3 + \Phi_3(x,y) \cdot \tan\theta}$$
+                    
+                    <p style="margin: 15px 0; font-size: 0.95em; color: #34495e;">
+                        其中：d为投影仪与相机的基线距离，θ为投影角度，f₃为高频条纹频率
+                    </p>
+                </div>
+                
+                <h3>三维坐标计算</h3>
+                <div class="formula-box">
+                    <h4 style="color: #2c3e50; margin-bottom: 15px;">世界坐标系转换：</h4>
+                    $$X(x,y) = \frac{(x - c_x) \cdot z(x,y)}{f_x}$$
+                    $$Y(x,y) = \frac{(y - c_y) \cdot z(x,y)}{f_y}$$
+                    $$Z(x,y) = z(x,y)$$
+                    
+                    <p style="margin: 15px 0; font-size: 0.95em; color: #34495e;">
+                        其中：(cₓ, cᵧ)为相机主点坐标，fₓ, fᵧ为相机在x、y方向的焦距参数
+                    </p>
+                </div>
+                
+                <div class="formula-box process-box">
+                    <h4 style="color: #f57c00; margin-bottom: 15px;">完整的三维重建流程：</h4>
+                    $$\begin{align}
+                    &\text{1. 相位计算：} \quad \phi_i(x,y) = \arctan2(\text{分子}, \text{分母}) \\
+                    &\text{2. 相位解包裹：} \quad \Phi_3(x,y) = \phi_3(x,y) + 2\pi k_3(x,y) \\
+                    &\text{3. 高度重建：} \quad z(x,y) = f(\Phi_3(x,y), \text{标定参数}) \\
+                    &\text{4. 坐标转换：} \quad (X,Y,Z) = \text{相机坐标系到世界坐标系}
+                    \end{align}$$
+                </div>
+            </div>
+            
+            <div class="section" id="precision">
+                <h2>精度分析</h2>
+                <h3>相位测量精度</h3>
+                <div class="formula-box">
+                    <h4 style="color: #2c3e50; margin-bottom: 15px;">八步相移法精度公式：</h4>
+                    $$\sigma_\phi = \frac{\sigma_I}{B} \cdot \frac{1}{\sqrt{N/2}}$$
+                    
+                    <p style="margin: 15px 0; font-size: 0.95em; color: #34495e;">
+                        其中：σᵢ为图像噪声标准差，B为条纹调制度，N为相移步数（N=8）
+                    </p>
+                    
+                    <p style="margin: 15px 0; font-size: 0.95em; color: #34495e;">
+                        对于八步相移：σ_φ = σᵢ/(B·√4) = σᵢ/(2B)
+                    </p>
+                </div>
+                
+                <h3>深度测量精度（1:8:64）</h3>
+                <div class="formula-box">
+                    <h4 style="color: #2c3e50; margin-bottom: 15px;">深度精度公式：</h4>
+                    $$\sigma_z = \frac{d \cdot \sigma_\phi}{2\pi \cdot 64f_1 \cos^2\theta} = \frac{d \cdot \sigma_\phi}{128\pi f_1 \cos^2\theta}$$
+                    
+                    <p style="margin: 15px 0; font-size: 0.95em; color: #34495e;">
+                        高频条纹（64倍基频）提供最高精度，精度与频率成反比
+                    </p>
+                </div>
+                
+                <div class="formula-box analysis-box">
+                    <h4 style="color: #1976d2; margin-bottom: 15px;">精度比较分析：</h4>
+                    $$\begin{align}
+                    &\text{四步相移精度：} \quad \sigma_{\phi,4} = \frac{\sigma_I}{B\sqrt{2}} \\
+                    &\text{八步相移精度：} \quad \sigma_{\phi,8} = \frac{\sigma_I}{2B} \\
+                    &\text{精度提升比：} \quad \frac{\sigma_{\phi,4}}{\sigma_{\phi,8}} = \frac{2}{\sqrt{2}} = \sqrt{2} \approx 1.414
+                    \end{align}$$
+                </div>
+                
+                <p><strong>与其他频率比例的比较：</strong></p>
+                <div class="table-container">
+                    <table>
+                        <tr>
+                            <th>频率比例</th>
+                            <th>理论精度</th>
+                            <th>测量范围</th>
+                            <th>解包裹难度</th>
+                        </tr>
+                        <tr>
+                            <td>1:3:9</td>
+                            <td>基准</td>
+                            <td>基准</td>
+                            <td>容易</td>
+                        </tr>
+                        <tr>
+                            <td>1:4:16</td>
+                            <td>1.78倍</td>
+                            <td>1.78倍</td>
+                            <td>容易</td>
+                        </tr>
+                        <tr>
+                            <td>1:8:64</td>
+                            <td>7.11倍</td>
+                            <td>7.11倍</td>
+                            <td>中等</td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <div class="advantages">
+                    <div class="advantage-item">
+                        <h4>高精度</h4>
+                        <p>八步相移法相比四步相移法，相位精度提高约40%</p>
+                    </div>
+                    <div class="advantage-item">
+                        <h4>大范围</h4>
+                        <p>三频法解决相位模糊，测量范围可达数米</p>
+                    </div>
+                    <div class="advantage-item">
+                        <h4>高稳定性</h4>
+                        <p>多频率验证，对环境干扰具有良好的鲁棒性</p>
+                    </div>
+                    <div class="advantage-item">
+                        <h4>实时性</h4>
+                        <p>算法优化后可实现25-30FPS的实时测量</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>误差分析与补偿</h2>
+                <h3>主要误差源</h3>
+                <ul style="padding-left: 20px;">
+                    <li><strong>相移误差：</strong>投影器相移精度偏差</li>
+                    <li><strong>非线性误差：</strong>投影器和相机的非线性响应</li>
+                    <li><strong>标定误差：</strong>相机和投影器标定参数偏差</li>
+                    <li><strong>环境干扰：</strong>环境光和振动影响</li>
+                </ul>
+                
+                <h3>误差补偿方法</h3>
+                <div class="formula-box">
+                    <h4 style="color: #2c3e50; margin-bottom: 15px;">误差补偿公式：</h4>
+                    $$\phi_{\text{corrected}} = \phi_{\text{measured}} + \Delta\phi_{\text{nonlinear}} + \Delta\phi_{\text{calibration}}$$
+                    
+                    <p style="margin: 15px 0; font-size: 0.95em; color: #34495e;">
+                        其中补偿项通过预标定获得，包括非线性误差和标定误差
+                    </p>
+                </div>
+                
+                <div class="formula-box">
+                    <h4 style="color: #2c3e50; margin-bottom: 15px;">非线性误差建模：</h4>
+                    $$\Delta\phi_{\text{nonlinear}} = \sum_{n=2}^{N} a_n \sin(n\phi_{\text{measured}}) + b_n \cos(n\phi_{\text{measured}})$$
+                    
+                    <p style="margin: 15px 0; font-size: 0.95em; color: #34495e;">
+                        使用傅里叶级数展开建模设备的非线性响应特性
+                    </p>
+                </div>
+            </div>
+            
+            <div class="interactive-demo" id="quick-ref">
+                <h3>快速公式参考</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 20px;">
+                    <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px;">
+                        <h4>八步相移相位</h4>
+                        <p style="font-size: 0.9em; margin: 5px 0;">φ = arctan2(分子, 分母)</p>
+                        <p style="font-size: 0.8em;">分子: √2/2(I₁+I₃-I₅-I₇)+I₂-I₆</p>
+                        <p style="font-size: 0.8em;">分母: I₀-I₄+√2/2(I₁-I₃-I₅+I₇)</p>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px;">
+                        <h4>相位解包裹</h4>
+                        <p style="font-size: 0.9em; margin: 5px 0;">频率比 1:8:64</p>
+                        <p style="font-size: 0.8em;">Φ₃ = φ₃ + 2πk₃</p>
+                        <p style="font-size: 0.8em;">k₃ = round((8Φ₂-φ₃+Δφ₂₃)/2π)</p>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px;">
+                        <h4>三维重建</h4>
+                        <p style="font-size: 0.9em; margin: 5px 0;">z = dΦ₃/(2πf₃+Φ₃tanθ)</p>
+                        <p style="font-size: 0.8em;">X = (x-cₓ)z/fₓ</p>
+                        <p style="font-size: 0.8em;">Y = (y-cᵧ)z/fᵧ</p>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px;">
+                        <h4>精度分析</h4>
+                        <p style="font-size: 0.9em; margin: 5px 0;">σφ = σᵢ/(2B)</p>
+                        <p style="font-size: 0.8em;">σz = dσφ/(128πf₁cos²θ)</p>
+                        <p style="font-size: 0.8em;">八步比四步精度提升√2倍</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="interactive-demo">
+                <h3>技术参数速查</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 20px;">
+                    <div>
+                        <h4>图像数量</h4>
+                        <p>3频率 × 8相移 = 24幅</p>
+                    </div>
+                    <div>
+                        <h4>相移步长</h4>
+                        <p>π/4 (45°)</p>
+                    </div>
+                    <div>
+                        <h4>频率比例</h4>
+                        <p>1:8:64 (高精度)</p>
+                    </div>
+                    <div>
+                        <h4>测量精度</h4>
+                        <p>0.01% - 0.05%</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>&copy; 2025 结构光三维测量技术科普 | 专业技术资料</p>
+            <p>本文档包含精确的数学公式和技术细节，适合工程技术人员参考学习</p>
+        </div>
+    </div>
+    
+    <script>
+        // 进度条
+        window.addEventListener('scroll', function() {
+            const scrolled = (window.pageYOffset / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+            document.getElementById('progressBar').style.width = scrolled + '%';
+        });
+        
+        // 公式渲染配置
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+            }
+        };
+        
+        // 平滑滚动
+        document.addEventListener('DOMContentLoaded', function() {
+            const links = document.querySelectorAll('a[href^="#"]');
+            links.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
