@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>7-Bit Gray Code and 8-Step Phase Shift Pattern Generator</title>
+    <style>
+        canvas { border: 1px solid black; }
+        .controls { margin: 10px 0; }
+        button { margin: 5px; padding: 5px 10px; }
+        .section { margin-bottom: 20px; }
+        h2 { margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h1>7-Bit Gray Code and 8-Step Phase Shift for Structured Light</h1>
+    <div class="section">
+        <h2>Gray Code Patterns</h2>
+        <div class="controls">
+            <button onclick="drawGrayCodePattern(0)">Gray Bit 0</button>
+            <button onclick="drawGrayCodePattern(1)">Gray Bit 1</button>
+            <button onclick="drawGrayCodePattern(2)">Gray Bit 2</button>
+            <button onclick="drawGrayCodePattern(3)">Gray Bit 3</button>
+            <button onclick="drawGrayCodePattern(4)">Gray Bit 4</button>
+            <button onclick="drawGrayCodePattern(5)">Gray Bit 5</button>
+            <button onclick="drawGrayCodePattern(6)">Gray Bit 6</button>
+        </div>
+    </div>
+    <div class="section">
+        <h2>8-Step Phase Shift Patterns</h2>
+        <div class="controls">
+            <button onclick="drawPhaseShiftPattern(0)">Phase Step 0</button>
+            <button onclick="drawPhaseShiftPattern(1)">Phase Step 1</button>
+            <button onclick="drawPhaseShiftPattern(2)">Phase Step 2</button>
+            <button onclick="drawPhaseShiftPattern(3)">Phase Step 3</button>
+            <button onclick="drawPhaseShiftPattern(4)">Phase Step 4</button>
+            <button onclick="drawPhaseShiftPattern(5)">Phase Step 5</button>
+            <button onclick="drawPhaseShiftPattern(6)">Phase Step 6</button>
+            <button onclick="drawPhaseShiftPattern(7)">Phase Step 7</button>
+        </div>
+    </div>
+    <div class="section">
+        <h2>Phase Calculations</h2>
+        <div class="controls">
+            <button onclick="drawWrappedPhase()">Wrapped Phase</button>
+            <button onclick="drawUnwrappedPhase()">Unwrapped Phase</button>
+        </div>
+    </div>
+    <canvas id="grayCodeCanvas" width="1024" height="512"></canvas>
+    <script>
+        const canvas = document.getElementById('grayCodeCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Generate 7-bit Gray code sequence (128 codes)
+        function generateGrayCodes(bits) {
+            const codes = [];
+            for (let i = 0; i < 1 << bits; i++) {
+                const gray = i ^ (i >> 1);
+                codes.push(gray.toString(2).padStart(bits, '0'));
+            }
+            return codes;
+        }
+
+        const grayCodes = generateGrayCodes(7); // 128 codes
+        const patternWidth = canvas.width / 128;
+
+        // Draw Gray code pattern for a specific bit, reversed order (127 to 0 from left to right)
+        function drawGrayCodePattern(bit) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < 128; i++) {
+                const reversedIndex = 127 - i; // Reverse the index
+                ctx.fillStyle = grayCodes[reversedIndex][bit] === '1' ? 'white' : 'black';
+                ctx.fillRect(i * patternWidth, 0, patternWidth, canvas.height);
+            }
+        }
+
+        // Draw 8-step phase shift pattern for a specific step
+        function drawPhaseShiftPattern(step) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const frequency = 1 / 32; // One cycle spans 32 columns
+            const phaseShift = (step * Math.PI) / 4; // Phase shift for each step (pi/4)
+            for (let i = 0; i < 128; i++) {
+                const x = i * patternWidth;
+                const intensity = 127.5 * (1 + Math.cos(2 * Math.PI * frequency * i + phaseShift));
+                const grayValue = Math.round(intensity);
+                ctx.fillStyle = `rgb(${grayValue}, ${grayValue}, ${grayValue})`;
+                ctx.fillRect(x, 0, patternWidth, canvas.height);
+            }
+        }
+
+        // Simulate intensity values for all 8 phase shift patterns
+        function getPhaseShiftIntensities() {
+            const intensities = [];
+            const frequency = 1 / 32;
+            for (let step = 0; step < 8; step++) {
+                const phaseShift = (step * Math.PI) / 4;
+                const intensityRow = [];
+                for (let i = 0; i < 128; i++) {
+                    const intensity = 127.5 * (1 + Math.cos(2 * Math.PI * frequency * i + phaseShift));
+                    intensityRow.push(intensity);
+                }
+                intensities.push(intensityRow);
+            }
+            return intensities;
+        }
+
+        // Calculate wrapped phase
+        function calculateWrappedPhase() {
+            const intensities = getPhaseShiftIntensities();
+            const wrappedPhase = [];
+            for (let i = 0; i < 128; i++) {
+                let numerator = 0;
+                let denominator = 0;
+                for (let n = 0; n < 8; n++) {
+                    const angle = (n * Math.PI) / 4;
+                    numerator += intensities[n][i] * Math.sin(angle);
+                    denominator += intensities[n][i] * Math.cos(angle);
+                }
+                wrappedPhase.push(Math.atan2(-numerator, denominator));
+            }
+            return wrappedPhase;
+        }
+
+        // Draw wrapped phase
+        function drawWrappedPhase() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const wrappedPhase = calculateWrappedPhase();
+            for (let i = 0; i < 128; i++) {
+                // Normalize phase from [-pi, pi] to [0, 255] for visualization
+                const normalizedPhase = ((wrappedPhase[i] + Math.PI) / (2 * Math.PI)) * 255;
+                const grayValue = Math.round(normalizedPhase);
+                ctx.fillStyle = `rgb(${grayValue}, ${grayValue}, ${grayValue})`;
+                ctx.fillRect(i * patternWidth, 0, patternWidth, canvas.height);
+            }
+        }
+
+        // Calculate unwrapped phase using Gray code
+        function calculateUnwrappedPhase() {
+            const wrappedPhase = calculateWrappedPhase();
+            const unwrappedPhase = [];
+            for (let i = 0; i < 128; i++) {
+                const reversedIndex = 127 - i; // Match Gray code order (127 to 0)
+                const k = reversedIndex; // Gray code provides period number
+                const phi = wrappedPhase[i];
+                const unwrapped = phi + 2 * Math.PI * k;
+                unwrappedPhase.push(unwrapped);
+            }
+            return unwrappedPhase;
+        }
+
+        // Draw unwrapped phase
+        function drawUnwrappedPhase() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const unwrappedPhase = calculateUnwrappedPhase();
+            const maxPhase = 2 * Math.PI * 127; // Maximum unwrapped phase
+            for (let i = 0; i < 128; i++) {
+                // Normalize phase to [0, 255] for visualization
+                const normalizedPhase = (unwrappedPhase[i] / maxPhase) * 255;
+                const grayValue = Math.round(normalizedPhase);
+                ctx.fillStyle = `rgb(${grayValue}, ${grayValue}, ${grayValue})`;
+                ctx.fillRect(i * patternWidth, 0, patternWidth, canvas.height);
+            }
+        }
+
+        // Draw the first Gray code pattern (bit 0) by default
+        drawGrayCodePattern(0);
+    </script>
+</body>
+</html>
