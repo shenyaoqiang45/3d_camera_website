@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>7位格雷码编解码 - 结构光三维视觉</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            padding: 40px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .section {
+            background: white;
+            margin: 20px 0;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .section:hover {
+            transform: translateY(-5px);
+        }
+        
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .demo-container {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .input-panel {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .output-panel {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .number-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2em;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            margin: 10px 0;
+            transition: border-color 0.3s ease;
+        }
+        
+        .number-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+        
+        .convert-btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1em;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 10px 0;
+            transition: transform 0.3s ease;
+        }
+        
+        .convert-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .convert-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .result-display {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1em;
+            border-left: 4px solid #667eea;
+        }
+        
+        .pattern-display {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .bit-pattern {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2em;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .bit-1 {
+            background: #333;
+            color: white;
+        }
+        
+        .bit-0 {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .comparison-table th,
+        .comparison-table td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+        
+        .comparison-table th {
+            background: #667eea;
+            color: white;
+        }
+        
+        .comparison-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        .comparison-table tr:hover {
+            background: #e3f2fd;
+        }
+        
+        .advantage-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .advantage-item {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .advantage-item:hover {
+            transform: translateY(-5px);
+        }
+        
+        .advantage-item h3 {
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+        
+        .visual-demo {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .stripe-pattern {
+            height: 60px;
+            margin: 10px 0;
+            border-radius: 5px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stripe-label {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-weight: bold;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .section {
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        @media (max-width: 768px) {
+            .demo-container {
+                flex-direction: column;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .advantage-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>7位格雷码编解码</h1>
+            <p>结构光三维视觉中的核心技术</p>
+        </div>
+        
+        <div class="section">
+            <h2>🔍 什么是格雷码？</h2>
+            <p>格雷码（Gray Code）是一种特殊的二进制编码方式，其最重要的特点是<strong>相邻两个码字之间只有一位数字不同</strong>。这种特性使得格雷码在光学编码中具有很强的抗噪声能力，是结构光三维测量技术的核心组成部分。</p>
+            
+            <div class="visual-demo">
+                <h3>📊 7位格雷码可视化演示</h3>
+                <p>7位格雷码可以表示 2<sup>7</sup> = 128 个不同的状态，用于结构光投影中的条纹编码。</p>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>🔄 编解码演示</h2>
+            <div class="demo-container">
+                <div class="input-panel">
+                    <h3>输入数值 (0-127)</h3>
+                    <input type="number" id="numberInput" class="number-input" min="0" max="127" value="42" placeholder="请输入0-127之间的数字">
+                    <button class="convert-btn" onclick="convertNumber()">🔄 转换为格雷码</button>
+                    
+                    <div class="result-display" id="binaryResult">
+                        <strong>二进制码:</strong> <span id="binaryValue">0101010</span>
+                    </div>
+                    
+                    <div class="result-display" id="grayResult">
+                        <strong>格雷码:</strong> <span id="grayValue">0111111</span>
+                    </div>
+                </div>
+                
+                <div class="output-panel">
+                    <h3>视觉化显示</h3>
+                    <div>
+                        <h4>二进制模式:</h4>
+                        <div class="pattern-display" id="binaryPattern"></div>
+                    </div>
+                    
+                    <div>
+                        <h4>格雷码模式:</h4>
+                        <div class="pattern-display" id="grayPattern"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>📋 格雷码对比表</h2>
+            <p>下表展示了前16个数字的二进制码和格雷码对比，可以看出格雷码相邻编码之间只有一位不同：</p>
+            
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>十进制</th>
+                        <th>二进制码</th>
+                        <th>格雷码</th>
+                        <th>变化位数</th>
+                    </tr>
+                </thead>
+                <tbody id="comparisonTable">
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="section">
+            <h2>🚀 技术优势</h2>
+            <div class="advantage-list">
+                <div class="advantage-item">
+                    <h3>🛡️ 抗噪声性能</h3>
+                    <p>相邻编码只有一位差异，即使有轻微噪声也不容易造成大的解码错误</p>
+                </div>
+                
+                <div class="advantage-item">
+                    <h3>🎯 高分辨率</h3>
+                    <p>7位编码可以区分128个不同的条纹，在有限投影区域内提供较高空间分辨率</p>
+                </div>
+                
+                <div class="advantage-item">
+                    <h3>⚡ 计算效率</h3>
+                    <p>只需要7次投影就能完成编码，相比相移等方法更加高效</p>
+                </div>
+                
+                <div class="advantage-item">
+                    <h3>🔧 易于实现</h3>
+                    <p>编解码算法简单，硬件实现成本低，适合工业应用</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>🔬 在结构光中的应用</h2>
+            <div class="visual-demo">
+                <h3>投影模式可视化</h3>
+                <p>以下展示了7位格雷码在结构光投影中的条纹模式：</p>
+                
+                <div class="stripe-pattern" id="stripe6">
+                    <div class="stripe-label">Bit 6 (最高位)</div>
+                </div>
+                <div class="stripe-pattern" id="stripe5">
+                    <div class="stripe-label">Bit 5</div>
+                </div>
+                <div class="stripe-pattern" id="stripe4">
+                    <div class="stripe-label">Bit 4</div>
+                </div>
+                <div class="stripe-pattern" id="stripe3">
+                    <div class="stripe-label">Bit 3</div>
+                </div>
+                <div class="stripe-pattern" id="stripe2">
+                    <div class="stripe-label">Bit 2</div>
+                </div>
+                <div class="stripe-pattern" id="stripe1">
+                    <div class="stripe-label">Bit 1</div>
+                </div>
+                <div class="stripe-pattern" id="stripe0">
+                    <div class="stripe-label">Bit 0 (最低位)</div>
+                </div>
+            </div>
+            
+            <p><strong>工作原理：</strong></p>
+            <p>1. 依次投影7幅格雷码图案到物体表面（从Bit 6到Bit 0）</p>
+            <p>2. 相机采集对应的7幅图像</p>
+            <p>3. 对每个像素点判断各位的0/1状态</p>
+            <p>4. 将格雷码转换为条纹索引，结合标定参数计算三维坐标</p>
+            <p><strong>注意：</strong>投影顺序通常从最高位(Bit 6)开始，到最低位(Bit 0)结束，这样可以更好地控制解码精度。</p>
+        </div>
+        
+        <div class="section">
+            <h2>🎯 实际应用领域</h2>
+            <p>7位格雷码编解码技术在以下领域有广泛应用：</p>
+            <ul style="margin: 20px 0; padding-left: 30px;">
+                <li><strong>工业检测：</strong> 零件尺寸测量、表面缺陷检测</li>
+                <li><strong>三维扫描：</strong> 文物数字化、逆向工程</li>
+                <li><strong>机器视觉：</strong> 机器人导航、自动化装配</li>
+                <li><strong>医疗成像：</strong> 人体三维建模、假肢设计</li>
+                <li><strong>虚拟现实：</strong> 三维场景重建、动作捕捉</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        // 二进制转格雷码
+        function binaryToGray(binary) {
+            let gray = binary[0]; // 最高位保持不变
+            for (let i = 1; i < binary.length; i++) {
+                gray += (parseInt(binary[i-1]) ^ parseInt(binary[i])).toString();
+            }
+            return gray;
+        }
+        
+        // 数字转7位二进制
+        function toBinary7(num) {
+            return num.toString(2).padStart(7, '0');
+        }
+        
+        // 转换函数
+        function convertNumber() {
+            const num = parseInt(document.getElementById('numberInput').value);
+            if (isNaN(num) || num < 0 || num > 127) {
+                alert('请输入0-127之间的数字');
+                return;
+            }
+            
+            const binary = toBinary7(num);
+            const gray = binaryToGray(binary);
+            
+            document.getElementById('binaryValue').textContent = binary;
+            document.getElementById('grayValue').textContent = gray;
+            
+            // 更新视觉化显示
+            updatePatternDisplay('binaryPattern', binary);
+            updatePatternDisplay('grayPattern', gray);
+        }
+        
+        // 更新模式显示
+        function updatePatternDisplay(containerId, pattern) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            for (let i = 0; i < pattern.length; i++) {
+                const bit = document.createElement('div');
+                bit.className = `bit-pattern bit-${pattern[i]}`;
+                bit.textContent = pattern[i];
+                bit.style.animationDelay = `${i * 0.1}s`;
+                container.appendChild(bit);
+            }
+        }
+        
+        // 生成对比表
+        function generateComparisonTable() {
+            const table = document.getElementById('comparisonTable');
+            let prevGray = '0000000';
+            
+            for (let i = 0; i < 16; i++) {
+                const binary = toBinary7(i);
+                const gray = binaryToGray(binary);
+                
+                // 计算与前一个格雷码的差异位数
+                let changes = 0;
+                if (i > 0) {
+                    for (let j = 0; j < 7; j++) {
+                        if (gray[j] !== prevGray[j]) changes++;
+                    }
+                }
+                
+                const row = table.insertRow();
+                row.innerHTML = `
+                    <td>${i}</td>
+                    <td style="font-family: monospace;">${binary}</td>
+                    <td style="font-family: monospace;">${gray}</td>
+                    <td>${i === 0 ? '-' : changes}</td>
+                `;
+                
+                prevGray = gray;
+            }
+        }
+        
+        // 生成条纹模式
+        function generateStripePatterns() {
+            // 按照bit6到bit0的顺序生成条纹模式
+            for (let bit = 6; bit >= 0; bit--) {
+                const stripe = document.getElementById(`stripe${bit}`);
+                const width = 128; // 代表128个条纹
+                const stripeWidth = 100 / width;
+                
+                let pattern = '';
+                for (let i = 0; i < width; i++) {
+                    const binary = toBinary7(i);
+                    const gray = binaryToGray(binary);
+                    const color = gray[6-bit] === '1' ? '#333' : '#f0f0f0';
+                    pattern += `<div style="width: ${stripeWidth}%; height: 100%; background: ${color}; display: inline-block;"></div>`;
+                }
+                
+                stripe.innerHTML += pattern;
+            }
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            convertNumber();
+            generateComparisonTable();
+            generateStripePatterns();
+        });
+        
+        // 添加输入事件监听
+        document.getElementById('numberInput').addEventListener('input', function() {
+            const num = parseInt(this.value);
+            if (!isNaN(num) && num >= 0 && num <= 127) {
+                convertNumber();
+            }
+        });
+    </script>
+</body>
+</html>
