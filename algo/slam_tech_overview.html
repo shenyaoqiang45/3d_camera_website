@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SLAM技术框架科普指南</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px 0;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header h1 {
+            font-size: 3em;
+            color: #fff;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 300;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .section h2 {
+            color: #2c3e50;
+            font-size: 2em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section h2::before {
+            content: '';
+            width: 4px;
+            height: 30px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 2px;
+        }
+
+        .subsection {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: rgba(108, 92, 231, 0.05);
+            border-radius: 10px;
+            border-left: 4px solid #6c5ce7;
+            transition: all 0.3s ease;
+        }
+
+        .subsection:hover {
+            background: rgba(108, 92, 231, 0.1);
+            transform: translateX(5px);
+        }
+
+        .subsection h3 {
+            color: #6c5ce7;
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .subsection h3::before {
+            content: '🔍';
+            font-size: 1.2em;
+        }
+
+        .feature-item {
+            margin-bottom: 15px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 8px;
+            border-left: 3px solid #74b9ff;
+            transition: all 0.3s ease;
+        }
+
+        .feature-item:hover {
+            background: rgba(255, 255, 255, 0.9);
+            transform: translateX(3px);
+        }
+
+        .feature-title {
+            font-weight: bold;
+            color: #2d3436;
+            margin-bottom: 5px;
+        }
+
+        .feature-desc {
+            color: #636e72;
+            font-size: 0.95em;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, #a8e6cf 0%, #dcedc8 100%);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: #2d5016;
+        }
+
+        .matrix-section {
+            background: rgba(255, 248, 220, 0.95);
+            border-left: 4px solid #f39c12;
+        }
+
+        .matrix-section h3::before {
+            content: '🔢';
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .tech-badge {
+            display: inline-block;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin: 2px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2.5em;
+            }
+            
+            .section {
+                padding: 20px;
+            }
+        }
+
+        .animation-fade-in {
+            animation: fadeIn 0.8s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header animation-fade-in">
+            <h1>SLAM技术框架科普指南</h1>
+            <p>同步定位与地图构建 (Simultaneous Localization and Mapping)</p>
+        </div>
+
+        <div class="main-content">
+            <!-- 特征提取匹配 -->
+            <div class="section animation-fade-in">
+                <h2>特征提取匹配</h2>
+                
+                <div class="subsection">
+                    <h3>单目视觉特征</h3>
+                    <div class="feature-item">
+                        <div class="feature-title">单目问题</div>
+                        <div class="feature-desc">单目尺度不确定性，无法直接获得绝对尺度信息</div>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <h3>ORB特征 <span class="tech-badge">二进制</span></h3>
+                    <div class="feature-item">
+                        <div class="feature-title">特征组成</div>
+                        <div class="feature-desc">包含<span class="highlight">关键点(Keypoints)</span>和<span class="highlight">描述子(Descriptors)</span></div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-title">描述子特性</div>
+                        <div class="feature-desc">基于<span class="highlight">汉明距离(Hamming Distance)</span>进行匹配</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-title">匹配方式</div>
+                        <div class="feature-desc">二进制字符串相似度计算</div>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <h3>SIFT特征 <span class="tech-badge">浮点</span></h3>
+                    <div class="feature-item">
+                        <div class="feature-title">特征组成</div>
+                        <div class="feature-desc">包含关键点(Keypoints)和描述子(Descriptors)</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-title">描述子维度</div>
+                        <div class="feature-desc"><span class="highlight">128维浮点描述子</span></div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-title">搜索算法</div>
+                        <div class="feature-desc">使用NNS(最近邻搜索)</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-title">特点</div>
+                        <div class="feature-desc">精度高但计算耗时</div>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <h3>FPFH特征 <span class="tech-badge">3D点云</span></h3>
+                    <div class="feature-item">
+                        <div class="feature-title">特征类型</div>
+                        <div class="feature-desc">快速点特征直方图，主要用于3D点云匹配</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-title">描述子特性</div>
+                        <div class="feature-desc"><span class="highlight">33维直方图，描述点的局部几何特征</span></div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-title">求解方式</div>
+                        <div class="feature-desc"><span class="highlight">通过点云和法向量求解</span></div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-title">搜索策略</div>
+                        <div class="feature-desc">
+                            最近邻搜索(NNS) + KD-Tree数据结构<br>
+                            适合保持维度N&lt;10，搜索复杂度O(logN)
+                        </div>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <h3>深度学习特征匹配 <span class="tech-badge">AI</span></h3>
+                    <div class="feature-item">
+                        <div class="feature-title">现代方法</div>
+                        <div class="feature-desc">基于神经网络的特征提取方法</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 运动估计 -->
+            <div class="section animation-fade-in">
+                <h2>运动估计</h2>
+                
+                <div class="subsection matrix-section">
+                    <h3>几何约束矩阵</h3>
+                    <div class="feature-item">
+                        <div class="feature-title">基础矩阵(Fundamental Matrix)</div>
+                        <div class="feature-desc">
+                            描述两视图间的对极几何关系<br>
+                            适用于未标定相机<br>
+                            <span class="highlight">8自由度，通过8点法求解</span>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-title">本质矩阵(Essential Matrix)</div>
+                        <div class="feature-desc">
+                            标定相机的对极几何关系<br>
+                            包含旋转和平移信息<br>
+                            <span class="highlight">5自由度，通过5点法求解</span>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-title">单应矩阵(Homography Matrix)</div>
+                        <div class="feature-desc">
+                            描述平面到平面的投影变换<br>
+                            适用于平面场景或纯旋转运动<br>
+                            <span class="highlight">8自由度，通过4点法求解</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <h3>鲁棒估计算法</h3>
+                    <div class="feature-item">
+                        <div class="feature-title">RANSAC思想</div>
+                        <div class="feature-desc">估计几何模型参数</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-title">随机采样一致性</div>
+                        <div class="feature-desc">处理外点干扰</div>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <h3>位姿估计流程</h3>
+                    <div class="feature-item">
+                        <div class="feature-title">模型估计</div>
+                        <div class="feature-desc">估计<span class="highlight">RT变换矩阵</span>(旋转R + 平移T)</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-title">误差计算</div>
+                        <div class="feature-desc">
+                            <span class="highlight">基础距离</span>：使用对极约束<br>
+                            <span class="highlight">单应距离</span>：使用重投影误差
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-title">优化策略</div>
+                        <div class="feature-desc">
+                            内点选取<br>
+                            记录最优模型
+                        </div>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <h3>已知参数条件</h3>
+                    <div class="feature-item">
+                        <div class="feature-title">感知已知参数</div>
+                        <div class="feature-desc">相机内参已知</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-title">估计目标</div>
+                        <div class="feature-desc"><span class="highlight">RT变换矩阵</span>(6自由度位姿)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer animation-fade-in">
+            <p>🤖 本框架展示了SLAM系统中从感知数据获取到运动估计的完整技术路线</p>
+            <p>涵盖了多种特征提取方法和鲁棒的位姿估计策略</p>
+        </div>
+    </div>
+
+    <script>
+        // 添加滚动动画效果
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // 观察所有子系统
+        document.querySelectorAll('.subsection').forEach(subsection => {
+            subsection.style.opacity = '0';
+            subsection.style.transform = 'translateY(20px)';
+            subsection.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(subsection);
+        });
+
+        // 添加交互效果
+        document.querySelectorAll('.feature-item').forEach(item => {
+            item.addEventListener('mouseenter', () => {
+                item.style.boxShadow = '0 4px 12px rgba(108, 92, 231, 0.2)';
+            });
+            
+            item.addEventListener('mouseleave', () => {
+                item.style.boxShadow = 'none';
+            });
+        });
+    </script>
+</body>
+</html>

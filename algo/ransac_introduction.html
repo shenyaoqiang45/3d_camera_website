@@ -1,0 +1,259 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>了解RANSAC算法</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f4f8;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            animation: fadeIn 1s ease-in;
+        }
+        h2 {
+            color: #0066cc;
+            animation: fadeIn 1.5s ease-in;
+        }
+        p {
+            color: #34495e;
+        }
+        ul {
+            list-style-type: disc;
+            margin-left: 20px;
+        }
+        .example {
+            background-color: #e8f1ff;
+            padding: 15px;
+            border-left: 5px solid #0066cc;
+            margin: 15px 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .example:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        canvas {
+            display: block;
+            margin: 20px auto;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            display: block;
+            margin: 10px auto;
+            padding: 10px 20px;
+            background-color: #0066cc;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0052a3;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+            canvas {
+                width: 100%;
+                height: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>什么是RANSAC算法？</h1>
+        <p>RANSAC（随机采样一致性，RANdom SAmple Consensus）是一种强大的算法，用于从包含噪声或异常点的数据中提取正确的模型。它广泛应用于计算机视觉、图像处理等领域，比如从杂乱的点中找出一条直线或匹配图像特征点。</p>
+
+        <h2>核心思想</h2>
+        <p>RANSAC假设数据中大部分点（称为“内点”）符合某个模型，而少部分点（称为“离群点”）是错误的。通过随机挑选一小部分数据来构建模型，然后检查其他点是否符合这个模型，RANSAC能找到最符合大部分数据的模型。</p>
+
+        <h2>工作步骤</h2>
+        <ul>
+            <li><strong>随机选点</strong>：从数据中随机挑选一小部分点（比如拟合直线需要2个点）。</li>
+            <li><strong>构建模型</strong>：用这些点生成一个模型（比如一条直线）。</li>
+            <li><strong>检查一致性</strong>：测试其他点是否“接近”这个模型，接近的点是内点。</li>
+            <li><strong>记录最佳模型</strong>：如果这个模型的内点数量多于之前的模型，就保存它。</li>
+            <li><strong>重复</strong>：多次重复以上步骤，选出内点最多的模型。</li>
+        </ul>
+
+        <h2>例子1：拟合直线</h2>
+        <div class="example">
+            <p>想象你有一堆点，大部分接近一条直线，但有一些点完全偏离。RANSAC随机选两个点画一条直线，然后检查其他点到直线的距离。距离小的点是“内点”（绿色），距离大的是“离群点”（红色）。重复多次后，选出内点最多的直线，这就是最佳结果！</p>
+            <p><strong>可视化</strong>：下方是一个简化的RANSAC示例，绿色点是内点，红色点是离群点，蓝色线是拟合的直线。点击“重新运行”按钮可查看不同结果。</p>
+            <canvas id="ransacCanvas" width="600" height="400"></canvas>
+            <button onclick="drawRANSAC()">重新运行</button>
+        </div>
+
+        <h2>例子2：运动估计</h2>
+        <div class="example">
+            <p>在计算机视觉中，运动估计是RANSAC的经典应用。假设你有两张连续拍摄的照片，想知道相机如何移动（比如平移或旋转）。通过提取两张图中的特征点（如角点），RANSAC可以随机选择几组匹配点，计算一个变换模型（如平移或旋转矩阵），然后检查其他匹配点是否符合这个模型。符合的点（内点）表示正确的匹配，而不符合的点（离群点）可能是错误的匹配（比如光照变化或物体遮挡导致）。通过多次迭代，RANSAC找到最符合大部分匹配点的变换模型，从而准确估计相机的运动。</p>
+        </div>
+
+        <h2>应用场景</h2>
+        <ul>
+            <li>图像拼接：从两张图片的特征点中找到正确的匹配关系。</li>
+            <li>机器人导航：在杂乱的环境中构建地图。</li>
+            <li>3D建模：从点云数据中提取平面或形状。</li>
+            <li>运动估计：计算相机或物体的运动轨迹。</li>
+        </ul>
+
+        <h2>优点与局限</h2>
+        <p><strong>优点</strong>：能很好地处理包含异常点的数据，简单且鲁棒。</p>
+        <p><strong>局限</strong>：需要设置合适的参数（比如迭代次数或误差阈值），结果可能因随机性而略有变化。</p>
+
+        <p>RANSAC就像一个聪明的“过滤器”，从杂乱的数据中找出规律，是许多高科技应用背后的秘密武器！</p>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('ransacCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function generatePoints() {
+            const points = [];
+            for (let i = 0; i < 50; i++) {
+                if (Math.random() < 0.7) { // 70% inliers near y = 0.5x + 100
+                    const x = Math.random() * 600;
+                    const y = 0.5 * x + 100 + (Math.random() - 0.5) * 10; // Reduced noise
+                    points.push({ x, y, isInlier: true });
+                } else { // 30% outliers
+                    const x = Math.random() * 600;
+                    const y = Math.random() * 400;
+                    points.push({ x, y, isInlier: false });
+                }
+            }
+            return points;
+        }
+
+        function runRANSAC(points) {
+            let bestLine = { slope: 0, intercept: 0, inliers: [] };
+            let maxInliers = 0;
+
+            for (let i = 0; i < 500; i++) { // Increased iterations
+                const idx1 = Math.floor(Math.random() * points.length);
+                let idx2 = Math.floor(Math.random() * points.length);
+                while (idx2 === idx1) idx2 = Math.floor(Math.random() * points.length);
+                const p1 = points[idx1], p2 = points[idx2];
+
+                // Calculate line (y = mx + b)
+                const slope = (p2.y - p1.y) / (p2.x - p1.x);
+                const intercept = p1.y - slope * p1.x;
+
+                // Count inliers
+                const inliers = [];
+                points.forEach(p => {
+                    const distance = Math.abs(p.y - (slope * p.x + intercept)) / Math.sqrt(1 + slope * slope);
+                    if (distance < 10) { // Tighter threshold
+                        inliers.push(p);
+                        p.isInlier = true;
+                    } else {
+                        p.isInlier = false;
+                    }
+                });
+
+                if (inliers.length > maxInliers) {
+                    maxInliers = inliers.length;
+                    bestLine = { slope, intercept, inliers };
+                }
+            }
+            return bestLine;
+        }
+
+        function drawRANSAC() {
+            const points = generatePoints();
+            const bestLine = runRANSAC(points);
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw points
+            points.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 2, 0, 2 * Math.PI); // Smaller dots
+                ctx.fillStyle = p.isInlier ? 'green' : 'red';
+                ctx.fill();
+            });
+
+            // Draw the best line
+            ctx.beginPath();
+            ctx.moveTo(0, bestLine.slope * 0 + bestLine.intercept);
+            ctx.lineTo(600, bestLine.slope * 600 + bestLine.intercept);
+            ctx.strokeStyle = 'blue';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Add labels
+            ctx.font = '14px Arial';
+            ctx.fillStyle = 'black';
+            ctx.fillText('拟合直线 (蓝色)', 10, 20);
+            ctx.fillStyle = 'green';
+            ctx.fillText('内点', 10, 40);
+            ctx.fillStyle = 'red';
+            ctx.fillText('离群点', 10, 60);
+        }
+
+        // Initial draw
+        drawRANSAC();
+    </script>
+</body>
+</html>
