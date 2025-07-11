@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D相机世界 - 立体视觉科普网站</title>
+    <title>3D相机世界 - 立体视觉技术全面解析</title>
     <style>
         * {
             margin: 0;
@@ -82,32 +82,200 @@
             gap: 2rem;
         }
 
+        .nav-links > li {
+            position: relative;
+        }
+
         .nav-links a {
             color: #fff;
             text-decoration: none;
             font-weight: 500;
             transition: all 0.3s ease;
             position: relative;
+            display: block;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+        }
+
+        .nav-links > li > a {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .nav-links a:hover {
             color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
             transform: translateY(-2px);
         }
 
-        .nav-links a::after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 2px;
-            bottom: -5px;
-            left: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            transition: width 0.3s ease;
+        /* 下拉菜单样式 */
+        .dropdown {
+            position: relative;
         }
 
-        .nav-links a:hover::after {
-            width: 100%;
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(20px);
+            min-width: 250px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 1001;
+            padding: 0.5rem 0;
+            margin-top: 0.5rem;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+            animation: fadeInDown 0.3s ease-out;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .dropdown-content a {
+            color: #ccc;
+            padding: 0.75rem 1.5rem;
+            text-decoration: none;
+            display: block;
+            font-size: 0.9rem;
+            border-radius: 8px;
+            margin: 0.25rem 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .dropdown-content a:hover {
+            background: rgba(102, 126, 234, 0.2);
+            color: #fff;
+            transform: translateX(5px);
+        }
+
+        .dropdown-arrow {
+            font-size: 0.8rem;
+            margin-left: 0.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .dropdown:hover .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+
+        .nav-links a::after {
+            display: none;
+        }
+
+        /* 移动端汉堡菜单 */
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #fff;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        .mobile-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 1000;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .mobile-menu.active {
+            display: block;
+            max-height: 500px;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .mobile-menu ul {
+            list-style: none;
+            padding: 1rem;
+            margin: 0;
+        }
+
+        .mobile-menu li {
+            margin: 0.5rem 0;
+        }
+
+        .mobile-menu a {
+            color: #ccc;
+            text-decoration: none;
+            padding: 0.75rem 1rem;
+            display: block;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-menu a:hover {
+            background: rgba(102, 126, 234, 0.2);
+            color: #fff;
+        }
+
+        .mobile-submenu {
+            display: none;
+            margin-left: 1rem;
+            border-left: 2px solid rgba(102, 126, 234, 0.3);
+            padding-left: 1rem;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .mobile-submenu.active {
+            display: block;
+            max-height: 300px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .mobile-dropdown-toggle {
+            background: none;
+            border: none;
+            color: #ccc;
+            font-size: 0.9rem;
+            cursor: pointer;
+            padding: 0.5rem;
         }
 
         /* 主要内容区域 */
@@ -763,14 +931,73 @@
             margin: 15px 0;
         }
 
-        .result-highlight {
+        /* 表格样式 */
+        .spec-table {
+            width: 100%;
+            margin: 2rem 0;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 15px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .spec-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .spec-table th,
+        .spec-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .spec-table th {
             background: rgba(102, 126, 234, 0.1);
-            border: 1px solid rgba(102, 126, 234, 0.3);
-            border-radius: 5px;
-            padding: 8px;
-            margin: 5px 0;
-            font-weight: bold;
             color: #667eea;
+            font-weight: 600;
+        }
+
+        .spec-table td {
+            color: #ccc;
+        }
+
+        .spec-table td strong {
+            color: #fff;
+        }
+
+        .spec-table tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Footer样式 */
+        footer {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 3rem 5%;
+            margin-top: 5rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            color: #ccc;
+        }
+
+        .footer-content h4 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+
+        .footer-content ul {
+            margin: 0;
+            padding: 0;
+        }
+
+        .footer-content a:hover {
+            color: #667eea;
+            transform: translateX(5px);
+            transition: all 0.3s ease;
         }
 
         @media (max-width: 768px) {
@@ -782,8 +1009,28 @@
                 display: none;
             }
             
+            .mobile-menu-toggle {
+                display: block;
+            }
+            
+            /* 移动端下拉菜单 */
+            .dropdown-content {
+                position: static;
+                display: none;
+                box-shadow: none;
+                background: rgba(255, 255, 255, 0.05);
+                border: none;
+                border-radius: 8px;
+                margin: 0.5rem 0;
+            }
+            
+            .dropdown:hover .dropdown-content {
+                display: block;
+            }
+            
             .cards-grid {
                 grid-template-columns: 1fr;
+                gap: 1.5rem;
             }
             
             .demo-viewer {
@@ -808,6 +1055,19 @@
                 padding: 0.6rem 1rem;
                 font-size: 0.9rem;
             }
+            
+            .spec-table {
+                font-size: 0.9rem;
+            }
+            
+            .spec-table th,
+            .spec-table td {
+                padding: 0.5rem;
+            }
+            
+            .footer-content {
+                padding: 0 1rem;
+            }
         }
     </style>
 </head>
@@ -816,30 +1076,128 @@
 
     <nav>
         <div class="nav-container">
-            <div class="logo">3D Camera World</div>            <ul class="nav-links">
+            <div class="logo">3D Camera World</div>
+            <button class="mobile-menu-toggle" id="mobileMenuToggle">☰</button>
+            <ul class="nav-links">
                 <li><a href="#home">首页</a></li>
                 <li><a href="#basics">基础原理</a></li>
                 <li><a href="#types">相机类型</a></li>
-                <li><a href="#calibration">📷 标定科普</a></li>
-                <li><a href="calibration/zhang_calibration_guide.html">📐 张正友标定</a></li>
-                <li><a href="calibration/camera_calibration_3d.html">🎯 3D立体标靶</a></li>
-                <li><a href="calibration/cross_ratio_calibration_guide.html">📊 交比不变标定</a></li>
-                <li><a href="calibration/radial_constraint_calibration.html">🔄 径向约束标定</a></li>
-                <li><a href="calibration/hand_eye_calibration_guide.html">🤖 手眼标定</a></li>
-                <li><a href="stereo_vision_coordinates.html">📐 坐标系统</a></li>
-                <li><a href="updated_laser_triangulation.html">📡 激光三角</a></li>
-                <li><a href="camera_projector_calibration.html">📹 相机投影仪标定</a></li>                <li><a href="monocular_laser_plane_calibration.html">🔍 单目光平面标定</a></li>
-                <li><a href="phase_calculation/structured_light_3d_measurement.html">🌊 三频相移</a></li>
-                <li><a href="algo/connected_components_analysis.html">🔗 连通域分析</a></li>
-                <li><a href="algo/gray_code_tutorial.html">🔢 格雷码编解码</a></li>
-                <li><a href="algo/phase_shift_graycode.html">🌈 格雷码相移</a></li>
-                <li><a href="algo/ransac_introduction.html">🎯 RANSAC算法</a></li>
-                <li><a href="algo/slam_tech_overview.html">🏃 运动估计</a></li>
-                <li><a href="fpga_clb_guide.html">🔧 FPGA CLB科普</a></li>
-                <li><a href="fpga_vs_software.html">💻 FPGA vs 软件</a></li>
+                
+                <!-- 基础理论下拉菜单 -->
+                <li class="dropdown">
+                    <a href="#basic-theory">
+                        📚 基础理论 <span class="dropdown-arrow">▼</span>
+                    </a>
+                    <div class="dropdown-content">
+                        <a href="basic/stereo_vision_coordinates.html">📐 立体视觉坐标系</a>
+                    </div>
+                </li>
+                <li class="dropdown"><a href="#calibration">📷 标定技术 <span class="dropdown-arrow">▼</span></a>
+                    <div class="dropdown-content">
+                        <a href="calibration/zhang_calibration_guide.html">📐 张正友标定</a>
+                        <a href="calibration/camera_calibration_3d.html">🎯 3D立体标靶</a>
+                        <a href="calibration/cross_ratio_calibration_guide.html">📊 交比不变标定</a>
+                        <a href="calibration/radial_constraint_calibration.html">🔄 径向约束标定</a>
+                        <a href="calibration/hand_eye_calibration_guide.html">🤖 手眼标定</a>
+                        <a href="calibration/camera_projector_calibration.html">📹 相机投影仪标定</a>
+                        <a href="calibration/monocular_laser_plane_calibration.html">🔍 单目光平面标定</a>
+                    </div>
+                </li>
+                <li class="dropdown"><a href="#algorithms">🔬 算法专区 <span class="dropdown-arrow">▼</span></a>
+                    <div class="dropdown-content">
+                        <a href="algo/connected_components_analysis.html">🔗 连通域分析</a>
+                        <a href="algo/ransac_introduction.html">🎯 RANSAC算法</a>
+                    </div>
+                </li>
+                <li class="dropdown"><a href="#structured-light">🌈 结构光技术 <span class="dropdown-arrow">▼</span></a>
+                    <div class="dropdown-content">
+                        <a href="structured_light_algo/gray_code_tutorial.html">🔢 格雷码编解码</a>
+                        <a href="structured_light_algo/phase_shift_graycode.html">🌊 格雷码相移</a>
+                        <a href="structured_light_algo/structured_light_3d_measurement.html">📐 结构光3D测量</a>
+                        <a href="structured_light_algo/updated_laser_triangulation.html">🔺 激光三角测量</a>
+                    </div>
+                </li>
+                <li class="dropdown"><a href="#fpga">⚡ FPGA硬件 <span class="dropdown-arrow">▼</span></a>
+                    <div class="dropdown-content">
+                        <a href="fpga/fpga_clb_guide.html">🔧 FPGA CLB技术</a>
+                        <a href="fpga/fpga_vs_software.html">💻 FPGA vs 软件</a>
+                    </div>
+                </li>
+                <li class="dropdown"><a href="#slam">🏃 SLAM技术 <span class="dropdown-arrow">▼</span></a>
+                    <div class="dropdown-content">
+                        <a href="slam/slam_tech_overview.html">🗺️ SLAM技术概览</a>
+                        <a href="slam/point_cloud_registration_guide.html">🔗 点云配准</a>
+                    </div>
+                </li>
                 <li><a href="#demo">互动演示</a></li>
                 <li><a href="#applications">应用领域</a></li>
             </ul>
+
+            <!-- 移动端菜单 -->
+            <div class="mobile-menu" id="mobileMenu">
+                <ul>
+                    <li><a href="#home">首页</a></li>
+                    <li><a href="#basics">基础原理</a></li>
+                    <li><a href="#types">相机类型</a></li>
+                    
+                    <li>
+                        <a href="#basic-theory">📚 基础理论</a>
+                        <div class="mobile-submenu">
+                            <a href="basic/stereo_vision_coordinates.html">📐 立体视觉坐标系</a>
+                        </div>
+                    </li>
+                    
+                    <li>
+                        <a href="#calibration">📷 标定技术</a>
+                        <div class="mobile-submenu">
+                            <a href="calibration/zhang_calibration_guide.html">📐 张正友标定</a>
+                            <a href="calibration/camera_calibration_3d.html">🎯 3D立体标靶</a>
+                            <a href="calibration/cross_ratio_calibration_guide.html">📊 交比不变标定</a>
+                            <a href="calibration/radial_constraint_calibration.html">🔄 径向约束标定</a>
+                            <a href="calibration/hand_eye_calibration_guide.html">🤖 手眼标定</a>
+                            <a href="calibration/camera_projector_calibration.html">📹 相机投影仪标定</a>
+                            <a href="calibration/monocular_laser_plane_calibration.html">🔍 单目光平面标定</a>
+                        </div>
+                    </li>
+                    
+                    <li>
+                        <a href="#algorithms">🔬 算法专区</a>
+                        <div class="mobile-submenu">
+                            <a href="algo/connected_components_analysis.html">🔗 连通域分析</a>
+                            <a href="algo/ransac_introduction.html">🎯 RANSAC算法</a>
+                        </div>
+                    </li>
+                    
+                    <li>
+                        <a href="#structured-light">🌈 结构光技术</a>
+                        <div class="mobile-submenu">
+                            <a href="structured_light_algo/gray_code_tutorial.html">🔢 格雷码编解码</a>
+                            <a href="structured_light_algo/phase_shift_graycode.html">🌊 格雷码相移</a>
+                            <a href="structured_light_algo/structured_light_3d_measurement.html">📐 结构光3D测量</a>
+                            <a href="structured_light_algo/updated_laser_triangulation.html">🔺 激光三角测量</a>
+                        </div>
+                    </li>
+                    
+                    <li>
+                        <a href="#fpga">⚡ FPGA硬件</a>
+                        <div class="mobile-submenu">
+                            <a href="fpga/fpga_clb_guide.html">🔧 FPGA CLB技术</a>
+                            <a href="fpga/fpga_vs_software.html">💻 FPGA vs 软件</a>
+                        </div>
+                    </li>
+                    
+                    <li>
+                        <a href="#slam">🏃 SLAM技术</a>
+                        <div class="mobile-submenu">
+                            <a href="slam/slam_tech_overview.html">🗺️ SLAM技术概览</a>
+                            <a href="slam/point_cloud_registration_guide.html">🔗 点云配准</a>
+                        </div>
+                    </li>
+                    
+                    <li><a href="#demo">互动演示</a></li>
+                    <li><a href="#applications">应用领域</a></li>
+                </ul>
+            </div>
         </div>
     </nav>
 
@@ -847,7 +1205,7 @@
         <section id="home" class="hero">
             <div class="hero-content">
                 <h1>探索3D相机的奇妙世界</h1>
-                <p>从立体视觉原理到前沿应用技术，全面了解3D成像的科学与艺术</p>
+                <p>从立体视觉原理到前沿应用技术，涵盖标定、算法、结构光、FPGA、SLAM等全方位技术解析</p>
                 <a href="#basics" class="cta-button">开始探索</a>
             </div>
         </section>
@@ -864,7 +1222,7 @@
                     <h3>视差原理</h3>
                     <p>当物体距离观察者较近时，左右眼看到的图像差异较大；距离较远时，差异较小。通过计算这种视差，可以精确测量物体的三维坐标。</p>
                     <div style="margin-top: 1rem; text-align: center;">
-                        <a href="stereo_vision_coordinates.html" style="color: #667eea; text-decoration: none; font-size: 0.9rem; font-weight: bold;">
+                        <a href="basic/stereo_vision_coordinates.html" style="color: #667eea; text-decoration: none; font-size: 0.9rem; font-weight: bold;">
                             📐 深入了解四大坐标系统 →
                         </a>
                     </div>
@@ -873,7 +1231,7 @@
                     <h3>三角测量</h3>
                     <p>利用几何三角原理，已知两个观察点的距离和观察角度，就能计算出目标物体的距离和位置，这是3D相机测距的数学基础。</p>
                     <div style="margin-top: 1rem; text-align: center;">
-                        <a href="updated_laser_triangulation.html" style="color: #667eea; text-decoration: none; font-size: 0.9rem; font-weight: bold;">
+                        <a href="structured_light_algo/updated_laser_triangulation.html" style="color: #667eea; text-decoration: none; font-size: 0.9rem; font-weight: bold;">
                             🔺 激光三角测量详解 →
                         </a>
                     </div>
@@ -883,18 +1241,8 @@
                     <h3>FPGA CLB技术</h3>
                     <p>可配置逻辑块(CLB)是FPGA的核心组件，通过灵活的逻辑配置实现3D图像处理加速，为实时立体视觉计算提供强大的硬件支持。</p>
                     <div style="margin-top: 1rem; text-align: center;">
-                        <a href="fpga_clb_guide.html" style="color: #667eea; text-decoration: none; font-size: 0.9rem; font-weight: bold;">
+                        <a href="fpga/fpga_clb_guide.html" style="color: #667eea; text-decoration: none; font-size: 0.9rem; font-weight: bold;">
                             🔧 深入了解FPGA CLB →
-                        </a>
-                    </div>
-                </div>
-                <div class="card fade-in">
-                    <div class="card-icon">🔗</div>
-                    <h3>连通域分析</h3>
-                    <p>通过非递归DFS算法识别图像中相互连接的像素区域，是3D视觉处理中的重要技术。基于C++实现，高效且易于理解。</p>
-                    <div style="margin-top: 1rem; text-align: center;">
-                        <a href="algo/connected_components_analysis.html" style="color: #667eea; text-decoration: none; font-size: 0.9rem; font-weight: bold;">
-                            🔗 探索连通域分析算法 →
                         </a>
                     </div>
                 </div>
@@ -1064,7 +1412,7 @@
                             深度 = (200 × 100) / 10 = 2000px
                         </div>
                         <div style="text-align: center; margin-top: 1.5rem;">
-                            <a href="stereo_vision_coordinates.html" style="color: #667eea; text-decoration: none; font-size: 0.9rem; font-weight: bold; display: inline-flex; align-items: center; gap: 0.5rem;">
+                            <a href="basic/stereo_vision_coordinates.html" style="color: #667eea; text-decoration: none; font-size: 0.9rem; font-weight: bold; display: inline-flex; align-items: center; gap: 0.5rem;">
                                 📐 详细学习坐标变换公式 →
                             </a>
                             <p style="color: #aaa; font-size: 0.8rem; margin-top: 0.5rem;">
@@ -1155,9 +1503,9 @@
                             <td>手势识别、AR/VR</td>
                         </tr>                        <tr>
                             <td><strong>激光雷达</strong></td>
-                            <td>激光扫描测距 <a href="updated_laser_triangulation.html" style="color: #667eea; text-decoration: none; font-size: 0.9rem;">[详细原理]</a></td>
+                            <td>激光扫描测距</td>
                             <td>远距离，高精度</td>
-                            <td>地形测绘、无人机</td>
+                            <td>地形测绘、无人机 <a href="structured_light_algo/updated_laser_triangulation.html" style="color: #667eea; text-decoration: none; font-size: 0.9rem;">[详细原理]</a></td>
                         </tr>
                     </tbody>
                 </table>
@@ -1185,6 +1533,144 @@
                         <button class="control-btn" onclick="changeDemo(3, this)">3D重建</button>
                 </div>
                 <p style="color: #ccc; margin-top: 1rem;">观察3D立方体的旋转，体验立体视觉的魅力</p>
+            </div>
+        </section>
+
+        <!-- 算法专区 -->
+        <section id="algorithms" class="section">
+            <h2 class="section-title">🔬 算法专区</h2>
+            <div class="cards-grid">
+                <div class="card fade-in">
+                    <div class="card-icon">🔗</div>
+                    <h3>连通域分析</h3>
+                    <p>通过非递归DFS算法识别图像中相互连接的像素区域，是3D视觉处理中的重要技术。基于C++实现，高效且易于理解。</p>
+                    <div style="margin-top: 1rem; text-align: center;">
+                        <a href="algo/connected_components_analysis.html" style="color: #667eea; text-decoration: none; font-size: 0.9rem; font-weight: bold;">
+                            🔗 探索连通域分析算法 →
+                        </a>
+                    </div>
+                </div>
+                <div class="card fade-in">
+                    <div class="card-icon">🎯</div>
+                    <h3>RANSAC算法</h3>
+                    <p>随机抽样一致性算法，用于从包含异常值的数据中鲁棒地估计数学模型参数。在3D重建和特征匹配中应用广泛。</p>
+                    <div style="margin-top: 1rem; text-align: center;">
+                        <a href="algo/ransac_introduction.html" style="color: #667eea; text-decoration: none; font-size: 0.9rem; font-weight: bold;">
+                            🎯 深入理解RANSAC →
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 结构光技术 -->
+        <section id="structured-light" class="section">
+            <h2 class="section-title">🌈 结构光技术</h2>
+            <div class="cards-grid">
+                <div class="card fade-in">
+                    <div class="card-icon">🔢</div>
+                    <h3>格雷码编解码</h3>
+                    <p>格雷码是一种二进制编码系统，任意两个相邻的代码只有一个二进制位不同。在结构光3D测量中用于唯一标识投影条纹。</p>
+                    <div style="margin-top: 1rem; text-align: center;">
+                        <a href="structured_light_algo/gray_code_tutorial.html" style="color: #667eea; text-decoration: none; font-size: 0.9rem; font-weight: bold;">
+                            🔢 学习格雷码编解码 →
+                        </a>
+                    </div>
+                </div>
+                <div class="card fade-in">
+                    <div class="card-icon">🌊</div>
+                    <h3>相移技术</h3>
+                    <p>相移方法通过投影多幅具有不同相位的正弦条纹图案，利用相位信息实现高精度的3D形貌测量。</p>
+                    <div style="margin-top: 1rem; text-align: center;">
+                        <a href="structured_light_algo/phase_shift_graycode.html" style="color: #667eea; text-decoration: none; font-size: 0.9rem; font-weight: bold;">
+                            🌊 格雷码相移技术 →
+                        </a>
+                    </div>
+                </div>
+                <div class="card fade-in">
+                    <div class="card-icon">📐</div>
+                    <h3>结构光3D测量</h3>
+                    <p>结构光3D测量是一种主动式三维测量技术，通过投影编码光模式并分析其变形来获取物体的三维信息。</p>
+                    <div style="margin-top: 1rem; text-align: center;">
+                        <a href="structured_light_algo/structured_light_3d_measurement.html" style="color: #667eea; text-decoration: none; font-size: 0.9rem; font-weight: bold;">
+                            📐 结构光3D测量原理 →
+                        </a>
+                    </div>
+                </div>
+                <div class="card fade-in">
+                    <div class="card-icon">�</div>
+                    <h3>相位计算技术</h3>
+                    <p>相位计算是结构光3D测量中的关键步骤，通过分析投影图案的相位变化来获取物体的深度信息。</p>
+                    <div style="margin-top: 1rem; text-align: center;">
+                        <a href="structured_light_algo/structured_light_3d_measurement.html" style="color: #667eea; text-decoration: none; font-size: 0.9rem; font-weight: bold;">
+                            � 相位计算技术详解 →
+                        </a>
+                    </div>
+                </div>
+                <div class="card fade-in">
+                    <div class="card-icon">🔺</div>
+                    <h3>激光三角测量</h3>
+                    <p>激光三角测量技术利用激光器、相机和目标物体之间的几何关系，通过三角测量原理实现高精度的距离和形状测量。</p>
+                    <div style="margin-top: 1rem; text-align: center;">
+                        <a href="structured_light_algo/updated_laser_triangulation.html" style="color: #667eea; text-decoration: none; font-size: 0.9rem; font-weight: bold;">
+                            🔺 激光三角测量详解 →
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FPGA硬件 -->
+        <section id="fpga" class="section">
+            <h2 class="section-title">⚡ FPGA硬件加速</h2>
+            <div class="cards-grid">
+                <div class="card fade-in">
+                    <div class="card-icon">🔧</div>
+                    <h3>FPGA CLB技术</h3>
+                    <p>可配置逻辑块(CLB)是FPGA的核心组件，通过灵活的逻辑配置实现3D图像处理加速，为实时立体视觉计算提供强大的硬件支持。</p>
+                    <div style="margin-top: 1rem; text-align: center;">
+                        <a href="fpga/fpga_clb_guide.html" style="color: #667eea; text-decoration: none; font-size: 0.9rem; font-weight: bold;">
+                            🔧 深入了解FPGA CLB →
+                        </a>
+                    </div>
+                </div>
+                <div class="card fade-in">
+                    <div class="card-icon">💻</div>
+                    <h3>FPGA vs 软件</h3>
+                    <p>对比分析FPGA硬件实现与软件实现在3D视觉处理中的性能差异，帮助选择最适合的实现方案。</p>
+                    <div style="margin-top: 1rem; text-align: center;">
+                        <a href="fpga/fpga_vs_software.html" style="color: #667eea; text-decoration: none; font-size: 0.9rem; font-weight: bold;">
+                            💻 FPGA vs 软件对比 →
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLAM技术 -->
+        <section id="slam" class="section">
+            <h2 class="section-title">🏃 SLAM技术</h2>
+            <div class="cards-grid">
+                <div class="card fade-in">
+                    <div class="card-icon">🗺️</div>
+                    <h3>SLAM技术概览</h3>
+                    <p>同步定位与映射(SLAM)是机器人和自动驾驶中的关键技术，实现在未知环境中同时进行定位和地图构建。</p>
+                    <div style="margin-top: 1rem; text-align: center;">
+                        <a href="slam/slam_tech_overview.html" style="color: #667eea; text-decoration: none; font-size: 0.9rem; font-weight: bold;">
+                            🗺️ SLAM技术全景 →
+                        </a>
+                    </div>
+                </div>
+                <div class="card fade-in">
+                    <div class="card-icon">🔗</div>
+                    <h3>点云配准</h3>
+                    <p>点云配准是将多个点云数据对齐到同一坐标系的过程，是3D重建和SLAM中的核心技术。</p>
+                    <div style="margin-top: 1rem; text-align: center;">
+                        <a href="slam/point_cloud_registration_guide.html" style="color: #667eea; text-decoration: none; font-size: 0.9rem; font-weight: bold;">
+                            🔗 点云配准技术 →
+                        </a>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -1258,7 +1744,7 @@
                         <ul style="color: #ccc; line-height: 1.8;">
                             <li>张正友标定法（棋盘格）</li>
                             <li>立体标定</li>
-                            <li>单目标定</li>
+                            <li> 单目标定</li>
                             <li>在线标定</li>
                         </ul>
                     </div>
@@ -1335,41 +1821,45 @@
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
                         <div style="background: rgba(102, 126, 234, 0.1); padding: 1.5rem; border-radius: 10px; text-align: center;">
                             <div style="font-size: 2rem; margin-bottom: 0.5rem;">🤖</div>
-                            <h5 style="color: #667eea; margin-bottom: 0.5rem;">机器人视觉</h5>
-                            <p style="color: #ccc; font-size: 0.9rem;">精确抓取定位</p>
+                            <h5 style="color: #667eea; margin-bottom: 0.5rem; text-align: center;">机器人视觉</h5>
+                            <p style="color: #ccc; font-size: 0.9rem; text-align: center;">精确抓取定位</p>
                         </div>
                         <div style="background: rgba(118, 75, 162, 0.1); padding: 1.5rem; border-radius: 10px; text-align: center;">
                             <div style="font-size: 2rem; margin-bottom: 0.5rem;">🚗</div>
-                            <h5 style="color: #764ba2; margin-bottom: 0.5rem;">自动驾驶</h5>
-                            <p style="color: #ccc; font-size: 0.9rem;">距离测量判断</p>
+                            <h5 style="color: #764ba2; margin-bottom: 0.5rem; text-align: center;">自动驾驶</h5>
+                            <p style="color: #ccc; font-size: 0.9rem; text-align: center;">距离测量判断</p>
                         </div>
                         <div style="background: rgba(231, 76, 60, 0.1); padding: 1.5rem; border-radius: 10px; text-align: center;">
                             <div style="font-size: 2rem; margin-bottom: 0.5rem;">📱</div>
-                            <h5 style="color: #e74c3c; margin-bottom: 0.5rem;">AR应用</h5>
-                            <p style="color: #ccc; font-size: 0.9rem;">虚实融合定位</p>
+                            <h5 style="color: #e74c3c; margin-bottom: 0.5rem; text-align: center;">AR应用</h5>
+                            <p style="color: #ccc; font-size: 0.9rem; text-align: center;">虚实融合定位</p>
                         </div>
                         <div style="background: rgba(39, 174, 96, 0.1); padding: 1.5rem; border-radius: 10px; text-align: center;">
                             <div style="font-size: 2rem; margin-bottom: 0.5rem;">🏭</div>
-                            <h5 style="color: #27ae60; margin-bottom: 0.5rem;">工业检测</h5>
-                            <p style="color: #ccc; font-size: 0.9rem;">尺寸质量控制</p>
+                            <h5 style="color: #27ae60; margin-bottom: 0.5rem; text-align: center;">工业检测</h5>
+                            <p style="color: #ccc; font-size: 0.9rem; text-align: center;">尺寸质量控制</p>
                         </div>
                     </div>
                 </div>
 
                 <div style="text-align: center; margin-top: 2rem;">
                     <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem;">
-                        <a href="camera_projector_calibration.html" class="cta-button" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: inline-flex; align-items: center; gap: 0.5rem; font-size: 1rem;">
-                            📹 相机投影仪标定详解
+                        <a href="calibration/zhang_calibration_guide.html" class="cta-button" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: inline-flex; align-items: center; gap: 0.5rem; font-size: 1rem;">
+                            📐 张正友标定详解
                             <span style="font-size: 0.9rem;">→</span>
                         </a>
-                        <a href="monocular_laser_plane_calibration.html" class="cta-button" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); display: inline-flex; align-items: center; gap: 0.5rem; font-size: 1rem;">
+                        <a href="calibration/camera_projector_calibration.html" class="cta-button" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: inline-flex; align-items: center; gap: 0.5rem; font-size: 1rem;">
+                            📹 相机投影仪标定
+                            <span style="font-size: 0.9rem;">→</span>
+                        </a>
+                        <a href="calibration/monocular_laser_plane_calibration.html" class="cta-button" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); display: inline-flex; align-items: center; gap: 0.5rem; font-size: 1rem;">
                             🔍 单目光平面标定
                             <span style="font-size: 0.9rem;">→</span>
                         </a>
                     </div>
                     
                     <div style="background: rgba(255, 255, 255, 0.05); padding: 2rem; border-radius: 15px; margin: 1.5rem 0;">
-                        <h4 style="color: #fff; text-align: center; margin-bottom: 1.5rem; font-size: 1.3rem;">🎓 深度学习标定方法</h4>
+                        <h4 style="color: #fff; text-align: center; margin-bottom: 1.5rem; font-size: 1.3rem;">🎓 标定方法大全</h4>
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
                             <a href="calibration/zhang_calibration_guide.html" style="background: rgba(102, 126, 234, 0.1); padding: 1.5rem; border-radius: 10px; text-decoration: none; border: 1px solid rgba(102, 126, 234, 0.3); transition: all 0.3s ease; display: block;" onmouseover="this.style.transform='translateY(-5px)'; this.style.background='rgba(102, 126, 234, 0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(102, 126, 234, 0.1)'">
                                 <div style="font-size: 2rem; text-align: center; margin-bottom: 0.5rem;">📐</div>
@@ -1394,6 +1884,23 @@
                                 <h5 style="color: #27ae60; margin-bottom: 0.5rem; text-align: center;">径向约束标定</h5>
                                 <p style="color: #ccc; font-size: 0.9rem; text-align: center;">基于径向约束的创新方法</p>
                             </a>
+                            
+                            <a href="calibration/hand_eye_calibration_guide.html" style="background: rgba(52, 152, 219, 0.1); padding: 1.5rem; border-radius: 10px; text-decoration: none; border: 1px solid rgba(52, 152, 219, 0.3); transition: all 0.3s ease; display: block;" onmouseover="this.style.transform='translateY(-5px)'; this.style.background='rgba(52, 152, 219, 0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(52, 152, 219, 0.1)'">
+                                <div style="font-size: 2rem; text-align: center; margin-bottom: 0.5rem;">🤖</div>
+                                <h5 style="color: #3498db; margin-bottom: 0.5rem; text-align: center;">手眼标定</h5>
+                                <p style="color: #ccc; font-size: 0.9rem; text-align: center;">机器人视觉系统标定</p>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div style="background: rgba(255, 255, 255, 0.05); padding: 2rem; border-radius: 15px; margin: 1.5rem 0;">
+                        <h4 style="color: #fff; text-align: center; margin-bottom: 1.5rem; font-size: 1.3rem;">📚 基础理论</h4>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                            <a href="basic/stereo_vision_coordinates.html" style="background: rgba(155, 89, 182, 0.1); padding: 1.5rem; border-radius: 10px; text-decoration: none; border: 1px solid rgba(155, 89, 182, 0.3); transition: all 0.3s ease; display: block;" onmouseover="this.style.transform='translateY(-5px)'; this.style.background='rgba(155, 89, 182, 0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(155, 89, 182, 0.1)'">
+                                <div style="font-size: 2rem; text-align: center; margin-bottom: 0.5rem;">📐</div>
+                                <h5 style="color: #9b59b6; margin-bottom: 0.5rem; text-align: center;">立体视觉坐标系</h5>
+                                <p style="color: #ccc; font-size: 0.9rem; text-align: center;">四大坐标系统详解</p>
+                            </a>
                         </div>
                     </div>
                     
@@ -1404,75 +1911,56 @@
             </div>
         </section>
 
-        <section id="laser-triangulation" class="section">
-            <h2 class="section-title">激光三角测量原理</h2>
-            <div class="laser-triangulation-section">
-                <div class="step-section">
-                    <div class="step-title">1. 激光发射</div>
-                    <div class="explanation">
-                        激光三角测量利用激光器发射激光束，激光束照射到物体表面并反射回收。
-                    </div>
-                </div>
-                <div class="step-section">
-                    <div class="step-title">2. 位置测量</div>
-                    <div class="explanation">
-                        通过测量激光发射器和接收器之间的几何关系，计算出物体的三维坐标。
-                    </div>
-                </div>
-                <div class="step-section">
-                    <div class="step-title">3. 数据处理</div>
-                    <div class="explanation">
-                        将测得的激光点位置信息进行处理，生成高精度的三维模型或轮廓。
-                    </div>
-                </div>
-                
-                <div style="text-align: center; margin: 2rem 0;">
-                    <a href="updated_laser_triangulation.html" class="cta-button" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); display: inline-flex; align-items: center; gap: 0.5rem; font-size: 1.1rem;">
-                        🔺 查看详细激光三角测量原理图解
-                        <span style="font-size: 0.9rem;">→</span>
-                    </a>
-                    <p style="color: #ccc; margin-top: 0.5rem; font-size: 0.9rem;">
-                        包含交互式演示、公式推导和实时计算
-                    </p>
-                </div>
-
-                <div class="laser-demo-controls">
-                    <div class="laser-slider-group">
-                        <label for="laserDistance">激光距离:</label>
-                        <input type="range" id="laserDistance" min="100" max="500" value="250">
-                        <span class="laser-value-show" id="laserDistanceValue">250mm</span>
-                    </div>
-                    <div class="laser-slider-group">
-                        <label for="laserAngle">激光角度:</label>
-                        <input type="range" id="laserAngle" min="-30" max="30" value="0">
-                        <span class="laser-value-show" id="laserAngleValue">0°</span>
-                    </div>
-                </div>
-
-                <div class="formula-simple">
-                    Z = (f × B) / d
-                </div>
-                <div class="formula-simple">
-                    X = (u - cx) × Z / f
-                </div>
-                <div class="formula-simple">
-                    Y = (v - cy) × Z / f
-                </div>
-
-                <div class="laser-calculation-box" id="laserCalculation">
-                    <div>激光三角测量计算过程:</div>
-                    <div id="laserResult" style="color: #667eea; font-weight: bold;"></div>
-                </div>
-            </div>
-        </section>
     </main>
 
     <footer>
         <div class="footer-content">
-            <p>&copy; 2024 3D Camera World. 探索立体视觉的无限可能</p>
-            <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.7;">
-                本网站致力于3D相机技术的科普教育，让更多人了解立体视觉的奥秘
-            </p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-bottom: 2rem;">
+                <div>
+                    <h4 style="color: #667eea; margin-bottom: 1rem;">🎯 基础理论</h4>
+                    <ul style="list-style: none; padding: 0;">
+                        <li><a href="basic/stereo_vision_coordinates.html" style="color: #ccc; text-decoration: none; display: block; padding: 0.25rem 0;">📐 立体视觉坐标系</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="color: #667eea; margin-bottom: 1rem;">📷 标定技术</h4>
+                    <ul style="list-style: none; padding: 0;">
+                        <li><a href="calibration/zhang_calibration_guide.html" style="color: #ccc; text-decoration: none; display: block; padding: 0.25rem 0;">📐 张正友标定</a></li>
+                        <li><a href="calibration/camera_calibration_3d.html" style="color: #ccc; text-decoration: none; display: block; padding: 0.25rem 0;">🎯 3D立体标靶</a></li>
+                        <li><a href="calibration/cross_ratio_calibration_guide.html" style="color: #ccc; text-decoration: none; display: block; padding: 0.25rem 0;">📊 交比不变标定</a></li>
+                        <li><a href="calibration/radial_constraint_calibration.html" style="color: #ccc; text-decoration: none; display: block; padding: 0.25rem 0;">🔄 径向约束标定</a></li>
+                        <li><a href="calibration/hand_eye_calibration_guide.html" style="color: #ccc; text-decoration: none; display: block; padding: 0.25rem 0;">🤖 手眼标定</a></li>
+                        <li><a href="calibration/camera_projector_calibration.html" style="color: #ccc; text-decoration: none; display: block; padding: 0.25rem 0;">📹 相机投影仪标定</a></li>
+                        <li><a href="calibration/monocular_laser_plane_calibration.html" style="color: #ccc; text-decoration: none; display: block; padding: 0.25rem 0;">🔍 单目光平面标定</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="color: #667eea; margin-bottom: 1rem;">🌈 结构光技术</h4>
+                    <ul style="list-style: none; padding: 0;">
+                        <li><a href="structured_light_algo/gray_code_tutorial.html" style="color: #ccc; text-decoration: none; display: block; padding: 0.25rem 0;">🔢 格雷码编解码</a></li>
+                        <li><a href="structured_light_algo/phase_shift_graycode.html" style="color: #ccc; text-decoration: none; display: block; padding: 0.25rem 0;">🌊 格雷码相移</a></li>
+                        <li><a href="structured_light_algo/structured_light_3d_measurement.html" style="color: #ccc; text-decoration: none; display: block; padding: 0.25rem 0;">📐 结构光3D测量</a></li>
+                        <li><a href="structured_light_algo/updated_laser_triangulation.html" style="color: #ccc; text-decoration: none; display: block; padding: 0.25rem 0;">🔺 激光三角测量</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="color: #667eea; margin-bottom: 1rem;">🔬 算法与硬件</h4>
+                    <ul style="list-style: none; padding: 0;">
+                        <li><a href="algo/connected_components_analysis.html" style="color: #ccc; text-decoration: none; display: block; padding: 0.25rem 0;">🔗 连通域分析</a></li>
+                        <li><a href="algo/ransac_introduction.html" style="color: #ccc; text-decoration: none; display: block; padding: 0.25rem 0;">🎯 RANSAC算法</a></li>
+                        <li><a href="fpga/fpga_clb_guide.html" style="color: #ccc; text-decoration: none; display: block; padding: 0.25rem 0;">🔧 FPGA CLB技术</a></li>
+                        <li><a href="fpga/fpga_vs_software.html" style="color: #ccc; text-decoration: none; display: block; padding: 0.25rem 0;">💻 FPGA vs 软件</a></li>
+                        <li><a href="slam/slam_tech_overview.html" style="color: #ccc; text-decoration: none; display: block; padding: 0.25rem 0;">🗺️ SLAM技术</a></li>
+                        <li><a href="slam/point_cloud_registration_guide.html" style="color: #ccc; text-decoration: none; display: block; padding: 0.25rem 0;">🔗 点云配准</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div style="text-align: center; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                <p>&copy; 2024 3D Camera World. 探索立体视觉的无限可能</p>
+                <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.7;">
+                    本网站致力于3D相机技术的科普教育，让更多人了解立体视觉的奥秘
+                </p>
+            </div>
         </div>
     </footer>
 
@@ -1667,6 +2155,32 @@
             updateEyePosition();
             updateParallaxVisualization();
         }
+
+        // 移动端菜单切换
+        document.addEventListener('DOMContentLoaded', () => {
+            const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+            const mobileMenu = document.getElementById('mobileMenu');
+            
+            if (mobileMenuToggle && mobileMenu) {
+                mobileMenuToggle.addEventListener('click', () => {
+                    mobileMenu.classList.toggle('active');
+                    // 切换汉堡菜单图标
+                    mobileMenuToggle.textContent = mobileMenu.classList.contains('active') ? '✕' : '☰';
+                });
+                
+                // 移动端子菜单切换
+                const mobileSubmenuParents = mobileMenu.querySelectorAll('li > a');
+                mobileSubmenuParents.forEach(link => {
+                    const submenu = link.nextElementSibling;
+                    if (submenu && submenu.classList.contains('mobile-submenu')) {
+                        link.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            submenu.classList.toggle('active');
+                        });
+                    }
+                });
+            }
+        });
 
         // 立体匹配演示
         function initStereoMatchDemo() {
