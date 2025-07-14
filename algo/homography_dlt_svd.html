@@ -1,0 +1,195 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DLT与SVD在投影变换中的区别与联系</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        p {
+            margin: 10px 0;
+        }
+        .math {
+            font-style: italic;
+            font-family: 'Times New Roman', Times, serif;
+        }
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .table th, .table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .table th {
+            background-color: #f2f2f2;
+        }
+        .matrix {
+            display: inline-block;
+            vertical-align: middle;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>以投影变换（Homography）为例：DLT与SVD的区别与联系</h1>
+
+    <h2>1. 投影变换（Homography）的背景</h2>
+    <p>投影变换是计算机视觉中用于描述两幅图像之间平面到平面的映射关系的一种变换。数学上，2D 投影变换由一个 3×3 的矩阵 <span class="math">H</span> 表示，定义为：</p>
+    <p class="math">x' ~ Hx</p>
+    <p>其中，<span class="math">x = [x, y, 1]^T</span> 和 <span class="math">x' = [x', y', 1]^T</span> 是两幅图像上对应的点（以齐次坐标表示），<span class="math">~</span> 表示等价（忽略尺度因子）。<span class="math">H</span> 是一个 3×3 的矩阵，包含 9 个元素，但由于齐次坐标的尺度无关性，实际自由度为 8。</p>
+    <p>为了估计 <span class="math">H</span>，通常需要至少 4 对对应点（每对点提供 2 个线性约束）。DLT（直接线性变换）和 SVD（奇异值分解）是解决这一问题的两种关键方法。</p>
+
+    <h2>2. DLT（直接线性变换）</h2>
+    <h3>2.1 原理</h3>
+    <p>DLT 是一种直接求解 <span class="math">H</span> 的线性方法。它通过将投影变换的方程重写为一个线性系统来求解 <span class="math">H</span> 的元素。</p>
+    <p>对于一对对应点 <span class="math">(x_i, x'_i)</span>，即 <span class="math">([x_i, y_i, 1]^T, [x'_i, y'_i, 1]^T)</span>，投影变换满足：</p>
+    <p class="math">
+        <div class="matrix">
+            [ x'_i ]<br>
+            [ y'_i ]<br>
+            [ w'_i ]
+        </div>
+        =
+        <div class="matrix">
+            H
+        </div>
+        <div class="matrix">
+            [ x_i ]<br>
+            [ y_i ]<br>
+            [ 1 ]
+        </div>
+    </p>
+    <p>将 <span class="math">H</span> 展开为一个 9 维向量 <span class="math">h = [h_1, h_2, ..., h_9]^T</span>，并利用交叉乘积表示投影关系 <span class="math">x'_i × (Hx_i) = 0</span>，可以得到以下线性方程：</p>
+    <p class="math">
+        <div class="matrix">
+            [     0      0      0    -x_i  -y_i  -1  y'_i x_i  y'_i y_i  y'_i ]<br>
+            [  x_i  y_i    1      0      0     0   -x'_i x_i -x'_i y_i -x'_i ]
+        </div>
+        h = 0
+    </p>
+    <p>每个点对提供 2 个线性方程。对于 <span class="math">n ≥ 4</span> 对点，构造一个 <span class="math">2n × 9</span> 的矩阵 <span class="math">A</span>，使得：</p>
+    <p class="math">Ah = 0</p>
+    <p>由于 <span class="math">H</span> 的尺度无关性，通常约束 <span class="math">||h|| = 1</span>，并通过解这个齐次线性方程组来估计 <span class="math">h</span>。</p>
+
+    <h3>2.2 求解</h3>
+    <p>DLT 直接通过线性代数方法求解 <span class="math">Ah = 0</span>。通常，这需要找到 <span class="math">A</span> 的右零空间（right null space），即 <span class="math">A</span> 的一个非零向量 <span class="math">h</span>。这正是 SVD 发挥作用的地方。</p>
+
+    <h2>3. SVD（奇异值分解）</h2>
+    <h3>3.1 原理</h3>
+    <p>SVD 是一种矩阵分解方法，将任意 <span class="math">m × n</span> 矩阵 <span class="math">A</span> 分解为：</p>
+    <p class="math">A = U Σ V^T</p>
+    <p>其中：</p>
+    <ul>
+        <li><span class="math">U</span> 是 <span class="math">m × m</span> 的正交矩阵；</li>
+        <li><span class="math">Σ</span> 是 <span class="math">m × n</span> 的对角矩阵，包含非负奇异值；</li>
+        <li><span class="math">V</span> 是 <span class="math">n × n</span> 的正交矩阵。</li>
+    </ul>
+    <p>在 DLT 问题中，<span class="math">A</span> 是一个 <span class="math">2n × 9</span> 的矩阵。SVD 的右奇异向量（<span class="math">V</span> 的列）对应于 <span class="math">A</span> 的右零空间。当 <span class="math">A</span> 的秩为 8 时，<span class="math">V</span> 的最后一列（对应于最小的奇异值，通常接近 0）就是 <span class="math">h</span> 的解。</p>
+
+    <h3>3.2 应用到 DLT</h3>
+    <p>在 DLT 中，SVD 用于求解 <span class="math">Ah = 0</span>。具体步骤为：</p>
+    <ol>
+        <li>对矩阵 <span class="math">A</span> 进行 SVD 分解：<span class="math">A = U Σ V^T</span>。</li>
+        <li>取 <span class="math">V</span> 的最后一列（对应最小奇异值），即 <span class="math">h</span>。</li>
+        <li>将 <span class="math">h</span> 重塑为 3×3 的矩阵 <span class="math">H</span>，并归一化（例如，除以 <span class="math">h_9</span>）。</li>
+    </ol>
+
+    <h2>4. DLT 和 SVD 的区别</h2>
+    <table class="table">
+        <tr>
+            <th>方面</th>
+            <th>DLT</th>
+            <th>SVD</th>
+        </tr>
+        <tr>
+            <td>定义</td>
+            <td>一种求解投影变换 <span class="math">H</span> 的线性方法，通过构造线性方程组 <span class="math">Ah = 0</span>。</td>
+            <td>一种通用的矩阵分解方法，用于分解任意矩阵并提取其零空间。</td>
+        </tr>
+        <tr>
+            <td>作用</td>
+            <td>提供问题建模，将投影变换问题转化为线性方程组。</td>
+            <td>提供数值解法，用于求解 DLT 构造的线性方程组。</td>
+        </tr>
+        <tr>
+            <td>适用范围</td>
+            <td>专用于投影变换等齐次线性方程的求解。</td>
+            <td>通用方法，适用于线性代数中的多种问题（如 PCA、最小二乘、零空间求解等）。</td>
+        </tr>
+        <tr>
+            <td>输出</td>
+            <td>构造的线性方程组 <span class="math">Ah = 0</span>。</td>
+            <td>分解结果 <span class="math">U Σ V^T</span>，用于提取 <span class="math">h</span>。</td>
+        </tr>
+    </table>
+
+    <h2>5. DLT 和 SVD 的联系</h2>
+    <ol>
+        <li><strong>DLT 依赖 SVD 求解</strong>：DLT 将投影变换问题转化为一个齐次线性方程组 <span class="math">Ah = 0</span>，SVD 是求解这个方程组的数值工具，通过提取 <span class="math">A</span> 的右零空间（<span class="math">V</span> 的最后一列）来得到 <span class="math">h</span>。</li>
+        <li><strong>数值稳定性</strong>：SVD 是数值稳定的方法，能够处理 <span class="math">A</span> 可能存在的病态条件（例如，点对噪声或接近退化的情况）。DLT 本身只是问题建模，依赖 SVD 来保证解的可靠性。</li>
+        <li><strong>实际应用</strong>：在计算机视觉中，DLT 和 SVD 几乎总是结合使用。DLT 负责构造线性系统，而 SVD 负责求解。例如，OpenCV 的 <code>findHomography</code> 函数内部就使用 DLT 构造矩阵，并通过 SVD 求解 <span class="math">H</span>。</li>
+        <li><strong>预处理</strong>：DLT 通常需要对输入点进行归一化（Normalization，例如 Hartley 归一化），以提高数值稳定性。这一步也会间接影响 SVD 的计算精度。</li>
+    </ol>
+
+    <h2>6. 总结</h2>
+    <ul>
+        <li><strong>DLT</strong> 是一种方法论，专注于将投影变换问题转化为线性方程组，适合计算机视觉中的单应性估计。</li>
+        <li><strong>SVD</strong> 是一种通用的线性代数工具，在 DLT 中用于求解线性方程组的零空间。</li>
+        <li><strong>联系</strong>：DLT 提供问题建模，SVD 提供解法，两者相辅相成，共同完成投影变换矩阵的估计。</li>
+        <li><strong>实际意义</strong>：DLT 是理论框架，SVD 是实现手段。在噪声数据或非理想条件下，SVD 的鲁棒性使得 DLT 能够稳定地求解 <span class="math">H</span>。</li>
+    </ul>
+</body>
+</html>
