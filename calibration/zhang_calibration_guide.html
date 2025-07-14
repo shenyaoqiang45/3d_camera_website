@@ -516,6 +516,11 @@
                 <h2>标定精度分析</h2>
                 <p>不同相机分辨率下的标定精度表现，为实际应用提供参考数据。</p>
                 
+                <div class="math-equation">
+                    <strong>圆心误差说明：</strong><br>
+                    重投影误差评估了从三维空间点到二维图像点的投影与实际观测到的二维图像点之间的差异，度量方式是L2距离的均值
+                </div>
+                
                 <h3>精度标准与期望值</h3>
                 <div class="calibration-grid">
                     <div class="feature-card">
@@ -525,7 +530,7 @@
                         <p><strong>适用场景：</strong>一般工业应用</p>
                     </div>
                     <div class="feature-card">
-                        <h4>📷 200万像素相机</h4>
+                        <h4>📷 2000万像素相机</h4>
                         <p><strong>圆心误差：</strong>0.4像素</p>
                         <p><strong>标准差：</strong>0.3像素</p>
                         <p><strong>适用场景：</strong>高精度测量</p>
@@ -569,6 +574,7 @@
                         <p><strong>功能：</strong>计算相机内参数矩阵、畸变系数和外参数</p>
                         <p><strong>输入：</strong>世界坐标点、图像坐标点、图像尺寸</p>
                         <p><strong>输出：</strong>内参矩阵K、畸变系数、旋转和平移向量</p>
+                        <p><strong>说明：</strong>得到的旋转和平移向量表示世界坐标系到相机坐标系的转换</p>
                     </div>
                     
                     <div class="step">
@@ -595,7 +601,7 @@
                 </div>
                 
                 <div class="math-equation">
-                    <strong>世界坐标系的坐标标定：</strong><br>
+                    <strong>世界坐标系的坐标值是唯一的：</strong><br>
                     相机的外参描述了从世界坐标系到相机坐标系的刚性转换<br>
                     标定过程中确定的是相机相对于标定板的姿态
                 </div>
@@ -756,8 +762,8 @@
                 <div class="math-equation">
                     <strong>不同分辨率下的典型精度：</strong><br>
                     • 130万像素：圆心误差 0.06px，标准差 0.04px<br>
-                    • 200万像素：圆心误差 0.4px，标准差 0.3px<br>
-                    • 500万像素：圆心误差 0.2px，标准差 0.15px
+                    • 2000万像素：圆心误差 0.4px，标准差 0.3px<br>
+                    • 5000万像素：圆心误差 0.2px，标准差 0.15px
                 </div>
                 
                 <div class="visual-demo">
