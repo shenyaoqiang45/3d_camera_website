@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>白底黑圆标定板圆心亚像素提取全流程科普</title>
+    <style>
+        body{
+            font-family: Arial, "Microsoft YaHei", sans-serif;
+            line-height: 1.7;
+            margin: 0 auto;
+            max-width: 900px;
+            padding: 20px;
+            color: #333;
+            background: #fafafa;
+        }
+        h1, h2{
+            color: #0059a2;
+        }
+        code{
+            background: #eef;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: Consolas, monospace;
+        }
+        .step{
+            margin-bottom: 50px;
+            padding: 20px;
+            border-left: 4px solid #0059a2;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,.05);
+        }
+        img{
+            max-width: 100%;
+            border: 1px solid #ddd;
+            margin: 10px 0;
+        }
+        .formula{
+            background: #f7f7f7;
+            border-left: 3px solid #0059a2;
+            padding: 10px;
+            font-family: Consolas;
+        }
+        
+        .home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: #0059a2;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,89,162,0.3);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .home-button:hover {
+            background: #003d7a;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,89,162,0.4);
+        }
+        
+        .home-button:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../index.html" class="home-button">← 返回主页</a>
+    
+    <h1>白底黑圆标定板圆心亚像素提取全流程科普</h1>
+    <p>在工业视觉、摄影测量与机器人标定中，<strong>白底黑圆标定板</strong>是最常用的高精度基准之一。要获得“<strong>亚像素级</strong>”圆心坐标，需要一条<strong>稳健、可重复</strong>的图像处理流水线。下面用通俗语言拆解“<em>高斯滤波 → Canny边缘检测 → 闭合边缘检测 → 灰度判断 → 亚像素处理 → 椭圆拟合</em>”六大步骤，并给出关键公式与实现要点。</p>
+
+    <!-- Step 1 -->
+    <div class="step">
+        <h2>1. 高斯滤波：降噪，保护边缘</h2>
+        <p>相机传感器、环境光照都会带来<strong>高频噪声</strong>，直接影响后续边缘定位精度。高斯滤波用<strong>加权平均</strong>的方式平滑图像，同时<strong>保留边缘轮廓</strong>。</p>
+        <ul>
+            <li>核大小：<code>3×3</code>、<code>5×5</code> 或 <code>7×7</code>，常用 <code>σ=1.0~1.5</code></li>
+            <li>公式：二维高斯核
+                <div class="formula">G(x,y)=1/(2πσ²)·exp(-(x²+y²)/(2σ²))</div>
+            </li>
+        </ul>
+        <img src="https://i.imgur.com/GaussianDemo.png" alt="高斯滤波前后对比">
+    </div>
+
+    <!-- Step 2 -->
+    <div class="step">
+        <h2>2. Canny边缘检测：找出候选边界</h2>
+        <p>Canny 算法被誉为“<strong>最优边缘检测器</strong>”，因为它：</p>
+        <ol>
+            <li><strong>抑制噪声</strong>（已提前高斯滤波）</li>
+            <li>计算<strong>梯度幅值与方向</strong></li>
+            <li><strong>非极大值抑制</strong>，只保留局部极值</li>
+            <li><strong>双阈值</strong>（高阈值 <code>Th</code>、低阈值 <code>Tl</code>）+ <strong>滞后连接</strong></li>
+        </ol>
+        <p>输出：一条<strong>单像素宽</strong>、<strong>连续</strong>的<strong>潜在边缘链</strong>。</p>
+        <img src="https://i.imgur.com/CannyDemo.png" alt="Canny边缘图">
+    </div>
+
+    <!-- Step 3 -->
+    <div class="step">
+        <h2>3. 闭合边缘检测：锁定完整椭圆轮廓</h2>
+        <p>Canny 可能把<strong>同一圆</strong>切成几段；我们需要<strong>闭合</strong>它们：</p>
+        <ul>
+            <li><strong>形态学闭运算</strong>：先用膨胀“<strong>补缝隙</strong>”，再用腐蚀“<strong>恢复粗细</strong>”</li>
+            <li>找<strong>连通域</strong>，并筛选
+                <ul>
+                    <li>面积 &gt; <code>A_min</code></li>
+                    <li>轮廓近似后接近椭圆（<code>area/(π·a·b) ≈ 1</code>）</li>
+                </ul>
+            </li>
+        </ul>
+        <img src="https://i.imgur.com/ClosedEdge.png" alt="闭合边缘">
+    </div>
+
+    <!-- Step 4 -->
+    <div class="step">
+        <h2>4. 灰度值判断：区分“黑圆”与“白背景”</h2>
+        <p>一条闭合轮廓，既可能是<strong>黑圆</strong>，也可能是<strong>白圆</strong>。用<strong>内外灰度均值差</strong>做判决：</p>
+        <div class="formula">
+            ΔI = mean(inside) − mean(outside)<br>
+            ΔI &lt; 0 → 黑圆；ΔI &gt; 0 → 白圆
+        </div>
+        <p>实际操作：在轮廓内、外各<strong>膨胀/腐蚀 3~5 像素</strong>形成<strong>采样环带</strong>。</p>
+    </div>
+
+    <!-- Step 5 -->
+    <div class="step">
+        <h2>5. 亚像素精度处理：让边缘“更锋利”</h2>
+        <p>像素级边缘误差可达 <strong>±0.5 px</strong>，而亚像素技术可降到 <strong>0.01~0.1 px</strong>。常用<strong>灰度矩法</strong>：</p>
+        <ul>
+            <li>以像素级边缘点为<strong>初值</strong></li>
+            <li>沿<strong>梯度方向</strong>取<strong>3 或 5 点灰度值</strong></li>
+            <li>拟合<strong>二次曲线</strong>求极值点
+                <div class="formula">
+                    f(t)=a·t²+b·t+c → t_edge = −b/(2a)
+                </div>
+            </li>
+            <li>得到<strong>亚像素坐标</strong>：<code>(x_sub, y_sub)</code></li>
+        </ul>
+        <img src="https://i.imgur.com/SubpixelDemo.png" alt="亚像素边缘">
+    </div>
+
+    <!-- Step 6 -->
+    <div class="step">
+        <h2>6. 椭圆拟合：求圆心</h2>
+        <p>透视投影下，圆会变成<strong>椭圆</strong>。使用<strong>代数距离最小化</strong>的椭圆拟合：</p>
+        <div class="formula">
+            Ax² + Bxy + Cy² + Dx + Ey + F = 0 , 约束 4AC − B² = 1
+        </div>
+        <p>步骤：</p>
+        <ol>
+            <li>收集所有<strong>亚像素边缘点</strong></li>
+            <li>用<strong>直接最小二乘法</strong>解线性方程组</li>
+            <li>计算椭圆<strong>中心 (x₀,y₀)</strong>：
+                <div class="formula">
+                    x₀ = (2CD − BE)/(B² − 4AC)<br>
+                    y₀ = (2AE − BD)/(B² − 4AC)
+                </div>
+            </li>
+        </ol>
+        <p>最终输出：<strong>亚像素级圆心坐标</strong>，误差 <strong>&lt; 0.05 px</strong>。</p>
+        <img src="https://i.imgur.com/EllipseFit.png" alt="椭圆拟合结果">
+    </div>
+
+    <h2>小结与扩展</h2>
+    <p>整流程遵循“<strong>降噪 → 粗边缘 → 精边缘 → 语义筛选 → 亚像素 → 几何拟合</strong>”的<strong>金字塔</strong>思想。若需更高鲁棒性，可叠加：</p>
+    <ul>
+        <li><strong>自适应阈值</strong> Canny</li>
+        <li><strong>RANSAC</strong> 去除离群边缘点</li>
+        <li><strong>迭代加权最小二乘</strong> 椭圆拟合</li>
+    </ul>
+    <p>希望本文能帮助你理解并实现一套<strong>工业级</strong>的圆心提取系统。</p>
+</body>
+</html>
