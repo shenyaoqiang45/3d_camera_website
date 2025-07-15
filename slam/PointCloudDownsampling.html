@@ -1,0 +1,259 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>最常用的点云降采样算法（PCL实现）</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+        }
+        pre {
+            background-color: #eee;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #ddd;
+        }
+        .section {
+            background-color: #fff;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <h1>最常用的点云降采样算法（PCL实现）</h1>
+    <div class="section">
+        <p>以下介绍PCL中四种常用的点云降采样算法，包括<b>体素网格滤波</b>、<b>均匀采样</b>、<b>随机采样</b>和<b>近似体素网格滤波</b>，涵盖原理、PCL代码实现、特点及适用场景。</p>
+    </div>
+
+    <div class="section">
+        <h2>1. 体素网格滤波（Voxel Grid Filter）</h2>
+        <p><b>原理</b>：将点云空间划分为规则的3D体素网格，对每个体素内的点取质心（centroid）或平均点作为代表点，减少点云数量。</p>
+        <p><b>PCL实现</b>：</p>
+        <pre>
+#include &lt;pcl/filters/voxel_grid.h&gt;
+pcl::VoxelGrid&lt;pcl::PointXYZ&gt; voxel_filter;
+voxel_filter.setInputCloud(cloud);
+voxel_filter.setLeafSize(0.01f, 0.01f, 0.01f); // 体素边长（米）
+voxel_filter.filter(*cloud_filtered);
+        </pre>
+        <p><b>特点</b>：</p>
+        <ul>
+            <li><b>优点</b>：保留点云几何结构，计算效率高，适合大规模点云。</li>
+            <li><b>缺点</b>：体素大小需权衡精度与降采样程度，可能丢失局部细节。</li>
+        </ul>
+        <p><b>适用场景</b>：3D重建、SLAM点云预处理。</p>
+        <p><b>参数</b>：`LeafSize`控制体素边长，值越大，点云压缩越强。</p>
+    </div>
+
+    <div class="section">
+        <h2>2. 均匀采样（Uniform Sampling）</h2>
+        <p><b>原理</b>：基于kd-tree，以固定空间间隔（搜索半径）选择代表点（通常为第一个点或质心），确保点云均匀分布。</p>
+        <p><b>PCL实现</b>：</p>
+        <pre>
+#include &lt;pcl/filters/uniform_sampling.h&gt;
+pcl::UniformSampling&lt;pcl::PointXYZ&gt; uniform_filter;
+uniform_filter.setInputCloud(cloud);
+uniform_filter.setRadiusSearch(0.05f); // 搜索半径（米）
+uniform_filter.filter(*cloud_filtered);
+        </pre>
+        <p><b>特点</b>：</p>
+        <ul>
+            <li><b>优点</b>：点云分布均匀，适合需要一致性点间距的场景。</li>
+            <li><b>缺点</b>：计算成本高于体素网格滤波，可能丢失局部特征。</li>
+        </ul>
+        <p><b>适用场景</b>：表面重建、点云配准。</p>
+        <p><b>参数</b>：`RadiusSearch`控制采样点间最小距离，值越大，点云越稀疏。</p>
+    </div>
+
+    <div class="section">
+        <h2>3. 随机采样（Random Sampling）</h2>
+        <p><b>原理</b>：从点云中随机选择固定数量的点，基于随机索引，不考虑空间分布。</p>
+        <p><b>PCL实现</b>：</p>
+        <pre>
+#include &lt;pcl/filters/random_sample.h&gt;
+pcl::RandomSample&lt;pcl::PointXYZ&gt; random_filter;
+random_filter.setInputCloud(cloud);
+random_filter.setSample(1000); // 保留点数
+random_filter.filter(*cloud_filtered);
+        </pre>
+        <p><b>特点</b>：</p>
+        <ul>
+            <li><b>优点</b>：实现简单，速度快，适合快速降采样。</li>
+            <li><b>缺点</b>：分布不均，可能丢失关键特征。</li>
+        </ul>
+        <p><b>适用场景</b>：快速可视化、初步数据处理。</p>
+        <p><b>参数</b>：`Sample`指定保留点数，值越小，降采样程度越高。</p>
+    </div>
+
+    <div class="section">
+        <h2>4. 近似体素网格滤波（Approximate Voxel Grid Filter）</h2>
+        <p><b>原理</b>：与体素网格滤波类似，划分为3D体素网格，但使用近似方法（如哈希表）加速处理，牺牲少量精度换取更高效率。</p>
+        <p><b>PCL实现</b>：</p>
+        <pre>
+#include &lt;pcl/filters/approximate_voxel_grid.h&gt;
+pcl::ApproximateVoxelGrid&lt;pcl::PointXYZ&gt; approx_voxel_filter;
+approx_voxel_filter.setInputCloud(cloud);
+approx_voxel_filter.setLeafSize(0.01f, 0.01f, 0.01f); // 体素边长（米）
+approx_voxel_filter.filter(*cloud_filtered);
+        </pre>
+        <p><b>特点</b>：</p>
+        <ul>
+            <li><b>优点</b>：计算速度更快，内存占用低，适合超大规模点云。</li>
+            <li><b>缺点</b>：精度略低于体素网格滤波，可能引入少量偏差。</li>
+        </ul>
+        <p><b>适用场景</b>：超大规模点云处理、实时应用。</p>
+        <p><b>参数</b>：`LeafSize`控制体素边长，值越大，点云压缩越强。</p>
+    </div>
+
+    <div class="section">
+        <h2>总结与对比</h2>
+        <table>
+            <tr>
+                <th>算法</th>
+                <th>保留几何结构</th>
+                <th>计算效率</th>
+                <th>点云均匀性</th>
+                <th>适用场景</th>
+            </tr>
+            <tr>
+                <td>体素网格滤波</td>
+                <td>高</td>
+                <td>高</td>
+                <td>中</td>
+                <td>3D重建、SLAM</td>
+            </tr>
+            <tr>
+                <td>均匀采样</td>
+                <td>中</td>
+                <td>中</td>
+                <td>高</td>
+                <td>表面重建、点云配准</td>
+            </tr>
+            <tr>
+                <td>随机采样</td>
+                <td>低</td>
+                <td>高</td>
+                <td>低</td>
+                <td>快速可视化、初步处理</td>
+            </tr>
+            <tr>
+                <td>近似体素网格</td>
+                <td>中</td>
+                <td>极高</td>
+                <td>中</td>
+                <td>超大规模点云、实时处理</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>选择建议</h2>
+        <ul>
+            <li><b>体素网格滤波</b>：适合需要高效处理并保留整体结构的场景。</li>
+            <li><b>均匀采样</b>：适合需要均匀分布的任务，如几何分析。</li>
+            <li><b>随机采样</b>：适合快速降采样且对分布要求不高。</li>
+            <li><b>近似体素网格滤波</b>：适合超大规模点云或实时处理，需平衡精度与速度。</li>
+        </ul>
+    </div>
+    
+    <!-- 回到首页按钮 -->
+    <div style="position: fixed; bottom: 30px; right: 30px; z-index: 1000;">
+        <a href="../index.html" 
+           style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; 
+                  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                  color: white; text-decoration: none; border-radius: 50px; 
+                  font-weight: 600; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); 
+                  transition: all 0.3s ease; font-size: 14px;">
+            <span style="font-size: 16px;">🏠</span>
+            回到首页
+        </a>
+    </div>
+    
+    <style>
+        /* 回到首页按钮悬停效果 */
+        div[style*="position: fixed"] a:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            div[style*="position: fixed"] {
+                bottom: 20px !important;
+                right: 20px !important;
+            }
+            
+            div[style*="position: fixed"] a {
+                padding: 10px 16px !important;
+                font-size: 12px !important;
+            }
+        }
+    </style>
+</body>
+</html>
