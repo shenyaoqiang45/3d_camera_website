@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>对极几何数学模型科普</title>
+  <style>
+    body {
+      font-family: "Microsoft YaHei", sans-serif;
+      line-height: 1.8;
+      background-color: #f9f9f9;
+      color: #333;
+      max-width: 900px;
+      margin: auto;
+      padding: 20px;
+    }
+    h1, h2, h3 {
+      color: #2c3e50;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background-color: #fff;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 12px;
+      text-align: center;
+    }
+    th {
+      background-color: #3498db;
+      color: white;
+    }
+    .note {
+      background-color: #e7f3fe;
+      border-left: 6px solid #2196F3;
+      padding: 10px;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>对极几何数学模型：科普介绍</h1>
+
+  <p>在计算机视觉中，当我们使用两个摄像头或一个移动的摄像头观察同一个场景时，会涉及到图像之间的几何关系，称为<strong>对极几何</strong>。这关系由几个核心矩阵描述，分别是：</p>
+
+  <ul>
+    <li>基础矩阵 F（Fundamental Matrix）</li>
+    <li>本质矩阵 E（Essential Matrix）</li>
+    <li>单应矩阵 H（Homography Matrix）</li>
+  </ul>
+
+  <div class="note">
+    📌 这些矩阵在<strong>三维重建</strong>、<strong>SLAM</strong>、<strong>图像拼接</strong>、<strong>AR识别</strong>等场景中有广泛应用。
+  </div>
+
+  <h2>一、基础矩阵 F</h2>
+  <p><strong>适用场景：</strong> 未知相机内参，例如手机或无人机拍摄的图像</p>
+  <p><strong>作用：</strong> 表示图像之间的对极几何关系，用于计算匹配点的极线</p>
+  <p><strong>用途：</strong> 特征点匹配过滤、三维重建的初步估计</p>
+
+  <h2>二、本质矩阵 E</h2>
+  <p><strong>适用场景：</strong> 已知相机内参，常用于工业相机或SLAM系统</p>
+  <p><strong>作用：</strong> 表示相机之间的相对运动（旋转和平移）</p>
+  <p><strong>用途：</strong> 相机位姿估计、三维点恢复</p>
+
+  <h2>三、单应矩阵 H</h2>
+  <p><strong>适用场景：</strong> 拍摄的是平面（如墙面、书页）或相机纯旋转</p>
+  <p><strong>作用：</strong> 表示图像平面之间的投影变换</p>
+  <p><strong>用途：</strong> 图像拼接、平面AR识别与跟踪、纯旋转SLAM</p>
+
+  <h2>矩阵对比表</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>矩阵</th>
+        <th>是否需要相机内参</th>
+        <th>适用场景</th>
+        <th>所需点对数</th>
+        <th>主要功能</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>基础矩阵 F</td>
+        <td>否</td>
+        <td>未知内参的相机</td>
+        <td>至少 8 个</td>
+        <td>估算极线关系</td>
+      </tr>
+      <tr>
+        <td>本质矩阵 E</td>
+        <td>是</td>
+        <td>已知内参的相机</td>
+        <td>至少 8 个</td>
+        <td>恢复相机位姿</td>
+      </tr>
+      <tr>
+        <td>单应矩阵 H</td>
+        <td>否</td>
+        <td>平面场景 / 纯旋转</td>
+        <td>至少 4 个</td>
+        <td>平面变换、图像拼接</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="note">
+    🧠 小贴士：选择哪个矩阵，取决于你的使用场景和是否知道相机内参。
+  </div>
+</body>
+</html>
