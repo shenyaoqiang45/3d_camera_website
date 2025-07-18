@@ -1,0 +1,192 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>双目多线激光系统的工作流程</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        h2 {
+            color: #444;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 5px;
+        }
+        h3 {
+            color: #555;
+            margin-top: 20px;
+        }
+        p {
+            margin: 10px 0;
+            color: #555;
+        }
+        .step {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .step-title {
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+        .highlight {
+            background-color: #e7f3ff;
+            padding: 10px;
+            border-left: 4px solid #007bff;
+            margin: 10px 0;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 10px auto;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>双目多线激光系统的工作流程</h1>
+    <p>双目多线激光系统是一种利用两个相机和多条激光线实现高精度三维测量的技术，广泛应用于工业检测、机器人导航和三维建模等领域。本文将以通俗易懂的方式介绍其工作流程，重点详细讲解最长公共子序列（LCS）算法和极线约束在激光线匹配中的应用。</p>
+
+    <h2>什么是双目多线激光系统？</h2>
+    <p>该系统通过向物体表面投射多条规则排列的激光线（例如垂直条纹），利用左右两个相机捕捉激光线在物体上的投影图像，然后通过图像处理和几何计算重建物体的三维形状。核心在于利用双目视觉的立体匹配原理，结合激光线的高精度定位能力，即使在复杂场景下也能实现可靠的三维测量。</p>
+
+    <h2>工作流程</h2>
+    <p>以下是双目多线激光系统的典型工作流程，包含七个关键步骤，特别突出LCS算法和极线约束的应用：</p>
+
+    <div class="step">
+        <div class="step-title">1. 相机标定</div>
+        <p>首先对左右相机进行标定，获取内参（焦距、主点）和畸变参数，以及两者之间的外参（旋转矩阵和平移向量）。标定通常使用棋盘格，确保相机模型准确，为后续图像校正和极线约束提供基础。</p>
+    </div>
+
+    <div class="step">
+        <div class="step-title">2. 图像采集</div>
+        <p>激光器投射多条规则排列的激光线（例如从左到右编号为 L1, L2, ...）到物体表面，左右相机同时捕捉包含这些激光线的图像。这些图像记录了激光线在物体上的投影，可能因遮挡或表面形状而出现断裂或变形。</p>
+    </div>
+
+    <div class="step">
+        <div class="step-title">3. 图像重映射（Remap）</div>
+        <p>使用标定结果校正镜头畸变并对齐左右图像的极线，使对应点位于同一水平线（y坐标相同）。这简化了后续激光线匹配，特别是在应用极线约束时。重映射后的图像使激光线更接近直线，便于检测。</p>
+    </div>
+
+    <div class="step">
+        <div class="step-title">4. 激光线检测</div>
+        <p>在校正后的图像上，通过图像处理技术（如边缘检测、Hough变换或深度学习）提取激光线的轮廓和位置。每条激光线被分配一个唯一编码（例如 L1, L2, ...），形成左右图像的激光线序列，为后续匹配做准备。</p>
+    </div>
+
+    <div class="step">
+        <div class="step-title">5. 激光线特征提取</div>
+        <p>从检测到的激光线中提取特征，例如每条线的x坐标（每行或整条线的平均值）、强度或宽度。这些特征用于匹配过程。例如，左图像的序列可能是 [L1, L2, L3]，右图像可能是 [R1, R2, R4]（因遮挡缺失 R3）。</p>
+    </div>
+
+    <div class="step">
+        <div class="step-title">6. 激光线匹配（重点：LCS算法和极线约束）</div>
+        <p>这是系统的核心步骤，目标是找到左右图像中对应的激光线对。以下详细介绍LCS算法和极线约束的应用：</p>
+        
+        <h3>LCS算法的应用</h3>
+        <div class="highlight">
+            <p><strong>什么是LCS算法？</strong>最长公共子序列（Longest Common Subsequence, LCS）是一种动态规划算法，用于找到两个序列中最长的公共部分。在激光线匹配中，LCS用于匹配左右图像中的激光线序列，解决遮挡和缺失问题。</p>
+            <p><strong>如何应用？</strong>假设左图像的激光线序列为 [L1, L2, L3, L4]，右图像为 [R1, R3, R4]（R2缺失）。LCS算法会比较这两个序列，找到最长的公共子序列，例如 [L1, L3, L4] 与 [R1, R3, R4]，从而确定匹配对：(L1, R1), (L3, R3), (L4, R4)。</p>
+            <p><strong>为什么适合？</strong>激光线通常按规则顺序投射（例如从左到右编号），即使部分线因遮挡缺失，LCS算法也能通过保持顺序一致性找到正确匹配。它对噪声和缺失具有鲁棒性，无需假设所有激光线都可见。</p>
+            <p><strong>实现步骤</strong>：
+            <ol>
+                <li>提取左右图像的激光线序列（基于编码或x坐标）。</li>
+                <li>构建动态规划表，比较序列元素，计算最长公共子序列。</li>
+                <li>回溯得到匹配对，例如 (L1, R1), (L3, R3)。</li>
+            </ol>
+            <p><strong>优势</strong>：简单高效，适合规则投射的激光线，能处理遮挡和部分缺失。复杂度为 O(mn)，其中 m 和 n 是左右序列长度。</p>
+            <p><strong>局限性</strong>：如果激光线顺序发生严重扰动（例如由于复杂表面反射），LCS可能需要结合其他特征（如强度、宽度）或几何约束来增强匹配。</p>
+        </div>
+
+        <h3>极线约束的应用</h3>
+        <div class="highlight">
+            <p><strong>什么是极线约束？</strong>极线约束是双目视觉的核心几何原理，指右图像中的点在左图像中的对应点必须位于一条特定的直线（极线）上。这种关系由基础矩阵 F 描述，公式为 \( p_l^T F p_r = 0 \)，其中 \( p_l \) 和 \( p_r \) 是左右图像中的对应点。</p>
+            <p><strong>如何应用？</strong>在激光线匹配中，极线约束用于：
+            <ul>
+                <li><strong>预过滤</strong>：在运行LCS前，检查每条激光线的关键点（例如中心x坐标）是否满足极线约束，减少无效匹配对。</li>
+                <li><strong>后验证</strong>：在LCS匹配后，验证匹配对的点是否位于对应极线上。例如，对于右图像中激光线 R1 的点 (x_r, y)，计算其在左图像中的极线，只匹配靠近该极线的左图像激光线。</li>
+            </ul>
+            <p><strong>为什么重要？</strong>极线约束利用相机几何信息，显著减少匹配的搜索空间，提高准确性。例如，左右图像校正后，极线平行，匹配点只需在同一y坐标上搜索，简化了LCS算法的输入。</p>
+            <p><strong>实现步骤</strong>：
+            <ol>
+                <li>使用相机标定结果计算基础矩阵 F。</li>
+                <li>对于右图像的激光线点，计算其在左图像的极线。</li>
+                <li>检查左图像的激光线点是否靠近该极线（误差小于阈值）。</li>
+                <li>结合LCS结果，剔除不符合极线约束的匹配对。</li>
+            </ol>
+            <p><strong>优势</strong>：基于物理几何模型，鲁棒性强，能有效排除错误匹配，尤其在复杂场景（如遮挡、反射）中。</p>
+            <p><strong>局限性</strong>：依赖准确的相机标定，标定误差可能导致极线偏移；对严重遮挡的场景需结合其他约束（如连续性）。</p>
+        </div>
+    </div>
+
+    <div class="step">
+        <div class="step-title">7. 三维重建</div>
+        <p>根据匹配的激光线对和相机参数，通过三角测量计算每条激光线在三维空间中的位置。这些三维点云可进一步处理，生成物体的完整三维模型，用于测量、建模或分析。</p>
+    </div>
+
+    <h2>为什么需要LCS和极线约束？</h2>
+    <p>LCS算法和极线约束在激光线匹配中相辅相成：
+    <ul>
+        <li><strong>LCS算法</strong>利用激光线的顺序一致性，快速找到匹配对，处理遮挡和缺失问题。</li>
+        <li><strong>极线约束</strong>基于双目视觉的几何原理，验证匹配的正确性，减少错误匹配，提高精度。</li>
+    </ul>
+    两者结合使系统在复杂场景下仍能实现可靠的激光线匹配，为高精度三维重建奠定基础。</p>
+
+    <h2>总结</h2>
+    <p>双目多线激光系统通过相机标定、图像采集、重映射、激光线检测、特征提取、匹配和三维重建等步骤，将二维图像转化为三维模型。LCS算法通过序列匹配解决遮挡问题，极线约束利用几何关系提升匹配精度。二者结合使系统在工业、医疗和机器人领域展现出强大的三维测量能力。</p>
+</body>
+</html>
