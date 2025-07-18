@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>线条亚像素提取算法 - 科普指南</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            line-height: 1.7;
+            color: #2c3e50;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .hero {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 25px;
+            padding: 50px;
+            margin-bottom: 30px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb, #f5576c);
+            animation: gradientShift 3s ease-in-out infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { transform: translateX(-100%); }
+            50% { transform: translateX(100%); }
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+            font-weight: 800;
+        }
+
+        .hero .subtitle {
+            font-size: 1.3em;
+            color: #7f8c8d;
+            margin-bottom: 25px;
+            font-weight: 300;
+        }
+
+        .hero .description {
+            font-size: 1.1em;
+            color: #34495e;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.8;
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .section:hover::before {
+            transform: scaleX(1);
+        }
+
+        .section:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
+        }
+
+        .section h2 {
+            color: #2c3e50;
+            font-size: 2.2em;
+            margin-bottom: 25px;
+            font-weight: 700;
+            position: relative;
+            padding-bottom: 15px;
+        }
+
+        .section h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 2px;
+        }
+
+        .section h3 {
+            color: #34495e;
+            font-size: 1.6em;
+            margin: 30px 0 20px 0;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section h3::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+        }
+
+        .section p {
+            margin-bottom: 20px;
+            color: #555;
+            font-size: 1.1em;
+            line-height: 1.8;
+        }
+
+        .concept-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+
+        .concept-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            border-radius: 15px;
+            color: white;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .concept-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .concept-card:hover::before {
+            opacity: 1;
+        }
+
+        .concept-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+
+        .concept-card h4 {
+            font-size: 1.4em;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .concept-card .icon {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .algorithm-steps {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 30px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .algorithm-steps::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background: linear-gradient(180deg, #667eea, #764ba2);
+        }
+
+        .step {
+            margin: 20px 0;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            border-left: 5px solid #667eea;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .step::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .step:hover::before {
+            opacity: 1;
+        }
+
+        .step:hover {
+            transform: translateX(10px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .step-number {
+            display: inline-block;
+            width: 35px;
+            height: 35px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 35px;
+            font-weight: bold;
+            margin-right: 15px;
+            font-size: 1.1em;
+        }
+
+        .step-content {
+            display: inline-block;
+            vertical-align: top;
+            width: calc(100% - 60px);
+        }
+
+        .step-title {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.2em;
+            margin-bottom: 8px;
+        }
+
+        .step-description {
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .formula-box {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: #ecf0f1;
+            padding: 25px;
+            border-radius: 15px;
+            font-family: 'Courier New', monospace;
+            margin: 25px 0;
+            overflow-x: auto;
+            text-align: center;
+            font-size: 1.1em;
+            line-height: 1.8;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .formula-box::before {
+            content: '📐';
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 1.5em;
+            opacity: 0.3;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin: 25px 0;
+            border-left: 6px solid #e17055;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .highlight-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="2"/></svg>');
+            transform: translate(30px, -30px);
+        }
+
+        .highlight-box h4 {
+            color: #2d3436;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+
+        .highlight-box p {
+            color: #2d3436;
+            margin-bottom: 12px;
+            font-size: 1.05em;
+        }
+
+        .applications-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+
+        .app-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            border-radius: 15px;
+            color: white;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .app-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .app-card:hover::after {
+            opacity: 1;
+        }
+
+        .app-card:hover {
+            transform: translateY(-8px) rotate(2deg);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+
+        .app-card .icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .app-card h4 {
+            font-size: 1.3em;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 18px;
+            text-align: left;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .comparison-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .comparison-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .comparison-table tr:hover {
+            background: #e3f2fd;
+            transform: scale(1.02);
+            transition: all 0.3s ease;
+        }
+
+        .comparison-table tr:first-child:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transform: none;
+        }
+
+        .interactive-demo {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            margin: 30px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .interactive-demo::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="10" cy="10" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="90" cy="20" r="3" fill="rgba(255,255,255,0.1)"/><circle cx="20" cy="80" r="2" fill="rgba(255,255,255,0.1)"/></svg>');
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .demo-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin: 25px 0;
+        }
+
+        .demo-button {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .demo-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .demo-button:hover::before {
+            left: 100%;
+        }
+
+        .demo-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .demo-button.active {
+            background: white;
+            color: #667eea;
+            border-color: white;
+        }
+
+        .demo-result {
+            margin-top: 25px;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            min-height: 150px;
+            transition: all 0.3s ease;
+        }
+
+        .demo-result h4 {
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .demo-result p {
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .parameters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+
+        .param-card {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            padding: 25px;
+            border-radius: 15px;
+            color: white;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .param-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transform: translate(20px, -20px);
+        }
+
+        .param-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+
+        .param-card h4 {
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+
+        .param-card .param-values {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .future-trends {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            margin: 30px 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .future-trends::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><polygon points="50,10 60,35 85,35 67,52 72,77 50,65 28,77 33,52 15,35 40,35" fill="rgba(255,255,255,0.1)"/></svg>');
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .future-trends h3 {
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+
+        .future-trends p {
+            font-size: 1.1em;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.2rem;
+            }
+
+            .concept-grid,
+            .applications-grid,
+            .parameters-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 15px;
+            }
+
+            .section {
+                padding: 25px;
+            }
+
+            .demo-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .demo-button {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+
+        .scroll-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            z-index: 1000;
+        }
+
+        .scroll-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.1s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="scroll-indicator">
+        <div class="scroll-progress" id="scrollProgress"></div>
+    </div>
+
+    <div class="container">
+        <div class="hero">
+            <h1>线条亚像素提取算法</h1>
+            <div class="subtitle">精确到亚像素级别的线条检测技术</div>
+            <div class="description">
+                探索计算机视觉中最精确的线条提取技术，了解如何通过数学方法实现超越像素精度的线条定位，
+                以及在工业检测、医学影像、机器视觉等领域的广泛应用。
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🔍 什么是亚像素精度？</h2>
+            <p>
+                在数字图像处理中，传统的像素级精度意味着我们只能定位到整数坐标，比如 (100, 200)。
+                而亚像素精度突破了这个限制，能够定位到小数坐标，比如 (100.37, 200.82)。
+            </p>
+            
+            <div class="concept-grid">
+                <div class="concept-card">
+                    <span class="icon">🔬</span>
+                    <h4>精度优势</h4>
+                    <p>亚像素精度可以达到 0.01-0.1 像素的定位精度，比传统方法精确 10-100 倍</p>
+                </div>
+                
+                <div class="concept-card">
+                    <span class="icon">📐</span>
+                    <h4>数学基础</h4>
+                    <p>基于连续数学模型，利用插值和优化技术在离散像素间寻找最佳位置</p>
+                </div>
+                
+                <div class="concept-card">
+                    <span class="icon">🎯</span>
+                    <h4>实际意义</h4>
+                    <p>在精密测量和工业检测中，亚像素精度能够显著提高测量准确性</p>
+                </div>
+            </div>
+            
+            <div class="highlight-box">
+                <h4>💡 形象比喻</h4>
+                <p>
+                    想象一个网格，每个格子代表一个像素。传统方法只能说"线条在某个格子里"，
+                    而亚像素方法能精确指出"线条在格子的左上角偏右 37% 的位置"。
+                </p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🧮 核心算法原理</h2>
+            <p>
+                线条亚像素提取算法（如著名的 Steger 算法）的核心思想是：
+                通过分析图像的梯度和曲率信息，在连续空间中精确定位线条中心。
+            </p>
+            
+            <div class="algorithm-steps">
+                <div class="step">
+                    <span class="step-number">1</span>
+                    <div class="step-content">
+                        <div class="step-title">图像预处理</div>
+                        <div class="step-description">
+                            使用高斯滤波器对图像进行平滑，消除噪声影响。
+                            高斯核的大小 σ 通常取 0.5-2.0，需要在去噪和保留细节间平衡。
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <span class="step-number">2</span>
+                    <div class="step-content">
+                        <div class="step-title">梯度计算</div>
+                        <div class="step-description">
+                            计算图像的一阶偏导数，得到梯度向量 ∇I = [∂I/∂x, ∂I/∂y]ᵀ，
+                            梯度方向指向强度变化最大的方向。
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <span class="step-number">3</span>
+                    <div class="step-content">
+                        <div class="step-title">海塞矩阵构建</div>
+                        <div class="step-description">
+                            构建二阶导数矩阵 H，描述图像强度的曲率信息。
+                            这是算法的数学核心，为亚像素定位提供理论基础。
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <span class="step-number">4</span>
+                    <div class="step-content">
+                        <div class="step-title">特征值分解</div>
+                        <div class="step-description">
+                            对海塞矩阵进行特征值分解，获得主方向和对应的曲率值。
+                            线条方向对应最小特征值的特征向量。
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <span class="step-number">5</span>
+                    <div class="step-content">
+                        <div class="step-title">线条点识别</div>
+                        <div class="step-description">
+                            根据特征值的大小关系和阈值条件，判断当前像素是否为线条点。
+                            通常要求 |λ₁| >> |λ₂| 且超过设定阈值。
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <span class="step-number">6</span>
+                    <div class="step-content">
+                        <div class="step-title">亚像素修正</div>
+                        <div class="step-description">
+                            利用泰勒展开和优化方法，沿着线条法线方向计算精确的偏移量，
+                            得到亚像素级的线条中心位置。
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="formula-box">
+                核心亚像素定位公式：
+                <br><br>
+                t = -(∇I · n) / (nᵀ H n)
+                <br><br>
+                最终坐标：(x', y') = (x, y) + t × n
+                <br><br>
+                其中 n 是线条法向量，t 是亚像素偏移量
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🎯 关键参数设置</h2>
+            <p>
+                算法的性能很大程度上取决于参数的合理设置。以下是主要参数的推荐范围：
+            </p>
+            
+            <div class="parameters-grid">
+                <div class="param-card">
+                    <h4>🌊 高斯标准差 (σ)</h4>
+                    <p>控制图像平滑程度，影响噪声抑制和细节保留的平衡</p>
+                    <div class="param-values">
+                        细线条：σ = 0.5-1.0<br>
+                        粗线条：σ = 1.0-2.0<br>
+                        噪声图像：σ = 1.5-3.0
+                    </div>
+                </div>
+                
+                <div class="param-card">
+                    <h4>📊 特征值阈值</h4>
+                    <p>决定线条检测的灵敏度，过低会引入噪声，过高会漏检</p>
+                    <div class="param-values">
+                        强线条：|λ₁| > 5-10<br>
+                        弱线条：|λ₁| > 1-3<br>
+                        比值：|λ₁|/|λ₂| > 3-5
+                    </div>
+                </div>
+                
+                <div class="param-card">
+                    <h4>🎯 偏移限制</h4>
+                    <p>防止算法过度修正，保证数值稳定性
