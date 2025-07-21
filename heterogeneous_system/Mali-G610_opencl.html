@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RK3588 GPU Mali-G610 MP4 OpenCL开发</title>
+    <style>
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            background: #f9f9f9;
+            color: #333;
+        }
+        h1, h2, h3 {
+            color: #005bbb;
+        }
+        pre {
+            background: #272822;
+            color: #f8f8f2;
+            padding: 10px;
+            overflow-x: auto;
+            border-radius: 5px;
+        }
+        code {
+            font-family: Consolas, monospace;
+            color: rgb(238, 30, 120);
+        }
+        section {
+            margin-bottom: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 8px rgba(0,0,0,0.1);
+        }
+        ul {
+            margin-left: 20px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #e0eaff;
+        }
+        .home-nav {
+            background: #005bbb;
+            padding: 10px 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .home-nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: opacity 0.3s ease;
+        }
+        .home-nav a:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="home-nav">
+        <a href="../index.html">← 返回主页 - 3D相机世界</a>
+    </div>
+    
+    <h1>RK3588 GPU Mali-G610 MP4 OpenCL开发指导</h1>
+
+    <section>
+        <h2>一、环境准备</h2>
+        <ul>
+            <li>确认RK3588平台操作系统及GPU驱动正常安装，支持Mali-G610 MP4。</li>
+            <li>安装OpenCL运行时环境（支持OpenCL 2.0），可通过命令<code>clinfo</code>验证。</li>
+            <li>确保开发环境支持OpenCL编译与调试，如GCC、LLVM或厂商SDK。</li>
+        </ul>
+        <pre><code>sudo apt install clinfo
+clinfo</code></pre>
+    </section>
+
+    <section>
+        <h2>二、OpenCL开发基本流程</h2>
+        <ol>
+            <li>查询平台和设备信息：
+                <pre><code>clGetPlatformIDs();
+clGetDeviceIDs();</code></pre>
+            </li>
+            <li>创建OpenCL上下文和命令队列：
+                <pre><code>clCreateContext();
+clCreateCommandQueueWithProperties();</code></pre>
+            </li>
+            <li>编译OpenCL内核程序：
+                <pre><code>clCreateProgramWithSource();
+clBuildProgram();
+clCreateKernel();</code></pre>
+            </li>
+            <li>创建内存缓冲区，进行数据传输：
+                <pre><code>clCreateBuffer();
+clEnqueueWriteBuffer();</code></pre>
+            </li>
+            <li>设置合理的全局和局部工作项大小并执行内核：
+                <pre><code>clEnqueueNDRangeKernel();</code></pre>
+            </li>
+        </ol>
+    </section>
+
+    <section>
+        <h2>三、工作组（Work-Group）设置要点</h2>
+        
+        <h3>核心概念定义</h3>
+        <ul>
+            <li><strong>NDRange（N维范围）</strong>：定义了全局计算域的大小（global size）。</li>
+            <li><strong>Global Size（全局工作项数）</strong>：所有工作项的总数，通常等于图像的尺寸，例如 width × height。</li>
+            <li><strong>Local Size（局部工作组尺寸）</strong>：每个工作组中工作项的数量（可选参数）。必须整除 global size。</li>
+            <li><strong>Work-item（工作项）</strong>：每个工作项可以处理图像中的一个像素或一个数据单元。</li>
+            <li><strong>Work-group（工作组）</strong>：OpenCL 将工作项组织成工作组，便于共享本地内存和同步。</li>
+        </ul>
+        
+        <h3>设置要点</h3>
+        <p>工作组大小影响GPU资源调度和执行效率，注意：</p>
+        <ul>
+            <li><strong>Local Work Size</strong>（局部工作组大小）通常设置为2的幂次方，如16×16，最大不要超过设备允许的<code>CL_DEVICE_MAX_WORK_GROUP_SIZE</code>，一般为256或512。</li>
+            <li>一个Shader Core（Mali-G610 MP4有4个核心）会执行一个工作组，因此局部工作组大小应合理控制在单核心可承载范围内，避免过大导致资源争用或执行效率下降。</li>
+            <li>全局工作项（Global Work Size）可远大于核心数，用于覆盖整个数据规模。</li>
+        </ul>
+        <p>示例设置：</p>
+        <pre><code>size_t global_work_size[2] = {1920, 1280};
+size_t local_work_size[2] = {16, 16};</code></pre>
+    </section>
+
+    <section>
+        <h2>四、Mali-G610 MP4 GPU内存架构简介</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>层级</th>
+                    <th>名称 / 特征</th>
+                    <th>访问速度</th>
+                    <th>容量范围</th>
+                    <th>说明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>寄存器</td>
+                    <td>每个 Shader Core 独立</td>
+                    <td>🚀最快（1cycle）</td>
+                    <td>十几个~上百个 / Core</td>
+                    <td>用于 warp/thread 间变量寄存</td>
+                </tr>
+                <tr>
+                    <td>L0 Cache</td>
+                    <td>特定类型如纹理缓存（可选）</td>
+                    <td>很快</td>
+                    <td>通常16~64KB</td>
+                    <td>Shader Core 访问纹理时命中</td>
+                </tr>
+                <tr>
+                    <td>L1 Cache</td>
+                    <td>各 Shader Core 私有</td>
+                    <td>快</td>
+                    <td>通常32~64KB</td>
+                    <td>仅该核心访问，有助于局部性</td>
+                </tr>
+                <tr>
+                    <td>L2 Cache</td>
+                    <td>所有 Shader Core 共享</td>
+                    <td>中等</td>
+                    <td>256KB ~ 1MB（G610）</td>
+                    <td>GPU 内部各核心协同通信关键</td>
+                </tr>
+                <tr>
+                    <td>系统主存</td>
+                    <td>SoC DDR / LPDDR（外部 DRAM）</td>
+                    <td>最慢（~100ns）</td>
+                    <td>几 GB ~ 32GB</td>
+                    <td>与 CPU/NPU/ISP 共享</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <h3>OpenCL内存模型对应关系</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>OpenCL内存类型</th>
+                    <th>硬件映射</th>
+                    <th>特点</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>__private</code></td>
+                    <td>寄存器</td>
+                    <td>线程私有，访问速度最快，数量有限</td>
+                </tr>
+                <tr>
+                    <td><code>__local</code></td>
+                    <td>L1 Cache / 片上存储</td>
+                    <td>同一工作组共享，延迟低，容量有限</td>
+                </tr>
+                <tr>
+                    <td><code>__global</code></td>
+                    <td>系统主存（通过L2缓存）</td>
+                    <td>共享系统DRAM，延迟高，带宽受限</td>
+                </tr>
+                <tr>
+                    <td><code>__constant</code></td>
+                    <td>L2 Cache专用区域</td>
+                    <td>只读缓存区域，适合存储不变数据</td>
+                </tr>
+                <tr>
+                    <td><code>image2d_t</code>等</td>
+                    <td>L0纹理缓存</td>
+                    <td>专用缓存优化纹理采样访问</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section>
+        <h2>五、性能优化建议</h2>
+        <ul>
+            <li>尽量减少对<code>__global</code>内存的访问次数，优先使用<code>__local</code>内存做缓存。</li>
+            <li>避免内核中复杂分支，采用数学替代分支操作。</li>
+            <li>使用向量数据类型（如<code>float4</code>）提升内存访问效率。</li>
+            <li>合理设置局部工作组大小，避免超过硬件支持的最大工作组大小。</li>
+            <li>利用Mali-G610的L1和L2缓存机制，优化内存访问模式。</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>六、示例代码</h2>
+        <h3>简单的图像像素反转内核</h3>
+        <pre><code>__kernel void invert(__global uchar *image, const int size) {
+    int gid = get_global_id(0);
+    if (gid &lt; size) {
+        image[gid] = 255 - image[gid];
+    }
+}</code></pre>
+    </section>
+
+    <section>
+        <h2>七、查询最大工作组大小示例代码</h2>
+        <pre><code>size_t maxWorkGroupSize = 0;
+clGetDeviceInfo(device, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(size_t), &maxWorkGroupSize, nullptr);
+printf("Max work group size: %zu\n", maxWorkGroupSize);</code></pre>
+    </section>
+
+    <section>
+        <h2>八、常用工具</h2>
+        <ul>
+            <li><strong>clinfo</strong>：查看OpenCL设备和驱动信息。</li>
+            <li><strong>Arm Mobile Studio</strong>：性能分析工具。</li>
+            <li><strong>Streamline Profiler</strong>：性能采样和瓶颈定位。</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>总结</h2>
+        <p>RK3588搭载的Mali-G610 MP4 GPU支持OpenCL 2.0，合理利用GPU计算资源，特别是工作组大小和内存层级的优化，是实现高效异构计算的关键。希望这份指导能帮助你快速入门并提升OpenCL应用性能。</p>
+    </section>
+</body>
+</html>
