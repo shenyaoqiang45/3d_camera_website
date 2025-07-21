@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ONNX 模型技术科普介绍</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            color: #666;
+            margin-top: 15px;
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            margin: 25px 0;
+            padding: 35px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.15);
+        }
+
+        .section h2 {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            border-left: 4px solid #667eea;
+            padding-left: 20px;
+            font-weight: 600;
+        }
+
+        .section h3 {
+            font-size: 1.3em;
+            margin: 25px 0 15px 0;
+            color: #34495e;
+            font-weight: 500;
+        }
+
+        .section p {
+            margin-bottom: 15px;
+            text-align: justify;
+            font-size: 1.05em;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .feature-card h4 {
+            font-size: 1.2em;
+            margin-bottom: 12px;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .workflow {
+            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+            padding: 30px;
+            border-radius: 20px;
+            margin: 30px 0;
+        }
+
+        .workflow h3 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #2c3e50;
+            font-size: 1.5em;
+        }
+
+        .steps {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .step {
+            flex: 1;
+            min-width: 200px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .step::after {
+            content: '→';
+            position: absolute;
+            right: -15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5em;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .step:last-child::after {
+            display: none;
+        }
+
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px auto;
+            font-weight: bold;
+        }
+
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .comparison-item {
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .pytorch-tf {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+        }
+
+        .onnx-style {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        }
+
+        .icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            color: white;
+        }
+
+        .pytorch-icon {
+            background: #ee4c2c;
+        }
+
+        .onnx-icon {
+            background: #0ea5e9;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header {
+                padding: 25px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .section {
+                padding: 25px;
+            }
+            
+            .steps {
+                flex-direction: column;
+            }
+            
+            .step::after {
+                display: none;
+            }
+            
+            .comparison {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>ONNX 模型技术科普</h1>
+            <p>深入了解 ONNX、ONNX Runtime 与 PyTorch/TensorFlow 的区别和联系</p>
+        </div>
+
+        <div class="section">
+            <h2>🔗 什么是 ONNX 模型？</h2>
+            <p><span class="highlight">ONNX（Open Neural Network Exchange）</span>是一种开放的深度学习模型表示标准，它在现代机器学习生态系统中起着重要的桥梁作用。可以把它理解为深度学习界的"通用语言"。</p>
+            
+            <div class="features">
+                <div class="feature-card">
+                    <h4>🌐 框架无关性</h4>
+                    <p>一旦模型转换为ONNX格式，就可以在支持ONNX的任何平台上运行</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📊 标准化表示</h4>
+                    <p>使用统一的计算图表示神经网络结构，消除不同框架间的差异</p>
+                </div>
+                <div class="feature-card">
+                    <h4>💻 跨平台兼容</h4>
+                    <p>支持从云端到边缘设备的各种部署环境</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>⚡ ONNX Runtime 是什么？</h2>
+            <p><span class="highlight">ONNX Runtime</span>是微软开源的高性能推理引擎，专门用于执行ONNX模型。它就像是一台为ONNX模型量身定制的"超级引擎"。</p>
+            
+            <div class="features">
+                <div class="feature-card">
+                    <h4>🚀 性能优化</h4>
+                    <p>通过图优化、算子融合、内存池等技术显著提升推理速度</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🔧 硬件加速</h4>
+                    <p>支持CPU、GPU、专用AI芯片等多种硬件后端</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📦 轻量级部署</h4>
+                    <p>相比完整的训练框架，运行时更小更高效</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🏭 生产就绪</h4>
+                    <p>提供稳定可靠的推理服务，适合生产环境</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🔄 与 PyTorch/TensorFlow 的关系</h2>
+            <p><span class="highlight">PyTorch</span>和<span class="highlight">TensorFlow</span>是深度学习的训练框架，而ONNX生态主要专注于模型部署和推理。它们在机器学习流程中扮演不同但互补的角色。</p>
+            
+            <div class="comparison">
+                <div class="comparison-item pytorch-tf">
+                    <div class="icon pytorch-icon">🔥</div>
+                    <h3>PyTorch/TensorFlow</h3>
+                    <h4>训练阶段</h4>
+                    <p>提供完整的训练功能，包括自动微分、优化器、数据加载等全套工具链</p>
+                    <h4>部署特点</h4>
+                    <p>功能完整但资源消耗较大，适合研究和快速原型开发</p>
+                </div>
+                
+                <div class="comparison-item onnx-style">
+                    <div class="icon onnx-icon">⚡</div>
+                    <h3>ONNX + ONNX Runtime</h3>
+                    <h4>推理专精</h4>
+                    <p>专门针对模型推理进行优化，在训练阶段通常不直接参与</p>
+                    <h4>部署优势</h4>
+                    <p>获得更好的性能表现和更少的资源占用，适合生产环境</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="workflow">
+                <h3>🔄 典型工作流程</h3>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <h4>模型开发</h4>
+                        <p>使用PyTorch或TensorFlow进行模型设计、训练和验证</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <h4>模型转换</h4>
+                        <p>将训练好的模型导出为ONNX格式</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <h4>优化部署</h4>
+                        <p>使用ONNX Runtime在生产环境中高效执行推理</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🎯 选择指南</h2>
+            
+            <h3>🔬 选择 PyTorch/TensorFlow 原生推理</h3>
+            <div class="features">
+                <div class="feature-card">
+                    <h4>研究实验</h4>
+                    <p>研究和实验阶段，需要频繁修改模型结构和参数</p>
+                </div>
+                <div class="feature-card">
+                    <h4>高级功能</h4>
+                    <p>需要使用框架特有的高级功能或最新特性</p>
+                </div>
+                <div class="feature-card">
+                    <h4>新操作符</h4>
+                    <p>模型包含ONNX暂不支持的新操作符或自定义层</p>
+                </div>
+            </div>
+            
+            <h3>🚀 选择 ONNX + ONNX Runtime</h3>
+            <div class="features">
+                <div class="feature-card">
+                    <h4>生产部署</h4>
+                    <p>生产环境部署，对性能和稳定性要求高</p>
+                </div>
+                <div class="feature-card">
+                    <h4>跨平台需求</h4>
+                    <p>需要跨平台部署或特定硬件加速支持</p>
+                </div>
+                <div class="feature-card">
+                    <h4>资源优化</h4>
+                    <p>希望减少部署时的依赖和资源占用</p>
+                </div>
+                <div class="feature-card">
+                    <h4>统一推理</h4>
+                    <p>团队使用多种训练框架但需要统一的推理方案</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>💡 总结</h2>
+            <p>ONNX生态系统的核心价值在于实现了<span class="highlight">"用最适合的工具训练，用最高效的方式部署"</span>的理念。这种设计让开发者既能保持开发阶段的灵活性，又能在生产环境中获得最优的性能表现。</p>
+            <p>随着AI应用的普及，理解和掌握ONNX技术栈将成为机器学习工程师的重要技能，它不仅能提高工作效率，还能为项目的成功部署提供强有力的技术保障。</p>
+        </div>
+    </div>
+</body>
+</html>
