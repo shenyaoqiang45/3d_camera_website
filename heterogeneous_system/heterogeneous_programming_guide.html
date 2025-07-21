@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>异构编程主要概念 - 科普指南</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            animation: fadeIn 1s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            text-align: center;
+            padding: 40px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="80" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="40" cy="60" r="1.5" fill="rgba(255,255,255,0.08)"/><circle cx="70" cy="30" r="1" fill="rgba(255,255,255,0.06)"/></svg>');
+            animation: float 20s linear infinite;
+        }
+        
+        @keyframes float {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(-50px, -50px) rotate(360deg); }
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .intro {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(240, 147, 251, 0.3);
+            transform: translateY(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .intro:hover {
+            transform: translateY(-5px);
+        }
+        
+        .intro h2 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+        }
+        
+        .models-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .model-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .model-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transform: translateX(-100%);
+            animation: shimmer 3s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            50% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        
+        .model-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .model-card.cuda { border-left-color: #76B900; }
+        .model-card.opencl { border-left-color: #FF6B35; }
+        .model-card.openmp { border-left-color: #4ECDC4; }
+        .model-card.openacc { border-left-color: #45B7D1; }
+        .model-card.sycl { border-left-color: #96CEB4; }
+        .model-card.hip { border-left-color: #FFEAA7; }
+        .model-card.halide { border-left-color: #FF7675; }
+        
+        .model-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+        }
+        
+        .model-card h3::before {
+            content: '🚀';
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .model-card.opencl h3::before { content: '🌐'; }
+        .model-card.openmp h3::before { content: '⚡'; }
+        .model-card.openacc h3::before { content: '🎯'; }
+        .model-card.sycl h3::before { content: '🔧'; }
+        .model-card.hip h3::before { content: '🔄'; }
+        .model-card.halide h3::before { content: '🎨'; }
+        
+        .features {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+        
+        .features li {
+            padding: 8px 0;
+            border-bottom: 1px solid #ecf0f1;
+            position: relative;
+            padding-left: 25px;
+        }
+        
+        .features li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #27ae60;
+            font-weight: bold;
+        }
+        
+        .use-case {
+            background: linear-gradient(135deg, #e8f5e8, #f0f8f0);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #27ae60;
+            font-style: italic;
+            margin-top: 15px;
+        }
+        
+        .selection-guide {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            margin-top: 40px;
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.3);
+        }
+        
+        .selection-guide h2 {
+            font-size: 2rem;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        
+        .guide-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+        
+        .guide-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .guide-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+        
+        .guide-item h4 {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: #ffffff;
+        }
+        
+        .footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 30px;
+            margin-top: 40px;
+        }
+        
+        .comparison-table {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+        }
+        
+        .comparison-table h3 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-size: 1.8rem;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        
+        th {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            font-weight: 600;
+        }
+        
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        tr:hover {
+            background: #e3f2fd;
+            transition: background 0.3s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .models-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+        }
+        
+        .highlight {
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>异构编程主要概念</h1>
+            <p>探索多处理器架构下的并行计算编程模型</p>
+        </div>
+        
+        <div class="content">
+            <div class="intro">
+                <h2>什么是异构编程？</h2>
+                <p>异构编程是指在包含不同类型处理器（如<span class="highlight">CPU、GPU、FPGA、DSP</span>等）的系统中进行程序设计和优化的编程范式。它充分利用不同处理器的特性，实现高效的并行计算。从传统的底层并行编程到现代的<span class="highlight">领域特定语言(DSL)</span>，异构编程模型正变得越来越多样化和专业化。</p>
+            </div>
+            
+            <div class="models-grid">
+                <div class="model-card cuda">
+                    <h3>CUDA</h3>
+                    <p><strong>NVIDIA并行计算平台</strong></p>
+                    <ul class="features">
+                        <li>类C语言编程接口</li>
+                        <li>丰富的开发工具链</li>
+                        <li>成熟的生态系统</li>
+                        <li>仅支持NVIDIA GPU</li>
+                    </ul>
+                    <div class="use-case">
+                        <strong>适用场景：</strong>科学计算、深度学习、图像处理
+                    </div>
+                </div>
+                
+                <div class="model-card opencl">
+                    <h3>OpenCL</h3>
+                    <p><strong>开放异构计算标准</strong></p>
+                    <ul class="features">
+                        <li>跨平台、跨厂商支持</li>
+                        <li>支持多种硬件类型</li>
+                        <li>统一的编程模型</li>
+                        <li>学习曲线较陡</li>
+                    </ul>
+                    <div class="use-case">
+                        <strong>适用场景：</strong>移动设备、嵌入式系统、跨平台应用
+                    </div>
+                </div>
+                
+                <div class="model-card openmp">
+                    <h3>OpenMP</h3>
+                    <p><strong>共享内存并行编程</strong></p>
+                    <ul class="features">
+                        <li>基于编译器指令</li>
+                        <li>易于学习和使用</li>
+                        <li>支持增量并行化</li>
+                        <li>主要针对CPU多核</li>
+                    </ul>
+                    <div class="use-case">
+                        <strong>适用场景：</strong>CPU多核并行、循环并行化
+                    </div>
+                </div>
+                
+                <div class="model-card openacc">
+                    <h3>OpenACC</h3>
+                    <p><strong>指令式GPU编程</strong></p>
+                    <ul class="features">
+                        <li>编译器指令驱动</li>
+                        <li>代码修改量小</li>
+                        <li>自动内存管理</li>
+                        <li>易于上手</li>
+                    </ul>
+                    <div class="use-case">
+                        <strong>适用场景：</strong>科学计算GPU加速、代码快速移植
+                    </div>
+                </div>
+                
+                <div class="model-card sycl">
+                    <h3>SYCL</h3>
+                    <p><strong>现代C++异构编程</strong></p>
+                    <ul class="features">
+                        <li>纯C++实现</li>
+                        <li>单一源码方案</li>
+                        <li>支持多种后端</li>
+                        <li>现代C++特性支持</li>
+                    </ul>
+                    <div class="use-case">
+                        <strong>适用场景：</strong>跨平台C++应用、现代化异构开发
+                    </div>
+                </div>
+                
+                <div class="model-card hip">
+                    <h3>HIP</h3>
+                    <p><strong>便携式GPU编程接口</strong></p>
+                    <ul class="features">
+                        <li>类CUDA编程接口</li>
+                        <li>支持AMD和NVIDIA GPU</li>
+                        <li>提供转换工具</li>
+                        <li>相对较新的模型</li>
+                    </ul>
+                    <div class="use-case">
+                        <strong>适用场景：</strong>GPU间代码移植、多厂商GPU支持
+                    </div>
+                </div>
+                
+                <div class="model-card halide">
+                    <h3>Halide</h3>
+                    <p><strong>高性能图像处理DSL</strong></p>
+                    <ul class="features">
+                        <li>算法与调度分离</li>
+                        <li>自动优化和向量化</li>
+                        <li>多后端代码生成</li>
+                        <li>声明式编程风格</li>
+                    </ul>
+                    <div class="use-case">
+                        <strong>适用场景：</strong>图像处理、计算机视觉、数字信号处理
+                    </div>
+                </div>
+            </div>
+            
+            <div class="comparison-table">
+                <h3>编程模型对比</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>编程模型</th>
+                            <th>硬件支持</th>
+                            <th>学习难度</th>
+                            <th>性能表现</th>
+                            <th>生态成熟度</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>CUDA</strong></td>
+                            <td>NVIDIA GPU</td>
+                            <td>中等</td>
+                            <td>优秀</td>
+                            <td>非常成熟</td>
+                        </tr>
+                        <tr>
+                            <td><strong>OpenCL</strong></td>
+                            <td>多种硬件</td>
+                            <td>较高</td>
+                            <td>良好</td>
+                            <td>成熟</td>
+                        </tr>
+                        <tr>
+                            <td><strong>OpenMP</strong></td>
+                            <td>CPU + GPU</td>
+                            <td>较低</td>
+                            <td>良好</td>
+                            <td>成熟</td>
+                        </tr>
+                        <tr>
+                            <td><strong>OpenACC</strong></td>
+                            <td>GPU</td>
+                            <td>低</td>
+                            <td>良好</td>
+                            <td>一般</td>
+                        </tr>
+                        <tr>
+                            <td><strong>SYCL</strong></td>
+                            <td>多种硬件</td>
+                            <td>中等</td>
+                            <td>良好</td>
+                            <td>发展中</td>
+                        </tr>
+                        <tr>
+                            <td><strong>HIP</strong></td>
+                            <td>AMD + NVIDIA GPU</td>
+                            <td>中等</td>
+                            <td>良好</td>
+                            <td>发展中</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Halide</strong></td>
+                            <td>CPU + GPU + 其他</td>
+                            <td>中等</td>
+                            <td>优秀</td>
+                            <td>专业领域成熟</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="selection-guide">
+                <h2>如何选择合适的编程模型？</h2>
+                <div class="guide-grid">
+                    <div class="guide-item">
+                        <h4>🎯 硬件平台</h4>
+                        <p>NVIDIA GPU首选CUDA；跨平台需求选择OpenCL或SYCL</p>
+                    </div>
+                    <div class="guide-item">
+                        <h4>📚 学习成本</h4>
+                        <p>OpenACC和OpenMP入门门槛低；CUDA和OpenCL提供更细粒度控制</p>
+                    </div>
+                    <div class="guide-item">
+                        <h4>⚡ 性能要求</h4>
+                        <p>CUDA通常提供最佳NVIDIA GPU性能；OpenCL跨平台性能略有损失</p>
+                    </div>
+                    <div class="guide-item">
+                        <h4>🔧 生态支持</h4>
+                        <p>CUDA拥有最丰富的库和工具；其他模型生态相对较小</p>
+                    </div>
+                </div>
+                <p style="text-align: center; margin-top: 30px; font-size: 1.1rem; opacity: 0.9;">
+                    选择编程模型需要综合考虑应用需求、硬件环境和团队技术背景
+                </p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>异构编程让我们能够充分发挥不同处理器的优势，实现更高效的并行计算</p>
+        </div>
+    </div>
+    
+    <script>
+        // 添加交互效果
+        document.addEventListener('DOMContentLoaded', function() {
+            // 卡片悬停效果
+            const cards = document.querySelectorAll('.model-card');
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-10px) scale(1.02)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                });
+            });
+            
+            // 平滑滚动效果
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+            
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+            
+            // 为所有卡片添加观察
+            cards.forEach(card => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(30px)';
+                card.style.transition = 'all 0.6s ease-out';
+                observer.observe(card);
+            });
+            
+            // 表格行高亮效果
+            const tableRows = document.querySelectorAll('tbody tr');
+            tableRows.forEach(row => {
+                row.addEventListener('click', function() {
+                    tableRows.forEach(r => r.style.backgroundColor = '');
+                    this.style.backgroundColor = '#e3f2fd';
+                    setTimeout(() => {
+                        this.style.backgroundColor = '';
+                    }, 2000);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
