@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGBM算法科普介绍</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 60px 0;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header h1 {
+            font-size: 3.5rem;
+            color: white;
+            margin-bottom: 20px;
+            font-weight: 700;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .header p {
+            font-size: 1.3rem;
+            color: rgba(255, 255, 255, 0.9);
+            max-width: 600px;
+            margin: 0 auto;
+            animation: fadeInUp 1s ease-out 0.2s both;
+        }
+
+        .content {
+            display: grid;
+            gap: 30px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+            animation: slideInUp 0.8s ease-out;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.15);
+        }
+
+        .card h2 {
+            color: #4a5568;
+            font-size: 2.2rem;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+            font-weight: 600;
+        }
+
+        .card h3 {
+            color: #667eea;
+            font-size: 1.5rem;
+            margin: 25px 0 15px 0;
+            font-weight: 600;
+        }
+
+        .card p, .card li {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: #2d3748;
+        }
+
+        .algorithm-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+
+        .step {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .step:hover {
+            transform: scale(1.05);
+        }
+
+        .step::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .step:hover::before {
+            opacity: 1;
+        }
+
+        .step-number {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            line-height: 40px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+
+        .step h4 {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 15px 20px;
+            text-align: center;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .comparison-table th {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .comparison-table tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+
+        .comparison-table tr:hover {
+            background-color: #e6fffa;
+            transform: scale(1.02);
+            transition: all 0.2s ease;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 25px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .highlight-box::before {
+            content: '💡';
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 2rem;
+            opacity: 0.7;
+        }
+
+        .highlight-box h4 {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .code-block::before {
+            content: '</>';
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        ul, ol {
+            padding-left: 25px;
+            margin: 20px 0;
+        }
+
+        li {
+            margin: 8px 0;
+        }
+
+        .pros-cons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .pros, .cons {
+            padding: 25px;
+            border-radius: 15px;
+            position: relative;
+        }
+
+        .pros {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+        }
+
+        .cons {
+            background: linear-gradient(135deg, #f56565, #e53e3e);
+            color: white;
+        }
+
+        .pros::before {
+            content: '✓';
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 2rem;
+            opacity: 0.7;
+        }
+
+        .cons::before {
+            content: '⚠';
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 2rem;
+            opacity: 0.7;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .card {
+                padding: 25px;
+            }
+            
+            .algorithm-steps {
+                grid-template-columns: 1fr;
+            }
+            
+            .pros-cons {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>SGBM算法</h1>
+            <p>Semi-Global Block Matching - 半全局块匹配算法深度解析</p>
+        </div>
+
+        <div class="content">
+            <div class="card">
+                <h2>🚀 算法概述</h2>
+                <p>SGBM（Semi-Global Block Matching，半全局块匹配）是由Hirschmuller在2005年提出的高效立体匹配算法。它巧妙地结合了块匹配的计算效率和全局优化的质量优势，在精度、速度和资源消耗之间找到了最佳平衡点。</p>
+                
+                <div class="highlight-box">
+                    <h4>核心创新</h4>
+                    <p>SGBM通过多方向路径优化来近似全局最优解，既保持了实时性，又显著提升了匹配质量，是目前立体视觉领域最主流的算法之一。</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>⚙️ 算法流程</h2>
+                <div class="algorithm-steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <h4>代价计算</h4>
+                        <p>对每个像素在不同视差下计算匹配代价，常用Census变换+汉明距离</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <h4>代价聚合</h4>
+                        <p>从8或16个方向进行动态规划，这是SGBM的核心创新</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <h4>视差计算</h4>
+                        <p>使用WTA策略选择最小代价视差，并进行亚像素优化</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <h4>后处理</h4>
+                        <p>左右一致性检查、视差填充、中值滤波等优化处理</p>
+                    </div>
+                </div>
+
+                <h3>📊 核心能量函数</h3>
+                <div class="code-block">
+E(D) = Σ(C(p,Dp) + Σ P1·T[|Dp-Dq|=1] + Σ P2·T[|Dp-Dq|>1])
+
+其中：
+• C(p,Dp): 像素p在视差Dp下的匹配代价
+• P1: 相邻像素视差差为1的惩罚（小惩罚）
+• P2: 相邻像素视差差大于1的惩罚（大惩罚）
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>🔧 关键参数设置</h2>
+                
+                <h3>惩罚参数</h3>
+                <div class="code-block">
+P1 = 8 × channels × blockSize²     // 小惩罚，允许平滑视差变化
+P2 = 32 × channels × blockSize²    // 大惩罚，抑制视差跳跃
+                </div>
+
+                <h3>其他重要参数</h3>
+                <ul>
+                    <li><strong>minDisparity</strong>: 最小视差值，通常为0</li>
+                    <li><strong>numDisparities</strong>: 视差搜索范围，必须是16的倍数</li>
+                    <li><strong>blockSize</strong>: 匹配窗口大小，通常为3-21的奇数</li>
+                    <li><strong>uniquenessRatio</strong>: 唯一性比率，用于滤除模糊匹配</li>
+                    <li><strong>speckleWindowSize</strong>: 斑点过滤窗口大小</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h2>⚖️ 算法优劣势分析</h2>
+                <div class="pros-cons">
+                    <div class="pros">
+                        <h3>✨ 优势</h3>
+                        <ul>
+                            <li>精度显著高于传统块匹配</li>
+                            <li>计算效率远超全局优化方法</li>
+                            <li>对纹理变化和光照适应性强</li>
+                            <li>能较好保持物体边缘锐度</li>
+                            <li>参数调节相对简单</li>
+                        </ul>
+                    </div>
+                    <div class="cons">
+                        <h3>⚠️ 局限性</h3>
+                        <ul>
+                            <li>需要针对场景调整参数</li>
+                            <li>内存消耗相对较大</li>
+                            <li>弱纹理区域效果有限</li>
+                            <li>严重遮挡处理能力不足</li>
+                            <li>计算复杂度中等</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>📊 算法对比</h2>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>算法</th>
+                            <th>精度</th>
+                            <th>速度</th>
+                            <th>内存消耗</th>
+                            <th>适用场景</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>BM</strong></td>
+                            <td>中等</td>
+                            <td>快</td>
+                            <td>小</td>
+                            <td>纹理丰富场景</td>
+                        </tr>
+                        <tr>
+                            <td><strong>SGBM</strong></td>
+                            <td>高</td>
+                            <td>中等</td>
+                            <td>中等</td>
+                            <td>通用场景</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Graph Cut</strong></td>
+                            <td>很高</td>
+                            <td>慢</td>
+                            <td>大</td>
+                            <td>离线高精度应用</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Dynamic Programming</strong></td>
+                            <td>中高</td>
+                            <td>中等</td>
+                            <td>中等</td>
+                            <td>扫描线场景</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <h2>🎯 在散斑结构光中的应用</h2>
+                <p>SGBM算法在散斑结构光系统中表现尤为出色，主要原因包括：</p>
+                
+                <div class="highlight-box">
+                    <h4>完美适配的特点</h4>
+                    <p>散斑图案提供的丰富纹理信息完美解决了SGBM在弱纹理区域的局限性，而SGBM的高效性和精度又满足了结构光系统对实时性和准确性的双重要求。</p>
+                </div>
+
+                <ul>
+                    <li><strong>纹理丰富</strong>: 散斑图案解决弱纹理问题</li>
+                    <li><strong>实时性好</strong>: 满足动态3D重建需求</li>
+                    <li><strong>精度适中</strong>: 达到毫米级测量精度</li>
+                    <li><strong>边缘保持</strong>: 保持重要的深度不连续性</li>
+                    <li><strong>抗干扰强</strong>: 对环境光照变化适应性好</li>
+                </ul>
+
+                <h3>📏 实际精度表现</h3>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>工作距离</th>
+                            <th>典型精度</th>
+                            <th>相机分辨率</th>
+                            <th>应用场景</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>0.3-1米</strong></td>
+                            <td>0.1-0.5毫米</td>
+                            <td>1280×720以上</td>
+                            <td>精密工件检测、牙科扫描</td>
+                        </tr>
+                        <tr>
+                            <td><strong>1-3米</strong></td>
+                            <td>0.5-2毫米</td>
+                            <td>1920×1080</td>
+                            <td>人脸识别、手部追踪</td>
+                        </tr>
+                        <tr>
+                            <td><strong>3-8米</strong></td>
+                            <td>2-8毫米</td>
+                            <td>1920×1080以上</td>
+                            <td>机器人导航、室内建模</td>
+                        </tr>
+                        <tr>
+                            <td><strong>8米以上</strong></td>
+                            <td>1-3厘米</td>
+                            <td>高分辨率相机</td>
+                            <td>大场景重建、车辆检测</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="highlight-box">
+                    <h4>精度影响因素</h4>
+                    <ul style="color: white; margin: 0;">
+                        <li><strong>散斑密度</strong>: 更密集的散斑图案提供更高精度</li>
+                        <li><strong>基线距离</strong>: 较大基线提升深度分辨率</li>
+                        <li><strong>标定质量</strong>: 高精度标定是准确测量的基础</li>
+                        <li><strong>环境稳定性</strong>: 温度、振动等因素影响精度</li>
+                    </ul>
+                </div>
+
+                <h3>🔬 典型应用场景</h3>
+                <ul>
+                    <li><strong>工业检测</strong> (0.1-1毫米精度): 零件尺寸测量、表面缺陷检测</li>
+                    <li><strong>生物识别</strong> (0.5-2毫米精度): 3D人脸识别、指纹立体扫描</li>
+                    <li><strong>医疗应用</strong> (0.2-1毫米精度): 牙科建模、整形外科测量</li>
+                    <li><strong>机器人视觉</strong> (1-5毫米精度): 导航避障、物体抓取</li>
+                    <li><strong>逆向工程</strong> (0.2-2毫米精度): 文物数字化、产品设计</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
