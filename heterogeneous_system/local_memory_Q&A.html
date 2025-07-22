@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>OpenCL 图像处理中的 local memory 与同步机制</title>
+  <style>
+    body { font-family: sans-serif; line-height: 1.8; padding: 20px; background-color: #f8f8f8; }
+    h1, h2 { color: #003366; }
+    code { background-color: #eee; padding: 2px 6px; border-radius: 4px; }
+    .section { margin-bottom: 30px; }
+  </style>
+</head>
+<body>
+
+  <h1>OpenCL 图像处理中的 local memory 与同步机制</h1>
+
+  <div class="section">
+    <h2>一、Mali-G610 GPU 简介</h2>
+    <p>Mali-G610 是 ARM 基于 Valhall 架构的 GPU，支持 OpenCL 2.1，具备高并行执行能力，适用于嵌入式平台（如 RK3588）上的图像处理任务。</p>
+    <ul>
+      <li>支持 OpenCL 2.1 标准</li>
+      <li>多 Shader Core 架构（MP4、MP6）</li>
+      <li>统一内存架构，CPU/GPU 共享 DRAM</li>
+      <li>支持本地内存（<code>__local</code>）和图像对象操作</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>二、图像处理中适合使用 <code>__local</code> 内存的算法</h2>
+    <p>在 OpenCL 中，<code>__local</code> 内存用于工作组内共享小块数据，具有低延迟的特点，适合以下算法：</p>
+    <ul>
+      <li><strong>图像滤波</strong>（如均值滤波、高斯滤波）</li>
+      <li><strong>Sobel 边缘检测</strong>（对局部邻域进行卷积）</li>
+      <li><strong>中值滤波</strong>（排序需要反复访问邻域像素）</li>
+      <li><strong>图像金字塔构建</strong>（上下采样阶段）</li>
+      <li><strong>模板匹配</strong>（需要滑窗计算）</li>
+      <li><strong>图像旋转/仿射变换</strong>（共享变换数据）</li>
+    </ul>
+    <p>这些算法通常使用滑动窗口处理局部邻域数据，利用 <code>__local</code> 内存可减少全局内存访问。</p>
+  </div>
+
+  <div class="section">
+    <h2>三、<code>BLOCK_SIZE</code> 含义</h2>
+    <p><code>BLOCK_SIZE</code> 通常指的是每个 <strong>工作组（Work Group）</strong> 的局部大小，即 <code>local_work_size</code>。例如：</p>
+    <pre><code>local_work_size = (BLOCK_SIZE, BLOCK_SIZE)</code></pre>
+    <p>它定义了工作组中工作项的二维布局，控制共享内存分配及并行策略。</p>
+  </div>
+
+  <div class="section">
+    <h2>四、<code>barrier()</code> 的作用与限制</h2>
+    <p>在 OpenCL 中，<code>barrier(CLK_LOCAL_MEM_FENCE)</code> 用于<strong>同步同一个工作组内的所有工作项</strong>，确保局部内存写入完成后再进行后续操作。</p>
+    <ul>
+      <li>仅对同一工作组有效，不能跨组同步</li>
+      <li>用于协调对 <code>__local</code> 内存的并发访问</li>
+      <li>错误使用（如未同步即读取）可能导致数据竞争和错误</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>五、同步开销分析</h2>
+    <p>使用 <code>barrier()</code> 虽然能避免数据冲突，但也会引入性能开销：</p>
+    <ul>
+      <li>GPU 执行流必须等待所有工作项到达同步点</li>
+      <li>工作项间负载不均会导致线程阻塞时间差异</li>
+      <li>频繁使用 barrier 会影响吞吐率，应尽量减少同步次数</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>六、Tile 边缘问题</h2>
+    <p>在图像处理中，每个工作组通常处理一个 tile 区域并将其载入 <code>__local</code> 内存。但靠近图像边缘的 tile 可能访问不到完整邻域数据：</p>
+    <ul>
+      <li>需要通过 <code>if</code> 条件判断边界情况</li>
+      <li>或在 global kernel 中向 tile 边缘额外扩展（padding）</li>
+    </ul>
+    <p>示例：Sobel 滤波时需要 3x3 邻域，如果当前像素是图像边缘，就必须跳过或使用镜像边界策略。</p>
+  </div>
+
+  <div class="section">
+    <h2>七、适合 OpenCL 加速的图像处理场景</h2>
+    <ul>
+      <li>摄像头预处理（去噪、锐化、增强）</li>
+      <li>图像金字塔构建用于多尺度检测</li>
+      <li>双目图像预处理（Sobel+SGBM）</li>
+      <li>畸变矫正或图像矫正</li>
+      <li>AI 前处理/后处理中的图像 resize 和归一化</li>
+      <li>GPU 上进行大规模视频帧批量滤波</li>
+    </ul>
+  </div>
+
+</body>
+</html>
