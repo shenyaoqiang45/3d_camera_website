@@ -114,6 +114,17 @@
             position: relative;
         }
 
+        .dropdown::before {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            height: 10px;
+            background: transparent;
+            z-index: 1000;
+        }
+
         .dropdown-content {
             display: none;
             position: absolute;
@@ -126,8 +137,8 @@
             border-radius: 12px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             z-index: 1001;
-            padding: 0.5rem 0;
-            margin-top: 0.5rem;
+            padding: 1rem 0;
+            margin-top: 0;
         }
 
         .dropdown:hover .dropdown-content {
@@ -1089,6 +1100,7 @@
                         📚 基础理论 <span class="dropdown-arrow">▼</span>
                     </a>
                     <div class="dropdown-content">
+                        <a href="basic/vision_tech_intro.html">🧠 视觉感知思维范式</a>
                         <a href="basic/stereo_vision_coordinates.html">📐 立体视觉坐标系</a>
                         <a href="basic/Epipolar_Geometry.html">🔍 对极几何</a>
                     </div>
@@ -1162,6 +1174,7 @@
                     <li>
                         <a href="#basic-theory">📚 基础理论</a>
                         <div class="mobile-submenu">
+                            <a href="basic/vision_tech_intro.html">🧠 视觉感知思维范式</a>
                             <a href="basic/stereo_vision_coordinates.html">📐 立体视觉坐标系</a>
                             <a href="basic/Epipolar_Geometry.html">🔍 对极几何</a>
                         </div>
@@ -1252,7 +1265,17 @@
             <h2 class="section-title">基础原理</h2>
             <div class="cards-grid">
                 <div class="card fade-in">
-                    <div class="card-icon">👁️</div>
+                    <div class="card-icon">�</div>
+                    <h3>视觉感知思维范式</h3>
+                    <p>从应用到芯片的完整技术栈，涵盖计算机视觉、图像处理、硬件加速等多个层面，构建现代视觉感知系统的理论基础和实践方法。</p>
+                    <div style="margin-top: 1rem; text-align: center;">
+                        <a href="basic/vision_tech_intro.html" style="color: #667eea; text-decoration: none; font-size: 0.9rem; font-weight: bold;">
+                            🧠 探索视觉感知思维范式 →
+                        </a>
+                    </div>
+                </div>
+                <div class="card fade-in">
+                    <div class="card-icon">�👁️</div>
                     <h3>双目视觉</h3>
                     <p>人类的双眼能够感知深度信息，这是因为两只眼睛从不同角度观察同一物体，大脑通过分析视差来计算距离。3D相机正是模仿了这一自然机制。</p>
                 </div>                <div class="card fade-in">
