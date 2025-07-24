@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>Jetson Xavier NX CUDA 编程开发科普介绍</title>
+  <style>
+    body { 
+      font-family: "Microsoft YaHei", sans-serif; 
+      line-height: 1.6; 
+      background-color: #ffffff; 
+      padding: 2em; 
+      color: #2c3e50; 
+      max-width: 1200px; 
+      margin: 0 auto; 
+    }
+    h1, h2, h3 { 
+      color: #34495e; 
+      margin-top: 2em; 
+      margin-bottom: 1em; 
+    }
+    h1 { 
+      color: #2980b9; 
+      border-bottom: 3px solid #3498db; 
+      padding-bottom: 0.5em; 
+    }
+    h2 { 
+      color: #27ae60; 
+      border-left: 4px solid #2ecc71; 
+      padding-left: 1em; 
+    }
+    code { 
+      background: #f8f9fa; 
+      color: #e74c3c; 
+      padding: 0.2em 0.4em; 
+      border-radius: 4px; 
+      border: 1px solid #dee2e6; 
+      font-family: "Consolas", "Monaco", monospace; 
+    }
+    pre { 
+      overflow-x: auto; 
+      background: #2c3e50; 
+      color: #ecf0f1; 
+      padding: 1.5em; 
+      border-radius: 8px; 
+      border: 1px solid #34495e; 
+      margin: 1em 0; 
+    }
+    pre code { 
+      background: transparent; 
+      color: #ecf0f1; 
+      border: none; 
+      padding: 0; 
+    }
+    table { 
+      border-collapse: collapse; 
+      width: 100%; 
+      margin-bottom: 2em; 
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
+    }
+    th, td { 
+      border: 1px solid #bdc3c7; 
+      padding: 1em; 
+      text-align: left; 
+    }
+    th { 
+      background: #3498db; 
+      color: #ffffff; 
+      font-weight: bold; 
+    }
+    tr:nth-child(even) { 
+      background-color: #f8f9fa; 
+    }
+    tr:hover { 
+      background-color: #e8f4fd; 
+    }
+    ul, ol { 
+      margin: 1em 0; 
+      padding-left: 2em; 
+    }
+    li { 
+      margin: 0.5em 0; 
+      color: #2c3e50; 
+    }
+    p { 
+      margin: 1em 0; 
+      color: #2c3e50; 
+    }
+    a { 
+      color: #3498db; 
+      text-decoration: none; 
+    }
+    a:hover { 
+      color: #2980b9; 
+      text-decoration: underline; 
+    }
+    strong { 
+      color: #34495e; 
+      font-weight: bold; 
+    }
+  </style>
+</head>
+<body>
+  <h1>Jetson Xavier NX CUDA 编程开发科普介绍</h1>
+
+  <h2>🚀 一、平台简介</h2>
+  <p>Jetson Xavier NX 是 NVIDIA 推出的嵌入式 AI 计算平台，配备 Volta 架构 GPU（384 个 CUDA Core + 48 个 Tensor Core），支持 CUDA、cuDNN、TensorRT 等主流 AI 加速库，适用于边缘计算、无人机、机器人等场景。</p>
+
+  <h2>🧰 二、开发环境准备</h2>
+  <ol>
+    <li><strong>开发主机：</strong>建议使用 Ubuntu 18.04 或 20.04</li>
+    <li><strong>JetPack SDK：</strong>包含 CUDA Toolkit、cuDNN、TensorRT、OpenCV 等，可通过 SDK Manager 安装</li>
+    <li><strong>检查 CUDA 是否安装成功：</strong>
+      <pre><code>nvcc -V</code></pre>
+    </li>
+  </ol>
+
+  <h2>👨‍💻 三、CUDA 编程入门</h2>
+  <p>以下是一个简单的 CUDA Hello World 示例：</p>
+  <pre><code>#include &lt;stdio.h&gt;
+
+__global__ void hello_kernel() {
+    printf("Hello from CUDA thread %d!\n", threadIdx.x);
+}
+
+int main() {
+    hello_kernel&lt;&lt;&lt;1, 8&gt;&gt;&gt;();
+    cudaDeviceSynchronize();
+    return 0;
+}</code></pre>
+  <p><strong>编译：</strong> <code>nvcc hello_cuda.cu -o hello_cuda</code><br>
+  <strong>运行：</strong> <code>./hello_cuda</code></p>
+
+  <h2>⚙️ 四、Jetson CUDA 优化建议</h2>
+  <ul>
+    <li>合理设置线程块大小（如 128、256、512）</li>
+    <li>使用共享内存（<code>__shared__</code>）提高访问效率</li>
+    <li>优化内存访问模式，确保 coalesced 访问</li>
+    <li>使用 Nsight 系列工具进行性能分析</li>
+  </ul>
+
+  <h2>📦 五、Jetson 支持的 CUDA 加速库</h2>
+  <table>
+    <tr><th>库名</th><th>功能</th></tr>
+    <tr><td>cuBLAS</td><td>GPU 加速的 BLAS 数学库</td></tr>
+    <tr><td>cuDNN</td><td>深度学习加速</td></tr>
+    <tr><td>TensorRT</td><td>神经网络模型推理加速</td></tr>
+    <tr><td>OpenCV-GPU</td><td>OpenCV with CUDA 支持</td></tr>
+    <tr><td>NPP</td><td>图像处理 CUDA 库</td></tr>
+  </table>
+
+  <h2>🔍 六、调试与性能分析工具</h2>
+  <table>
+    <tr><th>工具名称</th><th>功能</th></tr>
+    <tr><td>Nsight Systems</td><td>系统级分析（线程、内存、设备）</td></tr>
+    <tr><td>Nsight Compute</td><td>kernel 性能剖析</td></tr>
+    <tr><td>tegrastats</td><td>Jetson 实时资源监控</td></tr>
+  </table>
+  <pre><code>sudo tegrastats</code></pre>
+
+  <h2>🧪 七、实战应用示例</h2>
+  <ul>
+    <li>图像处理：使用 CUDA 实现高斯模糊、边缘检测</li>
+    <li>模型推理：TensorRT 部署 YOLO、ResNet 等网络</li>
+    <li>并行工作流：图像采集 + 实时推理多线程调度</li>
+  </ul>
+
+  <h2>📚 八、推荐学习资源</h2>
+  <ul>
+    <li><a href="https://docs.nvidia.com/jetson/" target="_blank">NVIDIA Jetson 官方文档</a></li>
+    <li>Jetson 示例代码路径：<code>/usr/local/cuda/samples/</code></li>
+    <li>GitHub 项目：jetson-inference, jetson-utils</li>
+    <li><a href="https://courses.nvidia.com/" target="_blank">NVIDIA DLI 在线学习平台</a></li>
+  </ul>
+
+  <h2>✅ 九、Jetson 特别注意事项</h2>
+  <ul>
+    <li>合理配置功耗模式：
+      <pre><code>sudo nvpmodel -m 0  # Max-N 性能模式</code></pre>
+    </li>
+    <li>开启全速运行：
+      <pre><code>sudo jetson_clocks</code></pre>
+    </li>
+    <li>注意内存与热管理，尽量避免内存溢出</li>
+  </ul>
+
+  <p>如需进一步定制样例或项目框架，可联系我们进行个性化支持。</p>
+</body>
+</html>

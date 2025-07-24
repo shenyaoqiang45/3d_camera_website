@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>OpenCL 重要语法科普</title>
+  <style>
+    body { font-family: "Segoe UI", sans-serif; background-color: #f9f9f9; color: #333; line-height: 1.6; padding: 2em; }
+    h1, h2, h3 { color: #005a9e; }
+    code, pre { background: #eee; padding: 4px 8px; border-radius: 4px; font-family: monospace; }
+    pre { overflow-x: auto; }
+    table { border-collapse: collapse; width: 100%; margin-bottom: 1em; }
+    th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; }
+    th { background: #f0f0f0; }
+  </style>
+</head>
+<body>
+
+<h1>OpenCL 重要语法科普</h1>
+
+<p>OpenCL（Open Computing Language）是一种用于 CPU、GPU、DSP、FPGA 等异构平台并行编程的框架。本文将介绍 OpenCL 的基本语法和程序结构，帮助你快速入门。</p>
+
+<h2>1. OpenCL 程序结构</h2>
+<ul>
+  <li><strong>Host 代码</strong>：运行在 CPU 上，负责编译 Kernel、创建上下文、管理内存。</li>
+  <li><strong>Kernel 代码</strong>：运行在 GPU/加速器上，定义并行执行的函数。</li>
+</ul>
+
+<h2>2. Host 端核心对象</h2>
+<pre><code>cl_platform_id platform;
+cl_device_id device;
+cl_context context;
+cl_command_queue queue;
+cl_program program;
+cl_kernel kernel;
+</code></pre>
+
+<h3>Host 初始化步骤（简化）</h3>
+<pre><code>clGetPlatformIDs(...);
+clGetDeviceIDs(...);
+clCreateContext(...);
+clCreateCommandQueue(...);
+clCreateProgramWithSource(...);
+clBuildProgram(...);
+clCreateKernel(...);
+</code></pre>
+
+<h2>3. Kernel 端示例代码</h2>
+<pre><code>__kernel void add(__global const float* a,
+                  __global const float* b,
+                  __global float* result)
+{
+    int id = get_global_id(0);
+    result[id] = a[id] + b[id];
+}
+</code></pre>
+
+<h3>常用地址空间修饰符</h3>
+<table>
+  <tr><th>修饰符</th><th>说明</th></tr>
+  <tr><td>__global</td><td>全局内存</td></tr>
+  <tr><td>__local</td><td>工作组共享内存</td></tr>
+  <tr><td>__private</td><td>每个线程私有内存</td></tr>
+  <tr><td>__constant</td><td>只读常量内存</td></tr>
+</table>
+
+<h2>4. 工作项与工作组相关函数</h2>
+<table>
+  <tr><th>函数</th><th>功能</th></tr>
+  <tr><td>get_global_id(i)</td><td>获取全局 ID（线程唯一标识）</td></tr>
+  <tr><td>get_local_id(i)</td><td>获取局部 ID（组内线程索引）</td></tr>
+  <tr><td>get_group_id(i)</td><td>获取工作组 ID</td></tr>
+  <tr><td>get_global_size(i)</td><td>全局线程数</td></tr>
+  <tr><td>get_local_size(i)</td><td>每个工作组线程数</td></tr>
+</table>
+
+<h2>5. 同步与屏障</h2>
+<p>用于协调工作组内的线程执行：</p>
+<pre><code>barrier(CLK_LOCAL_MEM_FENCE);
+</code></pre>
+
+<h2>6. 数据类型支持</h2>
+<ul>
+  <li>标量：<code>int</code>, <code>float</code>, <code>double</code></li>
+  <li>向量：<code>float4</code>, <code>uchar16</code>, <code>int2</code> 等</li>
+  <li>内建函数：<code>sqrt()</code>, <code>dot()</code>, <code>cross()</code>, <code>fmax()</code></li>
+</ul>
+
+<h2>7. 内存分配与数据传输</h2>
+<pre><code>cl_mem bufA = clCreateBuffer(context, CL_MEM_READ_ONLY, size, NULL, NULL);
+clEnqueueWriteBuffer(queue, bufA, CL_TRUE, 0, size, host_data, 0, NULL, NULL);
+clSetKernelArg(kernel, 0, sizeof(cl_mem), &bufA);
+</code></pre>
+
+<h2>8. 启动 Kernel 执行</h2>
+<pre><code>size_t global_work_size = 1024;
+clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &global_work_size, NULL, 0, NULL, NULL);
+</code></pre>
+
+<h2>9. 错误检查（推荐）</h2>
+<pre><code>if (err != CL_SUCCESS) {
+    printf("OpenCL Error: %d\n", err);
+}
+</code></pre>
+
+<h2>10. 清理资源</h2>
+<pre><code>clReleaseMemObject(bufA);
+clReleaseKernel(kernel);
+clReleaseProgram(program);
+clReleaseCommandQueue(queue);
+clReleaseContext(context);
+</code></pre>
+
+<h2>11. 简化架构图（文字版）</h2>
+<pre>
+[Host 端 (CPU)]
+   └─ 创建 Context / Queue / Program / Kernel
+   └─ 分配内存、传数据
+   └─ 启动 Kernel
+
+[Device 端 (GPU)]
+   └─ 执行 __kernel 函数
+   └─ 并行调用 get_global_id() 等函数
+</pre>
+
+<hr>
+<p><strong>提示：</strong>学习 OpenCL 的最佳方式是配合实际平台（如 Intel、AMD、NVIDIA、ARM）的 SDK 示例进行调试和实验。</p>
+
+</body>
+</html>

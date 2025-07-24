@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SoM vs MCU：系统级模块与微控制器完全对比</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            padding: 40px 0;
+        }
+
+        .header h1 {
+            font-size: 3.2em;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            animation: fadeInDown 1s ease-out;
+        }
+
+        .header p {
+            font-size: 1.3em;
+            opacity: 0.9;
+            animation: fadeInUp 1s ease-out 0.3s both;
+        }
+
+        .comparison-overview {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .overview-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.4s ease;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .overview-card:hover {
+            transform: translateY(-15px);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.15);
+        }
+
+        .card-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .card-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5em;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .card-title {
+            font-size: 2.2em;
+            color: #4a5568;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .card-subtitle {
+            font-size: 1.1em;
+            color: #718096;
+            font-style: italic;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin: 40px 0;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+        }
+
+        .feature-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .feature-icon {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.3em;
+        }
+
+        .feature-title {
+            font-size: 1.4em;
+            color: #4a5568;
+            font-weight: 600;
+        }
+
+        .comparison-table {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 25px;
+            padding: 40px;
+            margin: 40px 0;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+
+        .comparison-table h2 {
+            text-align: center;
+            color: #4a5568;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 18px;
+            text-align: left;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            font-weight: 600;
+            font-size: 1.1em;
+            text-align: center;
+        }
+
+        th:first-child {
+            border-radius: 15px 0 0 0;
+        }
+
+        th:last-child {
+            border-radius: 0 15px 0 0;
+        }
+
+        td {
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        tr:hover td {
+            background: linear-gradient(90deg, #f7fafc, #edf2f7);
+        }
+
+        .som-cell {
+            background: linear-gradient(90deg, #e6fffa, #b2f5ea);
+            font-weight: 500;
+        }
+
+        .mcu-cell {
+            background: linear-gradient(90deg, #fef5e7, #fed7aa);
+            font-weight: 500;
+        }
+
+        .application-section {
+            margin: 50px 0;
+        }
+
+        .application-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .application-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            border-left: 6px solid;
+            transition: all 0.3s ease;
+        }
+
+        .som-app {
+            border-left-color: #38b2ac;
+        }
+
+        .mcu-app {
+            border-left-color: #ed8936;
+        }
+
+        .application-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+        }
+
+        .app-title {
+            font-size: 1.5em;
+            color: #4a5568;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .app-examples {
+            list-style: none;
+            margin-top: 15px;
+        }
+
+        .app-examples li {
+            margin: 8px 0;
+            padding: 8px 15px;
+            background: #f7fafc;
+            border-radius: 8px;
+            border-left: 3px solid #667eea;
+            font-size: 0.95em;
+        }
+
+        .selection-guide {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            border-radius: 25px;
+            padding: 40px;
+            margin: 50px 0;
+            text-align: center;
+        }
+
+        .selection-guide h2 {
+            color: #744210;
+            margin-bottom: 25px;
+            font-size: 2.2em;
+        }
+
+        .selection-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .selection-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+
+        .selection-title {
+            font-size: 1.6em;
+            color: #4a5568;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .selection-criteria {
+            list-style: none;
+        }
+
+        .selection-criteria li {
+            margin: 12px 0;
+            padding: 12px 20px;
+            background: #f0fff4;
+            border-radius: 10px;
+            border-left: 4px solid #38a169;
+            font-size: 0.95em;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            padding: 40px 0;
+            margin-top: 60px;
+            border-top: 2px solid rgba(255,255,255,0.2);
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.2em;
+            }
+            
+            .comparison-overview {
+                grid-template-columns: 1fr;
+            }
+            
+            .selection-options {
+                grid-template-columns: 1fr;
+            }
+            
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 SoM vs MCU</h1>
+            <p>系统级模块与微控制器的全面对比分析</p>
+        </div>
+
+        <div class="comparison-overview">
+            <div class="overview-card">
+                <div class="card-header">
+                    <div class="card-icon">🧩</div>
+                    <div class="card-title">SoM</div>
+                    <div class="card-subtitle">System-on-Module<br>系统级模块</div>
+                </div>
+                <p style="font-size: 1.1em; color: #4a5568; text-align: center;">
+                    将完整的计算机系统集成到一个紧凑模块中，包含处理器、内存、存储和各种接口，提供即插即用的解决方案。
+                </p>
+            </div>
+
+            <div class="overview-card">
+                <div class="card-header">
+                    <div class="card-icon">⚡</div>
+                    <div class="card-title">MCU</div>
+                    <div class="card-subtitle">Microcontroller Unit<br>微控制器</div>
+                </div>
+                <p style="font-size: 1.1em; color: #4a5568; text-align: center;">
+                    集成了处理器核心、内存和外设接口的单芯片计算机，专为嵌入式控制应用而设计，功耗低、成本低。
+                </p>
+            </div>
+        </div>
+
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-header">
+                    <div class="feature-icon">🎯</div>
+                    <div class="feature-title">设计理念</div>
+                </div>
+                <p><strong>SoM：</strong>模块化设计，将复杂的硬件集成到标准化模块中，简化产品开发流程</p>
+                <p style="margin-top: 10px;"><strong>MCU：</strong>单芯片集成，将所有必要功能集成到一颗芯片中，最大化成本效益</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-header">
+                    <div class="feature-icon">💻</div>
+                    <div class="feature-title">计算能力</div>
+                </div>
+                <p><strong>SoM：</strong>通常配备高性能处理器（ARM Cortex-A系列、x86等），支持复杂操作系统</p>
+                <p style="margin-top: 10px;"><strong>MCU：</strong>采用专用微控制器核心（ARM Cortex-M系列等），专注实时控制任务</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-header">
+                    <div class="feature-icon">🔧</div>
+                    <div class="feature-title">开发复杂度</div>
+                </div>
+                <p><strong>SoM：</strong>硬件设计简化，但软件开发相对复杂，需要操作系统和驱动程序知识</p>
+                <p style="margin-top: 10px;"><strong>MCU：</strong>裸机编程或轻量级RTOS，开发流程相对简单直接</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-header">
+                    <div class="feature-icon">⚡</div>
+                    <div class="feature-title">功耗特性</div>
+                </div>
+                <p><strong>SoM：</strong>功耗相对较高（几瓦到几十瓦），适合有稳定电源供应的应用</p>
+                <p style="margin-top: 10px;"><strong>MCU：</strong>超低功耗设计（微瓦到毫瓦级），支持电池供电和深度睡眠</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-header">
+                    <div class="feature-icon">💰</div>
+                    <div class="feature-title">成本结构</div>
+                </div>
+                <p><strong>SoM：</strong>单个模块成本较高，但可显著降低开发成本和上市时间</p>
+                <p style="margin-top: 10px;"><strong>MCU：</strong>芯片成本极低，但需要投入更多的硬件设计和调试时间</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-header">
+                    <div class="feature-icon">🔄</div>
+                    <div class="feature-title">升级维护</div>
+                </div>
+                <p><strong>SoM：</strong>模块化设计便于升级替换，供应商提供长期技术支持</p>
+                <p style="margin-top: 10px;"><strong>MCU：</strong>固化在PCB上，升级需要重新设计电路板，但产品生命周期稳定</p>
+            </div>
+        </div>
+
+        <div class="comparison-table">
+            <h2>📊 详细技术对比</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>对比维度</th>
+                        <th>SoM (系统级模块)</th>
+                        <th>MCU (微控制器)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>处理器类型</strong></td>
+                        <td class="som-cell">ARM Cortex-A, x86, GPU等高性能处理器</td>
+                        <td class="mcu-cell">ARM Cortex-M, AVR, PIC等微控制器核心</td>
+                    </tr>
+                    <tr>
+                        <td><strong>内存容量</strong></td>
+                        <td class="som-cell">512MB - 32GB RAM, eMMC/SSD存储</td>
+                        <td class="mcu-cell">4KB - 2MB RAM, Flash存储</td>
+                    </tr>
+                    <tr>
+                        <td><strong>操作系统</strong></td>
+                        <td class="som-cell">Linux, Android, Windows IoT等</td>
+                        <td class="mcu-cell">裸机程序, FreeRTOS, μC/OS等</td>
+                    </tr>
+                    <tr>
+                        <td><strong>开发语言</strong></td>
+                        <td class="som-cell">C/C++, Python, Java, JavaScript等</td>
+                        <td class="mcu-cell">主要是C/C++, 汇编语言</td>
+                    </tr>
+                    <tr>
+                        <td><strong>功耗范围</strong></td>
+                        <td class="som-cell">1W - 30W (高性能模式)</td>
+                        <td class="mcu-cell">1μW - 100mW (深度睡眠 - 运行)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>成本范围</strong></td>
+                        <td class="som-cell">$20 - $500+ (含开发成本节省)</td>
+                        <td class="mcu-cell">$0.5 - $20 (芯片单价)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>启动时间</strong></td>
+                        <td class="som-cell">几秒到几十秒 (OS启动)</td>
+                        <td class="mcu-cell">毫秒级 (即时响应)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>实时性能</strong></td>
+                        <td class="som-cell">软实时 (操作系统调度延迟)</td>
+                        <td class="mcu-cell">硬实时 (确定性响应)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="application-section">
+            <h2 style="text-align: center; color: white; font-size: 2.5em; margin-bottom: 30px;">🎯 典型应用场景</h2>
+            
+            <div class="application-grid">
+                <div class="application-card som-app">
+                    <div class="app-title">🧩 SoM适用场景</div>
+                    <p>需要高计算性能、复杂软件栈和快速产品化的应用</p>
+                    <ul class="app-examples">
+                        <li>🤖 智能机器人控制系统</li>
+                        <li>📷 AI视觉识别设备</li>
+                        <li>🏭 工业网关和边缘计算</li>
+                        <li>📺 数字标牌和信息终端</li>
+                        <li>🏥 医疗设备主控制器</li>
+                        <li>🚗 车载信息娱乐系统</li>
+                    </ul>
+                </div>
+
+                <div class="application-card mcu-app">
+                    <div class="app-title">⚡ MCU适用场景</div>
+                    <p>需要低功耗、实时控制和成本敏感的嵌入式应用</p>
+                    <ul class="app-examples">
+                        <li>🏠 智能家居控制器</li>
+                        <li>📟 可穿戴设备</li>
+                        <li>🔋 电池管理系统</li>
+                        <li>🌡️ 传感器数据采集</li>
+                        <li>🚗 汽车ECU控制单元</li>
+                        <li>⚙️ 电机驱动控制器</li>
+                    </ul>
+                </div>
+
+                <div class="application-card som-app">
+                    <div class="app-title">🌐 SoM优势领域</div>
+                    <p>复杂算法处理和多媒体应用</p>
+                    <ul class="app-examples">
+                        <li>🧠 深度学习推理</li>
+                        <li>🎮 多媒体处理</li>
+                        <li>🌐 网络通信协议栈</li>
+                        <li>📊 大数据本地处理</li>
+                        <li>🔐 安全加密计算</li>
+                        <li>📱 人机交互界面</li>
+                    </ul>
+                </div>
+
+                <div class="application-card mcu-app">
+                    <div class="app-title">⏱️ MCU优势领域</div>
+                    <p>实时控制和资源受限环境</p>
+                    <ul class="app-examples">
+                        <li>⏰ 精确定时控制</li>
+                        <li>🔄 PWM信号生成</li>
+                        <li>📡 无线通信协议</li>
+                        <li>🔌 电源管理</li>
+                        <li>📈 模拟信号处理</li>
+                        <li>🛡️ 安全监控系统</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="selection-guide">
+            <h2>🎯 选择指导原则</h2>
+            <p style="font-size: 1.2em; color: #744210; margin-bottom: 30px;">
+                如何在SoM和MCU之间做出最佳选择？
+            </p>
+            
+            <div class="selection-options">
+                <div class="selection-card">
+                    <div class="selection-title">选择SoM的情况</div>
+                    <ul class="selection-criteria">
+                        <li>需要运行复杂操作系统</li>
+                        <li>要求高计算性能和多媒体处理</li>
+                        <li>快速产品上市时间比成本更重要</li>
+                        <li>需要丰富的软件生态支持</li>
+                        <li>有稳定的电源供应</li>
+                        <li>团队软件开发能力强于硬件</li>
+                        <li>需要网络连接和云服务集成</li>
+                    </ul>
+                </div>
+
+                <div class="selection-card">
+                    <div class="selection-title">选择MCU的情况</div>
+                    <ul class="selection-criteria">
+                        <li>成本控制是主要考虑因素</li>
+                        <li>需要超低功耗或电池供电</li>
+                        <li>要求确定性实时响应</li>
+                        <li>简单的控制逻辑和数据处理</li>
+                        <li>大批量生产需求</li>
+                        <li>有经验的硬件开发团队</li>
+                        <li>产品生命周期较长且稳定</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p style="font-size: 1.3em; margin-bottom: 15px;">
+                🚀 理解SoM与MCU的差异，选择最适合的解决方案！
+            </p>
+            <p style="opacity: 0.8;">
+                现代嵌入式系统设计的关键决策指南
+            </p>
+        </div>
+    </div>
+</body>
+</html>
