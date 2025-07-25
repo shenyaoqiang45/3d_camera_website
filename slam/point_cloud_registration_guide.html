@@ -279,6 +279,16 @@
             margin-bottom: 10px;
         }
 
+        /* GitHub链接样式 */
+        .algorithm-card a {
+            transition: all 0.3s ease;
+        }
+
+        .algorithm-card a:hover {
+            color: #764ba2 !important;
+            text-decoration: underline !important;
+        }
+
         @keyframes slideInDown {
             from {
                 opacity: 0;
@@ -367,6 +377,7 @@
                         <h4><span class="algorithm-icon">GICP</span>Generalized ICP</h4>
                         <p><strong>核心思想：</strong> 使用概率模型同时考虑源点云和目标点云的局部结构信息，通过协方差矩阵描述点云的不确定性。</p>
                         <p><strong>数学表达：</strong> 最小化 Σdi^T(Ci^src + RCi^tgtR^T)^(-1)di</p>
+                        <p><strong>🔗 开源实现：</strong> <a href="https://github.com/koide3/fast_gicp" target="_blank" style="color: #667eea; text-decoration: none; font-weight: 600;">fast_gicp</a> - 高性能GPU加速版本</p>
                     </div>
 
                     <div class="algorithm-card">
