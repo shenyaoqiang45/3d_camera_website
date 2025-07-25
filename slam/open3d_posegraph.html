@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>Open3D 全局优化：关键帧选取与回环边构建</title>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.7; padding: 20px; background: #f9f9f9; color: #333; }
+    h1, h2, h3 { color: #005bbb; }
+    code { background: #eee; padding: 2px 4px; border-radius: 4px; font-family: Consolas, monospace; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background-color: #f0f0f0; }
+    pre { background: #eee; padding: 10px; overflow-x: auto; border-radius: 6px; }
+  </style>
+</head>
+<body>
+
+<h1>Open3D 全局优化：关键帧选取与回环边构建</h1>
+
+
+<p>open3d::pipelines::registration::GlobalOptimization 是 Open3D 中用于多视角点云配准（multi-view point cloud registration）的后端全局优化模块，主要用于消除配准累积误差（accumulated error），优化多个帧之间的姿态变换。</p>
+<p>其核心在于构建合适的关键帧图（PoseGraph），PoseGraph 就是一个图结构，其中每个“节点”代表一帧点云的 姿态（位姿），每条“边”代表两个帧之间的 相对变换（约束）。其中“关键帧选取”与“回环边构建”至关重要。</p>
+
+<h2>一、关键帧选取策略</h2>
+
+<p><strong>目的：</strong>减少冗余帧，降低累计误差，提高优化效率。</p>
+
+<h3>常见策略：</h3>
+<table>
+  <thead>
+    <tr>
+      <th>策略类型</th>
+      <th>描述</th>
+      <th>常用参数</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>时间间隔法</td>
+      <td>每隔固定帧数选取关键帧</td>
+      <td>如：每 10 帧选 1 帧</td>
+    </tr>
+    <tr>
+      <td>距离法</td>
+      <td>位姿变换超过阈值时选择</td>
+      <td>平移 > 0.2m，旋转 > 10°</td>
+    </tr>
+    <tr>
+      <td>信息熵法</td>
+      <td>视角/特征显著变化时选取</td>
+      <td>视角差、特征熵</td>
+    </tr>
+    <tr>
+      <td>匹配质量法</td>
+      <td>与上一帧匹配效果显著变差</td>
+      <td>RMSE > 阈值</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>推荐组合（工程实践）：</h3>
+<pre><code>1. 第 0 帧默认作为关键帧；
+2. 当前帧与上一关键帧：
+   - 平移距离 &gt; 0.15m 或
+   - 旋转角度 &gt; 10°；
+3. 满足条件则添加为关键帧。
+</code></pre>
+
+<h2>二、回环边（Loop Closure Edge）构建</h2>
+
+<p><strong>目的：</strong>通过检测回环关系来抑制漂移，提升全局一致性。</p>
+
+<h3>构建方法：</h3>
+<ul>
+  <li><strong>时间窗口法：</strong> 当前帧与历史帧（时间相距较远）尝试配准</li>
+  <li><strong>基于特征匹配：</strong> 使用 FPFH、SIFT、ScanContext 等</li>
+  <li><strong>视觉 BoW 检测：</strong> 结合 DBoW2 / NetVLAD 检测相似帧</li>
+</ul>
+
+<h3>典型代码结构（伪 C++）</h3>
+<pre><code>if (abs(i - j) > min_keyframe_interval) {
+    auto result = RANSACMatch(source, target, source_fpfh, target_fpfh);
+    auto refined = ICPMatch(source, target, result.transformation);
+
+    if (refined.fitness &gt; 0.3 &amp;&amp; refined.rmse &lt; 0.02) {
+        PoseGraphEdge edge(i, j, refined.transformation, info_matrix, true);
+        pose_graph.edges.push_back(edge);
+    }
+}
+</code></pre>
+
+<h3>工程注意事项：</h3>
+<ul>
+  <li>控制回环边数量，避免误匹配</li>
+  <li>将回环边设置 <code>uncertain=true</code>，降低错误边对全局的影响</li>
+  <li>多特征融合匹配更鲁棒</li>
+</ul>
+
+<h2>三、位姿图结构示意</h2>
+<pre><code>    (Keyframe 0)
+         |
+         |
+    (Keyframe 1)
+         |
+         |
+    (Keyframe 2)
+         |
+        / \
+(loop edge) (loop edge)
+      |        |
+(Keyframe N-2) (Keyframe N)
+</code></pre>
+
+<h2>四、总结</h2>
+<ul>
+  <li>关键帧减少冗余，保持配准稀疏性</li>
+  <li>回环边提升闭环一致性，减少累计误差</li>
+  <li>Open3D 的 PoseGraph + GlobalOptimization 机制非常适合多帧点云或 RGBD 场景的后端优化</li>
+</ul>
+
+</body>
+</html>
