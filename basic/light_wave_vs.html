@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>850nm 与 440nm 光波段对比分析</title>
+  <style>
+    body { font-family: "Microsoft YaHei", sans-serif; line-height: 1.8; padding: 20px; background: #f9f9f9; color: #333; }
+    h1, h2 { color: #2a5d9f; }
+    table { width: 100%; border-collapse: collapse; margin: 20px 0; background: #fff; }
+    th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
+    th { background: #eaf2fb; }
+    tr:nth-child(even) { background-color: #f2f2f2; }
+    .note { font-style: italic; color: #666; }
+  </style>
+</head>
+<body>
+  <h1>850nm 与 440nm 光波段对比分析</h1>
+
+  <h2>一、物理光学特性对比</h2>
+  <table>
+    <tr>
+      <th>特性</th>
+      <th>850nm（近红外）</th>
+      <th>440nm（蓝光）</th>
+    </tr>
+    <tr>
+      <td>波长范围</td>
+      <td>不可见近红外</td>
+      <td>可见光蓝色波段</td>
+    </tr>
+    <tr>
+      <td>光子能量</td>
+      <td>约 1.46 eV</td>
+      <td>约 2.82 eV</td>
+    </tr>
+    <tr>
+      <td>材料穿透能力</td>
+      <td>强，可穿透雾气、薄物质</td>
+      <td>弱，主要在表面反射</td>
+    </tr>
+    <tr>
+      <td>散射特性</td>
+      <td>低，Mie散射为主</td>
+      <td>高，Rayleigh散射明显</td>
+    </tr>
+    <tr>
+      <td>折射率敏感性</td>
+      <td>低</td>
+      <td>高，对材质差异敏感</td>
+    </tr>
+  </table>
+
+  <h2>二、结构光成像性能对比</h2>
+  <table>
+    <tr>
+      <th>性能项</th>
+      <th>850nm</th>
+      <th>440nm</th>
+    </tr>
+    <tr>
+      <td>相机响应性</td>
+      <td>CMOS响应强</td>
+      <td>CMOS对蓝光响应良好</td>
+    </tr>
+    <tr>
+      <td>条纹清晰度</td>
+      <td>一般，穿透较强</td>
+      <td>清晰锐利，适合高细节</td>
+    </tr>
+    <tr>
+      <td>表面细节识别</td>
+      <td>一般</td>
+      <td>非常强，适合微缺陷检测</td>
+    </tr>
+    <tr>
+      <td>抗环境光干扰</td>
+      <td>强，避开可见光</td>
+      <td>差，易受阳光和照明影响</td>
+    </tr>
+    <tr>
+      <td>人眼可见性</td>
+      <td>不可见，用户体验佳</td>
+      <td>可见，可能干扰使用者</td>
+    </tr>
+  </table>
+
+  <h2>三、应用场景推荐</h2>
+  <table>
+    <tr>
+      <th>应用</th>
+      <th>推荐波段</th>
+      <th>理由</th>
+    </tr>
+    <tr>
+      <td>工业尺寸测量</td>
+      <td>850nm ✅</td>
+      <td>稳定、抗干扰、工业兼容性强</td>
+    </tr>
+    <tr>
+      <td>金属表面缺陷检测</td>
+      <td>440nm ✅</td>
+      <td>对划痕/凹陷反差更敏感</td>
+    </tr>
+    <tr>
+      <td>机器人导航/对位</td>
+      <td>850nm ✅</td>
+      <td>抗干扰、隐形、稳健</td>
+    </tr>
+    <tr>
+      <td>手机人脸识别</td>
+      <td>850nm 或 940nm ✅</td>
+      <td>安全、不可见、人眼舒适</td>
+    </tr>
+    <tr>
+      <td>教育互动设备</td>
+      <td>440nm ✅</td>
+      <td>可视化条纹，互动感强</td>
+    </tr>
+  </table>
+
+  <h2>四、安全性对比（IEC 60825）</h2>
+  <table>
+    <tr>
+      <th>安全因素</th>
+      <th>850nm</th>
+      <th>440nm</th>
+    </tr>
+    <tr>
+      <td>人眼刺激</td>
+      <td>无刺激，不可见</td>
+      <td>刺激强烈，需限制功率</td>
+    </tr>
+    <tr>
+      <td>最大安全功率</td>
+      <td>较高，易达Class 1</td>
+      <td>较低，难达Class 1</td>
+    </tr>
+    <tr>
+      <td>激光安全设计难度</td>
+      <td>低</td>
+      <td>高</td>
+    </tr>
+  </table>
+
+  <h2>五、结论总结</h2>
+  <p>
+    ✅ <strong>850nm 更适用于多数工业和消费级结构光系统</strong>：成熟、安全、抗干扰，特别适合室外/黑色物体/人体测量等需求。
+  </p>
+  <p>
+    ✅ <strong>440nm 更适用于对表面细节要求极高的检测</strong>，但环境光干扰大，且光安全设计更复杂，适合特定高精度检测或教育类可视交互产品。
+  </p>
+  <p class="note">
+    *建议在具体项目中根据场景、材料、光照条件以及相机响应综合选择波段。
+  </p>
+</body>
+</html>
