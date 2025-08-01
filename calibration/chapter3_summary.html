@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第3章：使用3D机器视觉参考设计 - 总结</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        h1 {
+            color: #2d3748;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 1.2em;
+            font-weight: 300;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding: 25px;
+            background: #f8fafc;
+            border-radius: 15px;
+            border-left: 5px solid #667eea;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        h2 {
+            color: #2d3748;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .section-number {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        
+        .process-steps {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 15px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+        
+        .step:hover {
+            background: #edf2f7;
+        }
+        
+        .step-number {
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 0.9em;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        
+        .key-points {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+        
+        .warning {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #e17055;
+        }
+        
+        .warning::before {
+            content: "⚠️ ";
+            font-size: 1.2em;
+            margin-right: 8px;
+        }
+        
+        ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        li {
+            margin-bottom: 8px;
+            padding-left: 25px;
+            position: relative;
+        }
+        
+        li::before {
+            content: "▶";
+            color: #667eea;
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+        
+        .workflow {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .workflow-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            flex: 1;
+            min-width: 200px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease;
+        }
+        
+        .workflow-item:hover {
+            transform: scale(1.05);
+        }
+        
+        .workflow-arrow {
+            font-size: 2em;
+            color: #667eea;
+            align-self: center;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .workflow {
+                flex-direction: column;
+            }
+            
+            .workflow-arrow {
+                transform: rotate(90deg);
+            }
+        }
+        
+        /* 原文档链接样式 */
+        .doc-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4) !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>第3章：使用3D机器视觉参考设计</h1>
+            <p class="subtitle">基于DLP技术和工业相机的精确点云生成系统</p>
+            <div style="margin-top: 20px;">
+                <a href="https://www.ti.com/lit/ug/dlpu019/dlpu019.pdf" target="_blank" 
+                   class="doc-link"
+                   style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; 
+                          background: linear-gradient(45deg, #667eea, #764ba2); color: white; 
+                          text-decoration: none; border-radius: 25px; font-weight: 500; 
+                          box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); 
+                          transition: transform 0.3s ease, box-shadow 0.3s ease;">
+                    📄 查看原文档 (TI DLPU019)
+                </a>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><span class="section-number">3.1</span>相机标定板生成</h2>
+            <div class="process-steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div>
+                        <strong>启动程序：</strong>运行3D机器视觉参考设计程序
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div>
+                        <strong>生成标定板：</strong>选择菜单选项"1"生成相机标定板并输入特征测量值
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div>
+                        <strong>打印标定板：</strong>将生成的标定板图像打印出来，尺寸约为投影区域的一半
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div>
+                        <strong>固定标定板：</strong>将打印的标定板贴在比投影区域更大的平整白色表面上
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">5</div>
+                    <div>
+                        <strong>测量标定板：</strong>测量标定板的高度和宽度，输入到命令行中
+                    </div>
+                </div>
+            </div>
+            <div class="warning">
+                <strong>重要提示：</strong>标定板测量时使用的单位将决定生成点云的单位
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><span class="section-number">3.2</span>相机标定程序</h2>
+            <div class="process-steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div>
+                        <strong>连接设备：</strong>
+                        <ul>
+                            <li>相机GPIO输出触发连接到投影仪输入触发</li>
+                            <li>Point Grey Flea3相机连接到PC的USB 3.0端口</li>
+                            <li>LightCrafter 4500连接到PC的USB 2.0端口</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div>
+                        <strong>空间定位：</strong>确保相机和投影仪之间有足够距离，形成20-45度角
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div>
+                        <strong>启动标定：</strong>选择菜单选项"4"开始相机标定
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div>
+                        <strong>调整曝光：</strong>调小光圈，最小化眩光，确保投影区域对焦并锁定光圈和焦点
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">5</div>
+                    <div>
+                        <strong>采集图像：</strong>在不同角度和位置捕获10张标定板图像（按空格键）
+                    </div>
+                </div>
+            </div>
+            <div class="key-points">
+                <strong>关键要点：</strong>
+                <ul>
+                    <li>重投影误差应低于2（理想情况下为0）</li>
+                    <li>标定完成后不要改变相机光圈或焦点</li>
+                    <li>标定过程中可以移动相机</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><span class="section-number">3.3</span>投影仪准备</h2>
+            <div class="process-steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div>
+                        <strong>准备投影仪：</strong>选择菜单选项"2"为DLP LightCrafter 4500准备标定图像和结构光模式
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div>
+                        <strong>系统准备：</strong>每次运行程序时选择选项"3"准备系统进行标定和扫描
+                    </div>
+                </div>
+            </div>
+            <div class="warning">
+                <strong>注意：</strong>每个投影仪只需要准备一次（选项2），但每次运行程序都需要系统准备（选项3）
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><span class="section-number">3.4</span>投影仪和系统标定程序</h2>
+            <div class="process-steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div>
+                        <strong>启动标定：</strong>选择菜单选项"5"开始系统标定
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div>
+                        <strong>标定选择：</strong>
+                        <ul>
+                            <li>输入"0"更新相机外参（空间位置）</li>
+                            <li>输入"1"完全更新相机标定</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div>
+                        <strong>投影标定板：</strong>投影仪显示标定板，调整相机位置使投影标定板在视野中心
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div>
+                        <strong>捕获图像：</strong>在10个不同角度和位置捕获投影标定板图像，避免眩光
+                    </div>
+                </div>
+            </div>
+            <div class="key-points">
+                <strong>特点：</strong>
+                <ul>
+                    <li>每次按空格键捕获三种模式：纯白、黑白棋盘、纯黑</li>
+                    <li>投影标定板应比相机标定板大但完全落在标定表面上</li>
+                    <li>在所有3个轴上旋转背景角度</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><span class="section-number">3.5</span>标定验证</h2>
+            <div class="process-steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div>
+                        <strong>扫描平面：</strong>选择菜单选项"6"扫描平整的白色表面
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div>
+                        <strong>检查深度图：</strong>输出的深度图应该看起来像平整表面，密度充足
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div>
+                        <strong>验证点云：</strong>在MeshLab中打开点云文件检查准确性
+                    </div>
+                </div>
+            </div>
+            <div class="warning">
+                <strong>问题诊断：</strong>
+                <ul>
+                    <li>深度图缺失大量点 → 检查相机/投影仪同步</li>
+                    <li>点云扭曲变形 → 重新标定，注意标定板靠近相机框边缘</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><span class="section-number">3.6</span>扫描物体</h2>
+            <div class="process-steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div>
+                        <strong>放置物体：</strong>将要扫描的物体放在相机和投影仪的视野中
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div>
+                        <strong>执行扫描：</strong>运行程序并选择选项"6"执行扫描
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div>
+                        <strong>查看结果：</strong>扫描完成后打开深度图，点云文件保存在../output/scan/目录中
+                    </div>
+                </div>
+            </div>
+            <div class="key-points">
+                <strong>输出文件：</strong>生成的XYZ点云文件可以在MeshLab中查看和进一步处理
+            </div>
+        </div>
+
+        <div class="workflow">
+            <div class="workflow-item">
+                <h3>📋 生成标定板</h3>
+                <p>打印并测量标定板</p>
+            </div>
+            <div class="workflow-arrow">→</div>
+            <div class="workflow-item">
+                <h3>📷 相机标定</h3>
+                <p>采集10张不同角度图像</p>
+            </div>
+            <div class="workflow-arrow">→</div>
+            <div class="workflow-item">
+                <h3>🔧 投影仪准备</h3>
+                <p>加载标定和扫描模式</p>
+            </div>
+            <div class="workflow-arrow">→</div>
+            <div class="workflow-item">
+                <h3>⚙️ 系统标定</h3>
+                <p>标定投影仪和相机系统</p>
+            </div>
+            <div class="workflow-arrow">→</div>
+            <div class="workflow-item">
+                <h3>✅ 验证标定</h3>
+                <p>扫描平面验证精度</p>
+            </div>
+            <div class="workflow-arrow">→</div>
+            <div class="workflow-item">
+                <h3>🎯 扫描物体</h3>
+                <p>生成3D点云数据</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
