@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Open3D ScalableTSDFVolume 介绍</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.7; padding: 20px; background: #f9f9f9; color: #333; }
+        h1, h2, h3 { color: #005bbb; }
+        code { background: #eee; padding: 2px 4px; border-radius: 4px; font-family: Consolas, monospace; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #f0f0f0; }
+        pre { background: #eee; padding: 10px; overflow-x: auto; border-radius: 6px; }
+    </style>
+</head>
+<body>
+    <h1>Open3D 中的 ScalableTSDFVolume 介绍</h1>
+
+    <p>
+        <code>open3d::pipelines::integration::ScalableTSDFVolume</code> 是 Open3D 提供的一个核心类，
+        用于实现大规模稠密 3D 重建。它基于 <strong>可扩展 TSDF（Truncated Signed Distance Function）</strong> 技术，
+        支持处理大范围场景而不会受到传统固定体素网格的空间限制。
+    </p>
+
+    <h2>📌 所属模块</h2>
+    <pre><code>open3d::pipelines::integration</code></pre>
+
+    <h2>🧠 什么是 TSDF？</h2>
+    <p>
+        TSDF（截断有符号距离函数）是一种体素表示方法，用于表达点到表面的有符号距离。
+        正值表示前方，负值表示在表面之后，截断机制限制了远离表面的值，提升了效率。
+        TSDF 在多帧深度图融合中表现出色，具有较强的抗噪性能。
+    </p>
+
+    <h2>🚀 ScalableTSDFVolume 的优势</h2>
+    <ul>
+        <li>支持 <strong>大规模重建</strong>，使用 hash grid 结构动态扩展空间</li>
+        <li>融合多帧 <strong>RGB-D 图像</strong> 生成稠密模型</li>
+        <li>内存高效：仅在需要时分配局部体素块</li>
+        <li>支持多线程处理，融合速度快</li>
+        <li>可从 TSDF 中提取 <strong>三角网格</strong>，用于可视化与建模</li>
+    </ul>
+
+    <h2>🔧 构造函数示例</h2>
+    <pre><code>
+auto tsdf_volume = open3d::pipelines::integration::ScalableTSDFVolume(
+    0.04,       // voxel_length（体素边长）
+    0.1,        // sdf_trunc（截断距离）
+    open3d::pipelines::integration::TSDFVolumeColorType::RGB8
+);
+    </code></pre>
+
+    <h2>📥 融合一帧数据</h2>
+    <p>将一帧 RGB-D 图像融合进 TSDF：</p>
+    <pre><code>
+tsdf_volume->Integrate(rgbd_image, intrinsic, extrinsic);
+    </code></pre>
+    <ul>
+        <li><code>rgbd_image</code>：当前帧的 RGB-D 图像</li>
+        <li><code>intrinsic</code>：相机内参</li>
+        <li><code>extrinsic</code>：相机在世界坐标下的位姿矩阵</li>
+    </ul>
+
+    <h2>🧱 提取重建网格</h2>
+    <p>从 TSDF 中提取三角网格模型：</p>
+    <pre><code>
+auto mesh = tsdf_volume->ExtractTriangleMesh();
+mesh->ComputeVertexNormals();
+    </code></pre>
+
+    <h2>🌍 应用场景</h2>
+    <ul>
+        <li>机器人视觉与 SLAM 系统</li>
+        <li>室内/建筑等大规模场景的 3D 扫描</li>
+        <li>RGB-D 相机点云融合</li>
+        <li>高质量网格建模与后续渲染</li>
+    </ul>
+
+    <h2>🧪 Python 等价代码（便于测试）</h2>
+    <pre><code>
+volume = o3d.pipelines.integration.ScalableTSDFVolume(
+    voxel_length=0.04,
+    sdf_trunc=0.1,
+    color_type=o3d.pipelines.integration.TSDFVolumeColorType.RGB8
+)
+
+volume.integrate(rgbd, intrinsic, extrinsic)
+mesh = volume.extract_triangle_mesh()
+    </code></pre>
+
+    <h2>🔗 小结</h2>
+    <p>
+        ScalableTSDFVolume 是 Open3D 在 TSDF 融合领域的高效实现，
+        特别适合用于室内场景、机器人导航与 AR/VR 建模等需要大空间支持的 3D 重建任务。
+    </p>
+</body>
+</html>
