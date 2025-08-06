@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CGAL - 计算几何的强大引擎</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .hero {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 25px;
+            padding: 80px 40px;
+            text-align: center;
+            margin-bottom: 40px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(30, 60, 114, 0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+        
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .hero h1 {
+            font-size: 4rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+            line-height: 1.1;
+            letter-spacing: -2px;
+        }
+        
+        .hero .subtitle {
+            font-size: 1.5rem;
+            color: #666;
+            font-weight: 300;
+            margin-bottom: 30px;
+        }
+        
+        .hero .description {
+            font-size: 1.1rem;
+            color: #888;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .stats-row {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #1e3c72;
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+        
+        .card:hover {
+            transform: translateY(-15px) scale(1.02);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
+        }
+        
+        .card h2 {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            font-weight: 700;
+        }
+        
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            margin-right: 15px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+        
+        .feature-item {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .feature-item::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: rotate(45deg);
+            transition: transform 0.6s ease;
+        }
+        
+        .feature-item:hover {
+            transform: translateY(-10px) scale(1.05);
+        }
+        
+        .feature-item:hover::before {
+            transform: rotate(45deg) translate(50%, 50%);
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .feature-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .feature-desc {
+            position: relative;
+            z-index: 2;
+            opacity: 0.9;
+        }
+        
+        .modules-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 50px;
+            margin: 40px 0;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        .module-card {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .module-card:hover {
+            border-color: #667eea;
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(102, 126, 234, 0.2);
+        }
+        
+        .module-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .module-title::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: #667eea;
+            border-radius: 50%;
+            margin-right: 12px;
+        }
+        
+        .applications-showcase {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 50px;
+            margin: 40px 0;
+        }
+        
+        .application-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+        
+        .app-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            transition: all 0.4s ease;
+            cursor: pointer;
+        }
+        
+        .app-card:hover {
+            transform: translateY(-10px) rotate(2deg);
+            box-shadow: 0 25px 50px rgba(240, 147, 251, 0.3);
+        }
+        
+        .app-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        
+        .app-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .code-demo {
+            background: #1a1a1a;
+            color: #f8f8f2;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            overflow-x: auto;
+            position: relative;
+        }
+        
+        .code-demo::before {
+            content: 'C++';
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .code-demo pre {
+            margin: 0;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        .highlight-box {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%);
+            padding: 30px;
+            border-radius: 20px;
+            margin: 40px 0;
+            border-left: 6px solid #e17055;
+            position: relative;
+        }
+        
+        .highlight-box h3 {
+            color: #d63031;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .timeline {
+            position: relative;
+            margin: 40px 0;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            transform: translateX(-50%);
+        }
+        
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            margin: 40px 0;
+            position: relative;
+        }
+        
+        .timeline-content {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 45%;
+            position: relative;
+        }
+        
+        .timeline-item:nth-child(even) .timeline-content {
+            margin-left: auto;
+        }
+        
+        .timeline-year {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            z-index: 2;
+        }
+        
+        .interactive-demo {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            margin: 40px 0;
+        }
+        
+        .demo-canvas {
+            width: 100%;
+            max-width: 800px;
+            height: 400px;
+            border: 3px solid #667eea;
+            border-radius: 15px;
+            margin: 30px auto;
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: #666;
+            transition: all 0.3s ease;
+        }
+        
+        .demo-canvas:hover {
+            border-color: #764ba2;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px 35px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(-1px);
+        }
+        
+        @media (max-width: 768px) {
+            .hero {
+                padding: 40px 20px;
+            }
+            
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .timeline::before {
+                left: 20px;
+            }
+            
+            .timeline-content {
+                width: calc(100% - 60px);
+                margin-left: 60px !important;
+            }
+            
+            .timeline-year {
+                left: 20px;
+                transform: translateX(-50%);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <div class="hero-content">
+                <h1>CGAL</h1>
+                <p class="subtitle">Computational Geometry Algorithms Library</p>
+                <p class="description">世界领先的计算几何算法库，为复杂几何问题提供精确、高效的解决方案</p>
+                
+                <div class="stats-row">
+                    <div class="stat">
+                        <span class="stat-number">25+</span>
+                        <span class="stat-label">年发展历程</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">100+</span>
+                        <span class="stat-label">算法模块</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">1000+</span>
+                        <span class="stat-label">研究论文</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">全球</span>
+                        <span class="stat-label">广泛应用</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="content-grid">
+            <div class="card">
+                <h2>
+                    <div class="card-icon">🧮</div>
+                    什么是CGAL？
+                </h2>
+                <p>CGAL是一个强大的C++计算几何算法库，就像是几何世界的"瑞士军刀"。它包含了从基础的点线面操作到复杂的三维重建、网格处理等上百种经过严格验证的算法。</p>
+                <br>
+                <p><strong>核心理念：</strong>为科研人员和工程师提供精确、可靠、高效的几何计算工具，让复杂的几何问题变得简单易解。</p>
+            </div>
+            
+            <div class="card">
+                <h2>
+                    <div class="card-icon">🎯</div>
+                    为什么选择CGAL？
+                </h2>
+                <p>在几何计算中，精度就是生命。CGAL采用精确算术和鲁棒几何谓词，确保计算结果的正确性，避免了浮点数误差导致的灾难性后果。</p>
+                <br>
+                <p><strong>独特优势：</strong>基于严格的数学理论，每个算法都经过理论证明和大量测试，是工业界和学术界的首选。</p>
+            </div>
+        </div>
+        
+        <div class="card" style="margin-bottom: 40px;">
+            <h2>
+                <div class="card-icon">⭐</div>
+                核心特性
+            </h2>
+            <div class="features-grid">
+                <div class="feature-item">
+                    <div class="feature-icon">🔬</div>
+                    <div class="feature-title">精确计算</div>
+                    <div class="feature-desc">采用精确算术，彻底避免浮点误差</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🧩</div>
+                    <div class="feature-title">泛型设计</div>
+                    <div class="feature-desc">基于C++模板，高度可配置和扩展</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">📦</div>
+                    <div class="feature-title">模块化架构</div>
+                    <div class="feature-desc">按需使用，减少依赖和编译时间</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🌍</div>
+                    <div class="feature-title">跨平台支持</div>
+                    <div class="feature-desc">支持Windows、Linux、macOS等平台</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">⚡</div>
+                    <div class="feature-title">高性能优化</div>
+                    <div class="feature-desc">经过深度优化的算法实现</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🛡️</div>
+                    <div class="feature-title">工业级稳定</div>
+                    <div class="feature-desc">经过25年验证的成熟代码库</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modules-section">
+            <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 20px; color: #1e3c72;">🔧 核心算法模块</h2>
+            <p style="text-align: center; color: #666; font-size: 1.1rem; margin-bottom: 40px;">CGAL包含100多个专业算法包，覆盖计算几何的各个领域</p>
+            
+            <div class="modules-grid">
+                <div class="module-card">
+                    <div class="module-title">基础几何内核</div>
+                    <p>点、线、面等基本几何对象的表示和操作，提供精确的几何谓词和构造函数。</p>
+                </div>
+                <div class="module-card">
+                    <div class="module-title">二维算法</div>
+                    <p>凸包计算、Delaunay三角剖分、Voronoi图、多边形操作等经典二维几何算法。</p>
+                </div>
+                <div class="module-card">
+                    <div class="module-title">三维算法</div>
+                    <p>三维凸包、四面体剖分、三维Voronoi图、球面几何等三维空间算法。</p>
+                </div>
+                <div class="module-card">
+                    <div class="module-title">网格处理</div>
+                    <p>表面网格生成、网格简化、网格修复、网格分割等网格处理算法。</p>
+                </div>
+                <div class="module-card">
+                    <div class="module-title">拓扑数据结构</div>
+                    <p>半边数据结构、多面体表示、线性单元复形等拓扑建模工具。</p>
+                </div>
+                <div class="module-card">
+                    <div class="module-title">搜索与优化</div>
+                    <p>空间索引、最近邻搜索、范围查询、几何优化等高效算法。</p>
+                </div>
+                <div class="module-card">
+                    <div class="module-title">曲线曲面</div>
+                    <p>NURBS曲线、贝塞尔曲面、曲线拟合、曲面重建等参数化几何。</p>
+                </div>
+                <div class="module-card">
+                    <div class="module-title">布尔运算</div>
+                    <p>多边形和多面体的并、交、差等布尔运算，支持复杂几何操作。</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="applications-showcase">
+            <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 20px; color: #1e3c72;">🚀 广泛应用领域</h2>
+            <p style="text-align: center; color: #666; font-size: 1.1rem;">从学术研究到工业应用，CGAL在各个领域发挥着重要作用</p>
+            
+            <div class="application-cards">
+                <div class="app-card">
+                    <div class="app-icon">🎮</div>
+                    <div class="app-title">计算机图形学</div>
+                    <p>游戏引擎、3D建模软件、动画制作工具</p>
+                </div>
+                <div class="app-card">
+                    <div class="app-icon">🏭</div>
+                    <div class="app-title">CAD/CAM</div>
+                    <p>计算机辅助设计、制造业、建筑设计</p>
+                </div>
+                <div class="app-card">
+                    <div class="app-icon">🧬</div>
+                    <div class="app-title">科学计算</div>
+                    <p>生物信息学、物理仿真、数值分析</p>
+                </div>
+                <div class="app-card">
+                    <div class="app-icon">🗺️</div>
+                    <div class="app-title">地理信息系统</div>
+                    <p>GIS软件、地形分析、城市规划</p>
+                </div>
+                <div class="app-card">
+                    <div class="app-icon">🤖</div>
+                    <div class="app-title">机器人学</div>
+                    <p>路径规划、碰撞检测、机器视觉</p>
+                </div>
+                <div class="app-card">
+                    <div class="app-icon">🏥</div>
+                    <div class="app-title">医学成像</div>
+                    <p>医学图像处理、三维重建、手术规划</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>
+                <div class="card-icon">💻</div>
+                代码示例：计算凸包
+            </h2>
+            <p>让我们通过一个简单的例子来看看CGAL的使用方式。下面的代码展示了如何计算二维点集的凸包：</p>
+            
+            <div class="code-demo">
+                <pre><code>#include &lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;
+#include &lt;CGAL/convex_hull_2.h&gt;
+#include &lt;vector&gt;
+
+typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
+typedef K::Point_2 Point_2;
+
+int main() {
+    // 创建一组二维点
+    std::vector&lt;Point_2&gt; points = {
+        Point_2(0, 0), Point_2(1, 0), Point_2(0, 1),
+        Point_2(1, 1), Point_2(0.5, 0.5)
+    };
+    
+    // 计算凸包
+    std::vector&lt;Point_2&gt; hull;
+    CGAL::convex_hull_2(points.begin(), points.end(),
+                        std::back_inserter(hull));
+    
+    // 输出凸包顶点
+    std::cout &lt;&lt; "凸包包含 " &lt;&lt; hull.size() &lt;&lt; " 个顶点" &lt;&lt; std::endl;
+    
+    return 0;
+}</code></pre>
+            </div>
+            
+            <p style="margin-top: 20px;"><strong>代码解释：</strong>这个例子展现了CGAL的典型使用模式 - 选择合适的几何内核，定义数据类型，然后调用算法函数。简洁而强大！</p>
+        </div>
+        
+        <div class="highlight-box">
+            <h3>💡 专业提示</h3>
+            <p><strong>几何内核的选择：</strong>CGAL提供多种几何内核供选择。<code>Exact_predicates_inexact_constructions_kernel</code>是最常用的内核，它在保证谓词精确性的同时提供了良好的性能。对于需要绝对精确结果的应用，可以选择<code>Exact_predicates_exact_constructions_kernel</code>。</p>
+            <p><strong>性能优化：</strong>CGAL的算法经过高度优化，但选择合适的数据结构和参数设置仍然很重要。阅读文档中的性能建议可以帮助您获得最佳性能。</p>
+        </div>
+        
+        <div class="card">
+            <h2>📚 CGAL发展历程</h2>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <h4>CGAL项目启动</h4>
+                        <p>欧洲多个研究机构联合发起，目标是创建一个通用的计算几何算法库。</p>
+                    </div>
+                    <div class="timeline-year">1995</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <h4>首个公开版本</h4>
+                        <p>CGAL 1.0发布，包含基础的几何内核和一些核心算法。</p>
+                    </div>
+                    <div class="timeline-year">1999</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <h4>商业化运作</h4>
+                        <p>GeometryFactory公司成立，为CGAL提供商业支持和咨询服务。</p>
+                    </div>
+                    <div class="timeline-year">2003</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <h4>重大架构升级</h4>
+                        <p>CGAL 3.0发布，采用现代C++设计，性能和易用性大幅提升。</p>
+                    </div>
+                    <div class="timeline-year">2007</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <h4>开源里程碑</h4>
+                        <p>大部分CGAL模块采用开源许可证，促进了更广泛的应用。</p>
+                    </div>
+                    <div class="timeline-year">2010</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <h4>现代化持续</h4>
+                        <p>CGAL 5.0发布，支持C++14/17，集成更多前沿算法。</p>
+                    </div>
+                    <div class
