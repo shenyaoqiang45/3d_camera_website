@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MVS-Texturing 科普介绍</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            color: #2c3e50;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .hero {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .hero h1 {
+            font-size: 3.5em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .hero .subtitle {
+            font-size: 1.3em;
+            color: #7f8c8d;
+            margin-bottom: 20px;
+            animation: fadeInUp 1s ease-out 0.2s both;
+        }
+
+        .hero .description {
+            font-size: 1.1em;
+            color: #5a6c7d;
+            max-width: 800px;
+            margin: 0 auto;
+            animation: fadeInUp 1s ease-out 0.4s both;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
+        }
+
+        .card h2 {
+            font-size: 1.8em;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .card h2:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 2px;
+        }
+
+        .card h3 {
+            color: #34495e;
+            margin: 20px 0 10px 0;
+            font-size: 1.2em;
+        }
+
+        .card p, .card li {
+            color: #5a6c7d;
+            margin-bottom: 12px;
+            font-size: 1.05em;
+        }
+
+        .card ul {
+            padding-left: 20px;
+        }
+
+        .card li {
+            margin-bottom: 8px;
+        }
+
+        .tech-process {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 15px;
+            padding: 35px;
+            margin-bottom: 30px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            animation: fadeInUp 1s ease-out 0.6s both;
+        }
+
+        .process-flow {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .process-step {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 50px;
+            font-weight: 600;
+            text-align: center;
+            flex: 1;
+            min-width: 150px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .process-step:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .process-step:not(:last-child):after {
+            content: '→';
+            position: absolute;
+            right: -25px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5em;
+            color: #667eea;
+        }
+
+        .code-block {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95em;
+            margin: 15px 0;
+            overflow-x: auto;
+            border-left: 4px solid #667eea;
+        }
+
+        .applications {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .app-item {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .app-item:hover {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+            transform: translateY(-5px);
+        }
+
+        .app-item h4 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .footer {
+            background: rgba(44, 62, 80, 0.95);
+            backdrop-filter: blur(15px);
+            color: #ecf0f1;
+            text-align: center;
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 40px;
+            animation: fadeInUp 1s ease-out 0.8s both;
+        }
+
+        .footer p {
+            font-size: 1.1em;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5em;
+            }
+            
+            .process-flow {
+                flex-direction: column;
+            }
+            
+            .process-step:not(:last-child):after {
+                content: '↓';
+                right: 50%;
+                transform: translateX(50%);
+                bottom: -25px;
+                top: auto;
+            }
+            
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .highlight {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.15));
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <h1>MVS-Texturing</h1>
+            <p class="subtitle">多视图立体纹理映射核心算法库</p>
+            <p class="description">
+                一个专门为多视图立体重建生成的3D模型添加纹理的经典算法库，
+                由德国达姆施塔特工业大学研发，并在2014年ECCV上发表，
+                至今仍是业界标准的纹理映射实现。
+            </p>
+        </div>
+
+        <div class="content-grid">
+            <div class="card">
+                <h2>核心问题</h2>
+                <p>当我们用多张照片重建出3D几何模型后，得到的只是一个"白模"（没有颜色和纹理的几何体）。</p>
+                
+                <div class="highlight">
+                    <strong>MVS-Texturing解决的核心问题：</strong><br>
+                    如何将原始照片中的颜色和纹理信息准确地贴到3D模型上？
+                </div>
+                
+                <p>这个过程需要考虑多个视角的照片，处理光照差异、遮挡问题，并生成视觉上连贯的纹理贴图。</p>
+            </div>
+
+            <div class="card">
+                <h2>主要技术原理</h2>
+                
+                <h3>1. 视图选择 (View Selection)</h3>
+                <ul>
+                    <li>对每个3D表面小面片选择最合适的照片</li>
+                    <li>考虑观察角度、分辨率、光照质量</li>
+                    <li>避免过于倾斜或模糊的视角</li>
+                </ul>
+
+                <h3>2. 纹理投影 (Texture Projection)</h3>
+                <ul>
+                    <li>通过透视变换将照片投影到3D表面</li>
+                    <li>考虑相机内参（焦距、畸变）和外参（位置、角度）</li>
+                    <li>确保纹理在几何上的准确对应</li>
+                </ul>
+
+                <h3>3. 接缝优化 (Seam Optimization)</h3>
+                <ul>
+                    <li>使用图割算法找到最佳接缝位置</li>
+                    <li>最小化不同视图纹理的不连续性</li>
+                    <li>让整体纹理看起来自然连贯</li>
+                </ul>
+
+                <h3>4. 纹理融合 (Texture Blending)</h3>
+                <ul>
+                    <li>在接缝附近进行平滑过渡</li>
+                    <li>处理光照差异和颜色不匹配</li>
+                    <li>生成最终的无缝纹理图</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h2>算法优势</h2>
+                
+                <h3>🎯 高质量输出</h3>
+                <p>生成的纹理图具有很好的视觉一致性，有效处理了多视图间的色彩和光照差异。</p>
+
+                <h3>🛡️ 鲁棒性强</h3>
+                <p>能处理复杂场景和不规则几何体，对相机标定误差有一定容忍度。</p>
+
+                <h3>🔗 广泛兼容</h3>
+                <p>支持标准的PLY格式3D模型，可以与主流的多视图重建软件配合使用。</p>
+
+                <h3>📚 开源生态</h3>
+                <p>作为开源项目，促进了学术研究和工业应用的发展，建立了行业标准。</p>
+            </div>
+        </div>
+
+        <div class="tech-process">
+            <h2>使用流程</h2>
+            <p>MVS-Texturing的完整工作流程包括以下几个主要步骤：</p>
+            
+            <div class="process-flow">
+                <div class="process-step">输入照片</div>
+                <div class="process-step">MVS重建几何</div>
+                <div class="process-step">相机参数估计</div>
+                <div class="process-step">MVS-Texturing</div>
+                <div class="process-step">带纹理3D模型</div>
+            </div>
+
+            <div class="code-block">
+准备数据：多张重叠照片 + 3D几何网格 + 相机参数
+运行算法：自动进行视图选择和纹理映射  
+输出结果：带UV贴图的3D模型文件
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>实际应用场景</h2>
+            <div class="applications">
+                <div class="app-item">
+                    <h4>🏛️ 文物数字化</h4>
+                    <p>博物馆文物的高精度3D建档保存</p>
+                </div>
+                <div class="app-item">
+                    <h4>🏗️ 建筑测绘</h4>
+                    <p>古建筑、历史遗迹的数字化保护</p>
+                </div>
+                <div class="app-item">
+                    <h4>🎬 影视制作</h4>
+                    <p>真实场景的3D资产制作</p>
+                </div>
+                <div class="app-item">
+                    <h4>🎮 游戏开发</h4>
+                    <p>真实环境的3D场景构建</p>
+                </div>
+                <div class="app-item">
+                    <h4>🥽 VR/AR</h4>
+                    <p>沉浸式体验的内容制作</p>
+                </div>
+                <div class="app-item">
+                    <h4>📐 工业测量</h4>
+                    <p>精密零件的3D检测分析</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>技术影响与意义</h2>
+            
+            <div class="highlight">
+                <strong>历史地位：</strong> MVS-Texturing作为经典算法，建立了多视图纹理映射的标准流程，很多后续研究都以此为基准进行比较和改进。
+            </div>
+
+            <p>即使在深度学习时代，其核心思想仍然具有重要的参考价值。该算法的开源特性让它成为了学术研究和工业应用的重要工具，为3D重建领域的发展做出了重要贡献。</p>
+
+            <p>目前许多商业3D重建软件都借鉴了MVS-Texturing的核心理念，它不仅是一个工具，更是推动整个行业发展的重要基石。</p>
+        </div>
+
+        <div class="footer">
+            <p>MVS-Texturing - 让3D重建从几何走向真实</p>
+            <p style="margin-top: 10px; font-size: 0.9em; opacity: 0.8;">
+                本文档基于公开学术资料整理，仅供学习交流使用
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // 添加滚动动画效果
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animationPlayState = 'running';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.card, .tech-process').forEach(el => {
+            el.style.animationPlayState = 'paused';
+            observer.observe(el);
+        });
+
+        // 添加卡片悬停效果
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.background = 'rgba(255, 255, 255, 0.98)';
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                card.style.background = 'rgba(255, 255, 255, 0.95)';
+            });
+        });
+    </script>
+</body>
+</html>
