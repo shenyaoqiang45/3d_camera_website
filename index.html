@@ -1092,7 +1092,14 @@
             <ul class="nav-links">
                 <li><a href="#home">首页</a></li>
                 <li><a href="#basics">基础原理</a></li>
-                <li><a href="#types">相机类型</a></li>
+                <li class="dropdown">
+                    <a href="#types">📊 行业调研 <span class="dropdown-arrow">▼</span></a>
+                    <div class="dropdown-content">
+                        <a href="research/sense3d_analysis.html">🔬 3D感知方案分析</a>
+                        <a href="research/light_wave_vs.html">🌈 常见光源指标对比</a>
+                        <a href="research/microdisplay_tech_article.html">📺 微显技术全解析</a>
+                    </div>
+                </li>
                 
                 <!-- 基础理论下拉菜单 -->
                 <li class="dropdown">
@@ -1104,8 +1111,6 @@
                         <a href="basic/stereo_vision_coordinates.html">📐 立体视觉坐标系</a>
                         <a href="basic/Epipolar_Geometry.html">🔍 对极几何</a>
                         <a href="basic/ai_cpp_deploy_guide.html">🚀 AI推理与C++部署</a>
-                        <a href="basic/light_wave_vs.html">🌈 常见光源指标对比</a>
-                        <a href="basic/microdisplay_tech_article.html">📺 微显技术全解析</a>
                     </div>
                 </li>
                 <li class="dropdown"><a href="#calibration">📷 标定技术 <span class="dropdown-arrow">▼</span></a>
@@ -1187,7 +1192,14 @@
                 <ul>
                     <li><a href="#home">首页</a></li>
                     <li><a href="#basics">基础原理</a></li>
-                    <li><a href="#types">相机类型</a></li>
+                    <li>
+                        <a href="#types">📊 行业调研</a>
+                        <div class="mobile-submenu">
+                            <a href="research/sense3d_analysis.html">🔬 3D感知方案分析</a>
+                            <a href="research/light_wave_vs.html">🌈 常见光源指标对比</a>
+                            <a href="research/microdisplay_tech_article.html">📺 微显技术全解析</a>
+                        </div>
+                    </li>
                     
                     <li>
                         <a href="#basic-theory">📚 基础理论</a>
@@ -1196,8 +1208,6 @@
                             <a href="basic/stereo_vision_coordinates.html">📐 立体视觉坐标系</a>
                             <a href="basic/Epipolar_Geometry.html">🔍 对极几何</a>
                             <a href="basic/ai_cpp_deploy_guide.html">🚀 AI推理与C++部署</a>
-                            <a href="basic/light_wave_vs.html">🌈 常见光源指标对比</a>
-                            <a href="basic/microdisplay_tech_article.html">📺 微显技术全解析</a>
                         </div>
                     </li>
                     
@@ -1381,6 +1391,16 @@
                     <div style="margin-top: 1rem; text-align: center;">
                         <a href="basic/microdisplay_tech_article.html" style="color: #667eea; text-decoration: none; font-size: 0.9rem; font-weight: bold;">
                             📺 探索微显技术 →
+                        </a>
+                    </div>
+                </div>
+                <div class="card fade-in">
+                    <div class="card-icon">🔬</div>
+                    <h3>3D感知方案分析</h3>
+                    <p>系统性对比结构光、ToF、双目/多目立体视觉与激光雷达四类主流3D感知技术，从原理、优缺点、应用场景到成本分析，为技术选型提供科学决策依据。</p>
+                    <div style="margin-top: 1rem; text-align: center;">
+                        <a href="basic/sense3d_analysis.html" style="color: #667eea; text-decoration: none; font-size: 0.9rem; font-weight: bold;">
+                            🔬 深入分析3D感知技术 →
                         </a>
                     </div>
                 </div>
@@ -1610,7 +1630,7 @@
         </section>
 
         <section id="types" class="section">
-            <h2 class="section-title">3D相机类型</h2>
+            <h2 class="section-title">行业调研</h2>
             <div class="spec-table">
                 <table>
                     <thead>
