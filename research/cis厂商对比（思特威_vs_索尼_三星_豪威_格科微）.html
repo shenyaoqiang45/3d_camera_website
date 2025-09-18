@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CIS 厂商对比（思特威 vs 索尼/三星/豪威/格科微）</title>
+  <style>
+    :root{
+      --bg:#0b1220; --card:#0f172a; --muted:#94a3b8; --text:#e2e8f0; --accent:#38bdf8; --good:#22c55e; --warn:#f59e0b;
+      --border:rgba(148,163,184,.2);
+    }
+    *{box-sizing:border-box}
+    body{margin:0; font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"PingFang SC","Microsoft YaHei",sans-serif; background:var(--bg); color:var(--text);}
+    .wrap{max-width:1200px; margin:40px auto; padding:0 16px}
+    header{margin-bottom:24px}
+    h1{font-size:28px; margin:0 0 8px}
+    p.lead{margin:0; color:var(--muted)}
+    .card{background:var(--card); border:1px solid var(--border); border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(0,0,0,.25)}
+    .note{font-size:12px; color:var(--muted); margin-top:8px}
+
+    table{width:100%; border-collapse:separate; border-spacing:0; overflow:hidden; border-radius:12px;}
+    thead th{position:sticky; top:0; background:linear-gradient(180deg, rgba(56,189,248,.15), rgba(15,23,42,1)); color:#e6f7ff; font-weight:700; text-align:left; font-size:13px; padding:12px; border-bottom:1px solid var(--border)}
+    tbody td{padding:14px 12px; vertical-align:top; border-bottom:1px solid var(--border); font-size:13.5px; line-height:1.6}
+    tbody tr:hover{background:rgba(56,189,248,.05)}
+    .chip{display:inline-block; padding:2px 8px; border:1px solid var(--border); border-radius:999px; font-size:12px; color:var(--muted); margin:2px 6px 2px 0}
+    .ok{color:var(--good); border-color:rgba(34,197,94,.35)}
+    .warn{color:var(--warn); border-color:rgba(245,158,11,.35)}
+    .accent{color:var(--accent); border-color:rgba(56,189,248,.45)}
+
+    .grid{display:grid; grid-template-columns:1fr; gap:16px}
+    @media (min-width:900px){ .grid{grid-template-columns:1.1fr} }
+
+    .legend{display:flex; gap:8px; flex-wrap:wrap; margin:12px 0 0}
+    .legend .chip{background:rgba(148,163,184,.06)}
+    footer{margin-top:18px; color:var(--muted); font-size:12px}
+    a{color:var(--accent); text-decoration:none}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>CIS 厂商对比（思特威 vs 索尼 / 三星 / 豪威 / 格科微）</h1>
+      <p class="lead">维度：技术（像素、快门、堆栈工艺） × 市场定位（安防/车载/手机） × 客户群体 × 竞争力。</p>
+    </header>
+
+    <section class="card">
+      <div class="grid">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:130px">厂商</th>
+              <th>技术维度</th>
+              <th>市场定位</th>
+              <th>客户群体（示例/类别）</th>
+              <th>竞争力要点</th>
+              <th>主要挑战</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>思特威（SmartSens）</strong></td>
+              <td>
+                <span class="chip accent">BSI 主流</span>
+                <span class="chip ok">部分产品支持全局快门</span>
+                <span class="chip">高动态范围（HDR）</span>
+                <span class="chip">低照度优化</span>
+                <div class="note">像素覆盖从入门到中高端安防；堆栈式逐步导入。</div>
+              </td>
+              <td>
+                <span class="chip ok">安防监控核心</span>
+                <span class="chip">向车载拓展</span>
+                <span class="chip">消费/物联摄像头</span>
+              </td>
+              <td>
+                安防摄像机方案商与整机厂、物联网与智能家居品牌、工业与车载生态伙伴。
+              </td>
+              <td>
+                <ul style="margin:0; padding-left:18px">
+                  <li>安防细分领先，产品梯度齐全，性价比强</li>
+                  <li>本土生态协同与快速响应</li>
+                </ul>
+              </td>
+              <td>
+                <ul style="margin:0; padding-left:18px">
+                  <li>高端手机影像与顶级车规市场需持续突破</li>
+                  <li>与国际龙头在堆栈式/高速读出领域存在差距</li>
+                </ul>
+              </td>
+            </tr>
+
+            <tr>
+              <td><strong>索尼（Sony Semiconductor）</strong></td>
+              <td>
+                <span class="chip ok">堆栈式 CIS 领先</span>
+                <span class="chip ok">高像素/大底</span>
+                <span class="chip ok">全局快门/叠层存储</span>
+                <span class="chip">高级相位对焦</span>
+              </td>
+              <td>
+                <span class="chip ok">高端手机影像</span>
+                <span class="chip">车载/工业视觉</span>
+                <span class="chip">部分安防</span>
+              </td>
+              <td>
+                智能手机与高端影像 OEM、车载一级供应链、工业相机厂商。
+              </td>
+              <td>
+                <ul style="margin:0; padding-left:18px">
+                  <li>技术与良率双领先，品牌与生态强势</li>
+                  <li>高端客户覆盖广，定制能力强</li>
+                </ul>
+              </td>
+              <td>
+                <ul style="margin:0; padding-left:18px">
+                  <li>成本较高，价格弹性有限</li>
+                  <li>在部分安防/入门消费市场性价比不足</li>
+                </ul>
+              </td>
+            </tr>
+
+            <tr>
+              <td><strong>三星（Samsung System LSI）</strong></td>
+              <td>
+                <span class="chip ok">超高像素堆栈式</span>
+                <span class="chip">高速读出</span>
+                <span class="chip">Tetra/像素合并</span>
+              </td>
+              <td>
+                <span class="chip ok">中高端手机影像</span>
+                <span class="chip">可穿戴/笔电摄像</span>
+              </td>
+              <td>
+                智能手机与消费电子 OEM、平台型合作伙伴。
+              </td>
+              <td>
+                <ul style="margin:0; padding-left:18px">
+                  <li>高像素与大底产品迭代快</li>
+                  <li>与自家终端/生态联动</li>
+                </ul>
+              </td>
+              <td>
+                <ul style="margin:0; padding-left:18px">
+                  <li>在安防与工业视觉存在空白</li>
+                  <li>与索尼在高端旗舰影像上激烈对位</li>
+                </ul>
+              </td>
+            </tr>
+
+            <tr>
+              <td><strong>豪威科技（OmniVision，韦尔股份）</strong></td>
+              <td>
+                <span class="chip">BSI/堆栈并行</span>
+                <span class="chip ok">车载/安防优化 HDR</span>
+                <span class="chip">部分全局快门</span>
+              </td>
+              <td>
+                <span class="chip ok">车载影像</span>
+                <span class="chip ok">安防监控</span>
+                <span class="chip">消费/手机细分</span>
+              </td>
+              <td>
+                车载一/二级供应链、安防摄像机与物联品牌、消费电子 OEM。
+              </td>
+              <td>
+                <ul style="margin:0; padding-left:18px">
+                  <li>汽车/安防布局深，认证与产品面广</li>
+                  <li>在中高端多应用场景具备可选替代</li>
+                </ul>
+              </td>
+              <td>
+                <ul style="margin:0; padding-left:18px">
+                  <li>与索尼在高端影像对比受限</li>
+                  <li>与思特威在安防中高端直接竞争</li>
+                </ul>
+              </td>
+            </tr>
+
+            <tr>
+              <td><strong>格科微（GalaxyCore）</strong></td>
+              <td>
+                <span class="chip">主攻入门/中端像素</span>
+                <span class="chip">成本优化/小像素</span>
+                <span class="chip">部分堆栈过渡</span>
+              </td>
+              <td>
+                <span class="chip ok">中低端手机/模组</span>
+                <span class="chip">消费电子/玩具/IPC</span>
+              </td>
+              <td>
+                手机模组厂、白牌与入门级终端品牌、IoT/消费类摄像头厂商。
+              </td>
+              <td>
+                <ul style="margin:0; padding-left:18px">
+                  <li>成本控制与供货弹性强</li>
+                  <li>在入门与中端量大稳定</li>
+                </ul>
+              </td>
+              <td>
+                <ul style="margin:0; padding-left:18px">
+                  <li>高端影像与车规难度高</li>
+                  <li>与思特威/豪威在安防入门段存在交叉</li>
+                </ul>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="legend">
+        <span class="chip ok">强/领先</span>
+        <span class="chip warn">需突破/关注</span>
+        <span class="chip accent">主流/重点方向</span>
+      </div>
+
+      <footer>
+        说明：本表以公开行业常识梳理，客户群体为类别/示例，并非特定客户名单。根据不同产品线与时间点，技术与市场布局会有更新。
+      </footer>
+    </section>
+  </div>
+</body>
+</html>
