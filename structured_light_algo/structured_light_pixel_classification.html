@@ -215,6 +215,24 @@
             border-radius: 4px;
         }
 
+        .warning-box {
+            margin: 15px 0;
+            padding: 15px;
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            border-radius: 4px;
+        }
+
+        .warning-box h4 {
+            color: #856404;
+            margin: 0 0 10px 0;
+        }
+
+        .warning-box p {
+            margin: 0;
+            color: #856404;
+        }
+
         .classification-logic {
             margin: 20px 0;
         }
@@ -460,26 +478,64 @@
                     <h4>基本原理</h4>
                     <p>使用8个不同相位的正弦波图案，通过相移测量技术和傅里叶分析提取光分量。</p>
                     
-                    <h4>相移序列</h4>
+                    <h4>相移序列与光传输模型</h4>
                     <div class="formula">
                         φₖ = 2πk/8, k = 0,1,2,...,7<br>
-                        投影图案: Iₖ = A + B·cos(2πx/λ + φₖ)<br>
-                        观察图像: Cₖ = d·(A + B·cos(2πx/λ + φₖ)) + i_total
+                        <strong>投影图案</strong>: Iₖ = A + B·cos(2πx/λ + φₖ) ← 理想正弦波<br>
+                        <strong>理论模型</strong>: Cₖ = d·(A + B·cos(2πx/λ + φₖ)) + i_total<br>
+                        <strong>实际测量</strong>: Cₖ ← 相机采集的复合信号（非纯正弦波）
+                    </div>
+                    
+                    <div class="warning-box">
+                        <h4>⚠️ 重要概念澄清</h4>
+                        <p>
+                            <strong>Cₖ 不是直接的正弦波！</strong>它是包含直接光、间接光、环境光等多种成分的复合信号。
+                            8步相移法的目的就是从这8个实际测量值中反推出理论模型的参数 d 和 i_total。
+                        </p>
                     </div>
                     
                     <h4>分量计算</h4>
                     <p>利用8步相移的正交性质：</p>
                     <div class="formula">
                         直流分量: DC = (1/8)∑(k=0 to 7) Cₖ<br>
-                        调制振幅: AC = √[(∑cos_term)² + (∑sin_term)²]<br>
-                        相位信息: φ = arctan(∑sin_term / ∑cos_term)
+                        cos_sum = ∑(k=0 to 7) Cₖ·cos(kπ/4)<br>
+                        sin_sum = ∑(k=0 to 7) Cₖ·sin(kπ/4)<br>
+                        调制振幅: AC = 2√[(cos_sum)² + (sin_sum)²] / 8<br>
+                        相位信息: φ = arctan(sin_sum / cos_sum)
                     </div>
                     
-                    <p>最终分离结果：</p>
+                    <h4>参数求解的数学问题</h4>
+                    <p>从测量值到物理参数的求解：</p>
                     <div class="formula">
-                        直接光分量: d ≈ AC / B<br>
-                        总间接光分量: i_total ≈ DC - d·A
+                        方程1: DC = d·A + i_total<br>
+                        方程2: AC = d·B<br>
+                        <strong>问题：2个方程，4个未知数（d, A, B, i_total）→ 欠定系统！</strong>
                     </div>
+                    
+                    <div class="warning-box">
+                        <h4>⚠️ 求解策略</h4>
+                        <p><strong>方案1：已知投影参数</strong></p>
+                        <p>如果已知投影图案的A和B（通常可通过投影仪标定获得）：</p>
+                        <div class="formula">
+                            d = AC / B<br>
+                            i_total = DC - d·A = DC - (AC·A) / B
+                        </div>
+                        
+                        <p><strong>方案2：归一化假设（代码实现）</strong></p>
+                        <p>假设投影图案归一化：A = 0.5, B = 0.5 或 A = 0, B = 1：</p>
+                        <div class="formula">
+                            d = AC (假设B=1)<br>
+                            i_total = DC - d/2 (假设A=0.5)
+                        </div>
+                    </div>
+                    
+                    <p>最终分离结果（实际代码实现）：</p>
+                    <div class="formula">
+                        直接光分量: d = AC (假设投影调制幅度归一化)<br>
+                        总间接光分量: i_total = DC - d/2 (基于光传输模型I_dc = I_ambient + d/2)
+                    </div>
+                    
+                    <p><strong>注意</strong>：实际实现中假设投影图案已归一化(B=1)且采用简化的光传输模型。</p>
 
                     <h4>实现特点</h4>
                     <ul>
