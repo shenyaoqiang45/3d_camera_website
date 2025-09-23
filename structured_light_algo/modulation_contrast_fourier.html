@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>八步相移方法中的调制对比度推导</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .section:hover {
+            transform: translateY(-5px);
+        }
+
+        .section h2 {
+            color: #667eea;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .section h3 {
+            color: #764ba2;
+            font-size: 1.4em;
+            margin: 25px 0 15px 0;
+        }
+
+        .formula-box {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1em;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(240, 147, 251, 0.3);
+        }
+
+        .step-box {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border-left: 5px solid #667eea;
+        }
+
+        .highlight {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #ff9a56;
+        }
+
+        .phase-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .phase-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .phase-item:hover {
+            transform: scale(1.05);
+        }
+
+        .phase-item h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .phase-visualization {
+            width: 100%;
+            height: 60px;
+            background: linear-gradient(90deg, #333, #666, #999, #ccc, #fff, #ccc, #999, #666, #333);
+            border-radius: 4px;
+            margin: 10px 0;
+            position: relative;
+        }
+
+        .phase-marker {
+            position: absolute;
+            width: 3px;
+            height: 100%;
+            background: #ff4444;
+            top: 0;
+        }
+
+        .interactive-demo {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .controls {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .control-group {
+            display: inline-block;
+            margin: 10px;
+        }
+
+        label {
+            display: inline-block;
+            width: 120px;
+            text-align: left;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        input[type="range"] {
+            width: 200px;
+            margin: 0 10px;
+        }
+
+        .value-display {
+            display: inline-block;
+            width: 60px;
+            padding: 5px;
+            background: #667eea;
+            color: white;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .canvas-container {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        canvas {
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            background: white;
+            margin: 5px;
+        }
+
+        .result-panel {
+            background: #e8f5e8;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #4caf50;
+        }
+
+        .calculation-steps {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .calculation-steps h4 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .step-detail {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 3px solid #667eea;
+        }
+
+        .matrix-display {
+            font-family: 'Courier New', monospace;
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .comparison-table th, .comparison-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .comparison-table th {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .comparison-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .warning-text {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: white;
+            font-size: 1.1em;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .section {
+                padding: 20px;
+            }
+            
+            canvas {
+                width: 100%;
+                height: auto;
+            }
+
+            .phase-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>八步相移方法中的调制对比度推导</h1>
+            <div class="subtitle">从理论公式到实际计算的完整解析</div>
+        </div>
+
+        <div class="section">
+            <h2>🔄 八步相移基本原理</h2>
+            <p>八步相移技术通过投射八幅具有不同相位的正弦条纹图案，利用相位编码信息精确计算物体表面的三维形状。每步相移的光强信号可以表示为：</p>
+            
+            <div class="formula-box">
+                I_k(x) = A(x) + B(x)cos[φ(x) + δ_k]
+            </div>
+            
+            <div class="step-box">
+                <strong>参数说明：</strong><br>
+                • A(x)：背景光强（直流分量）<br>
+                • B(x)：调制幅度<br>
+                • φ(x)：被测物体引起的相位调制<br>
+                • δ_k：第k步的相移量，k = 1,2,3,...,8
+            </div>
+
+            <h3>八步相移的相位分布</h3>
+            <div class="phase-grid">
+                <div class="phase-item">
+                    <h4>第1步</h4>
+                    <div class="phase-visualization">
+                        <div class="phase-marker" style="left: 0%;"></div>
+                    </div>
+                    <p>δ₁ = 0°</p>
+                </div>
+                <div class="phase-item">
+                    <h4>第2步</h4>
+                    <div class="phase-visualization">
+                        <div class="phase-marker" style="left: 12.5%;"></div>
+                    </div>
+                    <p>δ₂ = 45° = π/4</p>
+                </div>
+                <div class="phase-item">
+                    <h4>第3步</h4>
+                    <div class="phase-visualization">
+                        <div class="phase-marker" style="left: 25%;"></div>
+                    </div>
+                    <p>δ₃ = 90° = π/2</p>
+                </div>
+                <div class="phase-item">
+                    <h4>第4步</h4>
+                    <div class="phase-visualization">
+                        <div class="phase-marker" style="left: 37.5%;"></div>
+                    </div>
+                    <p>δ₄ = 135° = 3π/4</p>
+                </div>
+                <div class="phase-item">
+                    <h4>第5步</h4>
+                    <div class="phase-visualization">
+                        <div class="phase-marker" style="left: 50%;"></div>
+                    </div>
+                    <p>δ₅ = 180° = π</p>
+                </div>
+                <div class="phase-item">
+                    <h4>第6步</h4>
+                    <div class="phase-visualization">
+                        <div class="phase-marker" style="left: 62.5%;"></div>
+                    </div>
+                    <p>δ₆ = 225° = 5π/4</p>
+                </div>
+                <div class="phase-item">
+                    <h4>第7步</h4>
+                    <div class="phase-visualization">
+                        <div class="phase-marker" style="left: 75%;"></div>
+                    </div>
+                    <p>δ₇ = 270° = 3π/2</p>
+                </div>
+                <div class="phase-item">
+                    <h4>第8步</h4>
+                    <div class="phase-visualization">
+                        <div class="phase-marker" style="left: 87.5%;"></div>
+                    </div>
+                    <p>δ₈ = 315° = 7π/4</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📊 调制对比度的推导过程</h2>
+            
+            <h3>步骤1：计算背景光强A(x)</h3>
+            <div class="step-box">
+                由于八个相移量均匀分布在2π范围内，余弦函数的平均值为零：
+            </div>
+            
+            <div class="formula-box">
+                A(x) = (1/8) Σ[k=1 to 8] I_k(x)
+            </div>
+
+            <div class="calculation-steps">
+                <h4>详细推导：</h4>
+                <div class="step-detail">
+                    <strong>展开求和：</strong><br>
+                    Σ[k=1 to 8] I_k = Σ[k=1 to 8] [A + B·cos(φ + δ_k)]<br>
+                    = 8A + B·Σ[k=1 to 8] cos(φ + δ_k)
+                </div>
+                <div class="step-detail">
+                    <strong>计算余弦和：</strong><br>
+                    Σ[k=1 to 8] cos(φ + δ_k) = cos(φ)·Σcos(δ_k) - sin(φ)·Σsin(δ_k)<br>
+                    由于δ_k均匀分布，两个求和均为0
+                </div>
+                <div class="step-detail">
+                    <strong>最终结果：</strong><br>
+                    A(x) = (1/8)·8A = A
+                </div>
+            </div>
+
+            <h3>步骤2：使用傅里叶分析计算调制幅度</h3>
+            <div class="step-box">
+                利用离散傅里叶变换的原理，计算N₁和N₂分量：
+            </div>
+
+            <div class="matrix-display">
+N₁ = Σ[k=1 to 8] I_k · sin(δ_k)
+N₂ = Σ[k=1 to 8] I_k · cos(δ_k)
+            </div>
+
+            <div class="calculation-steps">
+                <h4>N₁分量计算及为什么等于4B·sin(φ)的详细推导：</h4>
+                
+                <div class="step-detail">
+                    <strong>第一步：N₁的定义和展开</strong><br>
+                    N₁ = Σ[k=1 to 8] I_k · sin(δ_k)<br>
+                    其中 I_k = A + B·cos(φ + δ_k)<br><br>
+                    
+                    展开得到：<br>
+                    N₁ = Σ[k=1 to 8] [A + B·cos(φ + δ_k)] · sin(δ_k)<br>
+                    = A·Σ[k=1 to 8] sin(δ_k) + B·Σ[k=1 to 8] cos(φ + δ_k)·sin(δ_k)
+                </div>
+                
+                <div class="step-detail">
+                    <strong>第二步：计算第一项 A·Σsin(δ_k)</strong><br>
+                    δ_k = (k-1)·π/4，k = 1,2,3,...,8<br>
+                    即：δ₁=0, δ₂=π/4, δ₃=π/2, δ₄=3π/4, δ₅=π, δ₆=5π/4, δ₇=3π/2, δ₈=7π/4<br><br>
+                    
+                    Σsin(δ_k) = sin(0) + sin(π/4) + sin(π/2) + sin(3π/4) + sin(π) + sin(5π/4) + sin(3π/2) + sin(7π/4)<br>
+                    = 0 + √2/2 + 1 + √2/2 + 0 + (-√2/2) + (-1) + (-√2/2)<br>
+                    = 0 + √2/2 + 1 + √2/2 + 0 - √2/2 - 1 - √2/2 = 0<br><br>
+                    
+                    因此：A·Σsin(δ_k) = A·0 = 0
+                </div>
+                
+                <div class="step-detail">
+                    <strong>第三步：计算第二项 B·Σcos(φ + δ_k)·sin(δ_k)</strong><br>
+                    使用三角恒等式：cos(φ + δ_k) = cos(φ)cos(δ_k) - sin(φ)sin(δ_k)<br><br>
+                    
+                    B·Σcos(φ + δ_k)·sin(δ_k)<br>
+                    = B·Σ[cos(φ)cos(δ_k) - sin(φ)sin(δ_k)]·sin(δ_k)<br>
+                    = B·cos(φ)·Σcos(δ_k)sin(δ_k) - B·sin(φ)·Σsin²(δ_k)
+                </div>
+                
+                <div class="step-detail">
+                    <strong>第四步：计算Σcos(δ_k)sin(δ_k)</strong><br>
+                    利用恒等式：cos(x)sin(x) = (1/2)sin(2x)<br><br>
+                    
+                    Σcos(δ_k)sin(δ_k) = (1/2)Σsin(2δ_k)<br>
+                    = (1/2)[sin(0) + sin(π/2) + sin(π) + sin(3π/2) + sin(2π) + sin(5π/2) + sin(3π) + sin(7π/2)]<br>
+                    = (1/2)[0 + 1 + 0 + (-1) + 0 + 1 + 0 + (-1)] = 0
+                </div>
+                
+                <div class="step-detail">
+                    <strong>第五步：计算Σsin²(δ_k)</strong><br>
+                    Σsin²(δ_k) = sin²(0) + sin²(π/4) + sin²(π/2) + sin²(3π/4) + sin²(π) + sin²(5π/4) + sin²(3π/2) + sin²(7π/4)<br>
+                    = 0 + (√2/2)² + 1² + (√2/2)² + 0² + (-√2/2)² + (-1)² + (-√2/2)²<br>
+                    = 0 + 1/2 + 1 + 1/2 + 0 + 1/2 + 1 + 1/2<br>
+                    = 4
+                </div>
+                
+                <div class="step-detail">
+                    <strong>第六步：得出最终结果</strong><br>
+                    N₁ = B·cos(φ)·0 - B·sin(φ)·4<br>
+                    = 0 - 4B·sin(φ)<br>
+                    = -4B·sin(φ)<br><br>
+                    
+                    <strong class="warning-text">注意：</strong>通常我们取绝对值或者在后续计算中通过平方消除符号，所以表示为：<br>
+                    <strong>|N₁| = 4B·sin(φ)</strong>
+                </div>
+                
+                <div class="step-detail">
+                    <strong>物理意义解释：</strong><br>
+                    • 系数4来源于8个均匀分布相移角度的sin²值之和<br>
+                    • sin(φ)项反映了被测物体相位对正弦分量的调制<br>
+                    • 这个结果说明N₁包含了调制幅度B和相位φ的信息<br>
+                    • 通过N₁和N₂可以完全重构出B和φ
+                </div>
+                
+                <h4>N₂分量计算（类似推导）：</h4>
+                <div class="step-detail">
+                    同理可以推导出：<br>
+                    N₂ = Σ[k=1 to 8] I_k · cos(δ_k) = 4B·cos(φ)<br><br>
+                    
+                    因此：<br>
+                    • N₁ = -4B·sin(φ)（考虑符号）<br>
+                    • N₂ = 4B·cos(φ)<br>
+                    • √(N₁² + N₂²) = 4B<br>
+                    • B = √(N₁² + N₂²) / 4
+                </div>
+            </div>
+
+            <h3>步骤3：计算调制幅度B(x)及除以4的详细解释</h3>
+            <div class="formula-box">
+                B(x) = (1/4)√(N₁² + N₂²)
+            </div>
+
+            <div class="highlight">
+                <strong>为什么要除以4？深度解析：</strong><br><br>
+                
+                <strong>1. 傅里叶变换理论基础：</strong><br>
+                在连续傅里叶变换中，一个周期函数f(t) = A + B·cos(ωt + φ)的傅里叶系数为：<br>
+                • 基频余弦分量系数：B/2<br>
+                • 基频正弦分量系数：B/2<br>
+                • 幅度：√[(B/2)² + (B/2)²] = B/√2 × √2 = B<br><br>
+                
+                <strong>2. 离散傅里叶变换(DFT)修正：</strong><br>
+                对于N点DFT，第k个频率分量的计算公式为：<br>
+                X[k] = Σ[n=0 to N-1] x[n] · e^(-j2πkn/N)<br><br>
+                
+                对于8点相移数据，实际计算得到的N₁和N₂是：<br>
+                • N₁ = Σ I_k · sin(δ_k) = 4B · sin(φ)<br>
+                • N₂ = Σ I_k · cos(δ_k) = 4B · cos(φ)<br><br>
+                
+                <strong>3. 系数4的来源：</strong><br>
+                在8步相移中，每个三角函数值的平方和为：<br>
+                Σ[k=1 to 8] sin²(δ_k) = Σ[k=1 to 8] cos²(δ_k) = 4<br><br>
+                
+                因此：<br>
+                √(N₁² + N₂²) = √[(4B·sin(φ))² + (4B·cos(φ))²]<br>
+                = √[16B²(sin²(φ) + cos²(φ))]<br>
+                = √[16B²] = 4B<br><br>
+                
+                所以：B = √(N₁² + N₂²) / 4<br><br>
+                
+                <strong>4. 物理意义：</strong><br>
+                除以4是为了从DFT的原始输出中提取真实的物理调制幅度，消除由于采样点数和三角函数求和引入的比例因子。
+            </div>
+
+            <div class="calculation-steps">
+                <h4>数学验证过程：</h4>
+                <div class="step-detail">
+                    <strong>步骤1：验证三角函数和的性质</strong><br>
+                    对于δ_k = k·π/4 (k=0,1,2,...,7)：<br>
+                    Σ sin²(δ_k) = sin²(0) + sin²(π/4) + sin²(π/2) + ... + sin²(7π/4)<br>
+                    = 0 + 1/2 + 1 + 1/2 + 0 + 1/2 + 1 + 1/2 = 4<br><br>
+                    
+                    Σ cos²(δ_k) = cos²(0) + cos²(π/4) + cos²(π/2) + ... + cos²(7π/4)<br>
+                    = 1 + 1/2 + 0 + 1/2 + 1 + 1/2 + 0 + 1/2 = 4
+                </div>
+                
+                <div class="step-detail">
+                    <strong>步骤2：推导N₁和N₂的表达式</strong><br>
+                    I_k = A + B·cos(φ + δ_k)<br>
+                    
+                    N₁ = Σ I_k · sin(δ_k)<br>
+                    = Σ [A + B·cos(φ + δ_k)] · sin(δ_k)<br>
+                    = A·Σ sin(δ_k) + B·Σ cos(φ + δ_k)·sin(δ_k)<br>
+                    = 0 + B·[cos(φ)·Σ cos(δ_k)sin(δ_k) - sin(φ)·Σ sin²(δ_k)]<br>
+                    = B·[0 - sin(φ)·4] = -4B·sin(φ)<br><br>
+                    
+                    类似地：N₂ = 4B·cos(φ)
+                </div>
+                
+                <div class="step-detail">
+                    <strong>步骤3：计算最终的调制幅度</strong><br>
+                    √(N₁² + N₂²) = √[(-4B·sin(φ))² + (4B·cos(φ))²]<br>
+                    = √[16B²·sin²(φ) + 16B²·cos²(φ)]<br>
+                    = √[16B²(sin²(φ) + cos²(φ))]<br>
+                    = √[16B²] = 4B<br><br>
+                    
+                    因此：B = √(N₁² + N₂²) / 4
+                </div>
+            </div>
+
+            <h3>步骤4：计算调制对比度M(x)</h3>
+            <div class="formula-box">
+                M(x) = B(x) / A(x) = √(N₁² + N₂²) / (4A(x))
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🧮 交互式计算演示</h2>
+            
+            <div class="interactive-demo">
+                <h3>八步相移数据输入</h3>
+                <div class="controls">
+                    <div class="control-group">
+                        <label for="bg-slider">背景光强 A:</label>
+                        <input type="range" id="bg-slider" min="50" max="150" value="100" step="5">
+                        <span id="bg-value" class="value-display">100</span>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="mod-slider">调制幅度 B:</label>
+                        <input type="range" id="mod-slider" min="10" max="80" value="40" step="5">
+                        <span id="mod-value" class="value-display">40</span>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="phase-slider">物体相位 φ:</label>
+                        <input type="range" id="phase-slider" min="0" max="360" value="0" step="5">
+                        <span id="phase-value" class="value-display">0°</span>
+                    </div>
+                </div>
+
+                <div class="canvas-container">
+                    <canvas id="eight-step-canvas" width="800" height="300"></canvas>
+                </div>
+
+                <div class="result-panel" id="calculation-result">
+                    <h4>计算结果将在这里显示</h4>
+                </div>
+
+                <div class="calculation-steps" id="detailed-steps">
+                    <h4>详细计算步骤</h4>
+                    <div id="step-details"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🔍 数值示例分析</h2>
+            
+            <h3>示例数据</h3>
+            <div class="step-box">
+                假设测得八步相移的光强值：<br>
+                I₁ = 120, I₂ = 145, I₃ = 160, I₄ = 145<br>
+                I₅ = 80, I₆ = 55, I₇ = 40, I₈ = 55
+            </div>
+
+            <div class="calculation-steps">
+                <h4>完整计算过程：</h4>
+                
+                <div class="step-detail">
+                    <strong>1. 计算背景光强：</strong><br>
+                    A = (120 + 145 + 160 + 145 + 80 + 55 + 40 + 55) / 8 = 100
+                </div>
+                
+                <div class="step-detail">
+                    <strong>2. 计算N₁：</strong><br>
+                    N₁ = (√2/2)(145 + 145 - 55 - 55) + (160 - 40)<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; = (√2/2) × 180 + 120<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; = 127.3 + 120 = 247.3
+                </div>
+                
+                <div class="step-detail">
+                    <strong>3. 计算N₂：</strong><br>
+                    N₂ = (120 - 80) + (√2/2)(145 - 145 - 55 + 55)<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; = 40 + 0 = 40
+                </div>
+                
+                <div class="step-detail">
+                    <strong>4. 计算调制幅度：</strong><br>
+                    B = (1/4)√(247.3² + 40²) = (1/4)√(64,237) ≈ 63.4
+                </div>
+                
+                <div class="step-detail">
+                    <strong>5. 计算调制对比度：</strong><br>
+                    M = B/A = 63.4/100 = 0.634
+                </div>
+            </div>
+
+            <div class="highlight">
+                <strong>结果分析：</strong>调制对比度为0.634，属于良好质量范围，可以保证较高的测量精度。
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📈 八步相移的优势分析</h2>
+            
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>特性</th>
+                        <th>四步相移</th>
+                        <th>八步相移</th>
+                        <th>优势说明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>抗环境光能力</strong></td>
+                        <td>一般</td>
+                        <td>强</td>
+                        <td>更多采样点提供更好的平均效果</td>
+                    </tr>
+                    <tr>
+                        <td><strong>非线性误差抑制</strong></td>
+                        <td>有限</td>
+                        <td>优秀</td>
+                        <td>能有效消除高次谐波影响</td>
+                    </tr>
+                    <tr>
+                        <td><strong>测量精度</strong></td>
+                        <td>高</td>
+                        <td>更高</td>
+                        <td>λ/50 - λ/100精度级别</td>
+                    </tr>
+                    <tr>
+                        <td><strong>计算复杂度</strong></td>
+                        <td>低</td>
+                        <td>中等</td>
+                        <td>现代计算机可轻松处理</td>
+                    </tr>
+                    <tr>
+                        <td><strong>数据冗余度</strong></td>
+                        <td>无</td>
+                        <td>2倍</td>
+                        <td>提供质量评估和错误检测</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>⚙️ 实际应用中的考虑因素</h2>
+            
+            <h3>1. 噪声处理</h3>
+            <div class="step-box">
+                <strong>高斯噪声：</strong>八步相移的多点采样能有效降低随机噪声影响<br>
+                <strong>椒盐噪声：</strong>可通过中值滤波预处理<br>
+                <strong>系统噪声：</strong>八步算法本身具有噪声抑制特性
+            </div>
+
+            <h3>2. 系统标定</h3>
+            <div class="step-box">
+                <strong>相移标定：</strong>确保每步相移准确为π/4<br>
+                <strong>强度标定：</strong>消除投影仪和相机的非线性响应<br>
+                <strong>几何标定：</strong>建立像素坐标与世界坐标的关系
+            </div>
+
+            <h3>3. 质量评估指标</h3>
+            <div class="highlight">
+                <strong>调制对比度阈值：</strong><br>
+                • M > 0.7：优秀质量，精度可达λ/100<br>
+                • 0.5 < M ≤ 0.7：良好质量，精度约λ/50<br>
+                • 0.3 < M ≤ 0.5：可接受质量，需要处理<br>
+                • M ≤ 0.3：质量较差，建议重新测量
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>八步相移方法通过精确的数学推导和计算，为高精度三维测量提供了可靠的技术基础</p>
+        </div>
+    </div>
+
+    <script>
+        // 获取控制元素
+        const bgSlider = document.getElementById('bg-slider');
+        const modSlider = document.getElementById('mod-slider');
+        const phaseSlider = document.getElementById('phase-slider');
+        
+        const bgValue = document.getElementById('bg-value');
+        const modValue = document.getElementById('mod-value');
+        const phaseValue = document.getElementById('phase-value');
+        
+        const canvas = document.getElementById('eight-step-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        const resultPanel = document.getElementById('calculation-result');
+        const stepDetails = document.getElementById('step-details');
+
+        // 更新显示值
+        function updateValues() {
+            bgValue.textContent = bgSlider.value;
+            modValue.textContent = modSlider.value;
+            phaseValue.textContent = phaseSlider.value + '°';
+        }
+
+        // 计算八步相移数据
+        function calculateEightStep(A, B, phi_deg) {
+            const phi = phi_deg * Math.PI / 180; // 转换为弧度
+            const steps = [];
+            const phases = [0, Math.PI/4, Math.PI/2, 3*Math.PI/4, Math.PI, 5*Math.PI/4, 3*Math.PI/2, 7*Math.PI/4];
+            
+            for (let i = 0; i < 8; i++) {
+                const intensity = A + B * Math.cos(phi + phases[i]);
+                steps.push({
+                    step: i + 1,
+                    phase: phases[i],
+                    intensity: Math.round(intensity * 10) / 10
+                });
+            }
+            
+            return steps;
+        }
+
+        // 计算调制对比度
+        function calculateModulationContrast(steps) {
+            const I = steps.map(s => s.intensity);
+            
+            // 计算背景光强
+            const A_calc = I.reduce((sum, val) => sum + val, 0) / 8;
+            
+            // 计算N1和N2
+            const sqrt2_2 = Math.sqrt(2) / 2;
+            const N1 = sqrt2_2 * (I[1] + I[3] - I[5] - I[7]) + (I[2] - I[6]);
+            const N2 = (I[0] - I[4]) + sqrt2_2 * (I[1] - I[3] - I[5] + I[7]);
+            
+            // 计算调制幅度
+            const B_calc = 0.25 * Math.sqrt(N1 * N1 + N2 * N2);
+            
+            // 计算调制对比度
+            const M = B_calc / A_calc;
+            
+            // 计算相位
+            const phi_calc = Math.atan2(N1, N2);
+            
+            return {
+                A: A_calc,
+                B: B_calc,
+                M: M,
+                N1: N1,
+                N2: N2,
+                phi: phi_calc,
+                intensities: I
+            };
+        }
+
+        // 绘制八步相移图
+        function drawEightStep() {
+            const A = parseFloat(bgSlider.value);
+            const B = parseFloat(modSlider.value);
+            const phi = parseFloat(phaseSlider.value);
+            
+            const steps = calculateEightStep(A, B, phi);
+            const results = calculateModulationContrast(steps);
+            
+            // 清空画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制背景网格
+            ctx.strokeStyle = '#f0f0f0';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 10; i++) {
+                const x = i * canvas.width / 10;
+                const y = i * canvas.height / 10;
+                
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            
+            // 绘制八步相移条形图
+            const barWidth = canvas.width / 10;
+            const maxIntensity = Math.max(...results.intensities);
+            const minIntensity = Math.min(...results.intensities);
+            const range = maxIntensity - minIntensity;
+            
+            for (let i = 0; i < 8; i++) {
+                const x = (i + 1) * barWidth;
+                const normalizedHeight = (results.intensities[i] - minIntensity) / range;
+                const barHeight = normalizedHeight * (canvas.height - 60) + 20;
+                
+                // 绘制条形
+                ctx.fillStyle = `hsl(${240 - i * 30}, 70%, 60%)`;
+                ctx.fillRect(x, canvas.height - barHeight, barWidth * 0.8, barHeight);
+                
+                // 绘制数值标签
+                ctx.fillStyle = '#333';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(results.intensities[i].toFixed(1), x + barWidth * 0.4, canvas.height - barHeight - 5);
+                ctx.fillText(`I${i+1}`, x + barWidth * 0.4, canvas.height - 5);
+            }
+            
+            // 更新结果显示
+            updateResults(results, A, B, phi);
+        }
+
+        // 更新计算结果显示
+        function updateResults(results, A_input, B_input, phi_input) {
+            const resultHTML = `
+                <h4>计算结果对比</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <h5>输入参数</h5>
+                        <p><strong>背景光强 A:</strong> ${A_input}</p>
+                        <p><strong>调制幅度 B:</strong> ${B_input}</p>
+                        <p><strong>相位 φ:</strong> ${phi_input}°</p>
+                    </div>
+                    <div>
+                        <h5>计算结果</h5>
+                        <p><strong>计算得到的A:</strong> ${results.A.toFixed(2)}</p>
+                        <p><strong>计算得到的B:</strong> ${results.B.toFixed(2)}</p>
+                        <p><strong>调制对比度M:</strong> ${results.M.toFixed(3)}</p>
+                        <p><strong>计算相位:</strong> ${(results.phi * 180 / Math.PI).toFixed(1)}°</p>
+                    </div>
+                </div>
+                <div style="margin-top: 15px; padding: 10px; background: #e8f5e8; border-radius: 5px;">
+                    <strong>精度评估:</strong> 
+                    ${results.M > 0.7 ? '优秀质量 (M > 0.7)' : 
+                      results.M > 0.5 ? '良好质量 (0.5 < M ≤ 0.7)' : 
+                      results.M > 0.3 ? '可接受质量 (0.3 < M ≤ 0.5)' : '质量较差 (M ≤ 0.3)'}
+                </div>
+            `;
+            resultPanel.innerHTML = resultHTML;
+            
+            // 更新详细步骤
+            const stepsHTML = `
+                <div class="step-detail">
+                    <strong>1. 八步光强值：</strong><br>
+                    ${results.intensities.map((val, i) => `I${i+1} = ${val.toFixed(1)}`).join(', ')}
+                </div>
+                <div class="step-detail">
+                    <strong>2. 计算N₁：</strong><br>
+                    N₁ = (√2/2)(I₂ + I₄ - I₆ - I₈) + (I₃ - I₇)<br>
+                    N₁ = ${results.N1.toFixed(2)}
+                </div>
+                <div class="step-detail">
+                    <strong>3. 计算N₂：</strong><br>
+                    N₂ = (I₁ - I₅) + (√2/2)(I₂ - I₄ - I₆ + I₈)<br>
+                    N₂ = ${results.N2.toFixed(2)}
+                </div>
+                <div class="step-detail">
+                    <strong>4. 计算调制幅度（除以4）：</strong><br>
+                    B = √(N₁² + N₂²) / 4 = √(${results.N1.toFixed(2)}² + ${results.N2.toFixed(2)}²) / 4<br>
+                    B = ${Math.sqrt(results.N1*results.N1 + results.N2*results.N2).toFixed(2)} / 4 = ${results.B.toFixed(2)}
+                </div>
+                <div class="step-detail">
+                    <strong>5. 计算调制对比度：</strong><br>
+                    M = B/A = ${results.B.toFixed(2)}/${results.A.toFixed(2)} = ${results.M.toFixed(3)}
+                </div>
+            `;
+            stepDetails.innerHTML = stepsHTML;
+        }
+
+        // 事件监听器
+        bgSlider.addEventListener('input', () => {
+            updateValues();
+            drawEightStep();
+        });
+        
+        modSlider.addEventListener('input', () => {
+            updateValues();
+            drawEightStep();
+        });
+        
+        phaseSlider.addEventListener('input', () => {
+            updateValues();
+            drawEightStep();
+        });
+
+        // 初始化
+        updateValues();
+        drawEightStep();
+    </script>
+</body>
+</html>
