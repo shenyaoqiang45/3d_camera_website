@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linux环境下YOLOv5配置完整指南</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            animation: slideUp 0.8s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) translateY(-100%); }
+            100% { transform: translateX(100%) translateY(100%); }
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .intro {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .intro h2 {
+            font-size: 1.8em;
+            margin-bottom: 15px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border-left: 5px solid #4facfe;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .section h3 {
+            color: #2c3e50;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ecf0f1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .step-number {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            overflow-x: auto;
+            border-left: 4px solid #4facfe;
+            position: relative;
+        }
+
+        .code-block::before {
+            content: '终端';
+            position: absolute;
+            top: -10px;
+            right: 15px;
+            background: #4facfe;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .code-block code {
+            font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .warning {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            border: 1px solid #f39c12;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .warning::before {
+            content: '⚠️';
+            position: absolute;
+            top: -10px;
+            left: 15px;
+            background: #f39c12;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 50%;
+            font-size: 1.2em;
+        }
+
+        .warning h4 {
+            color: #d68910;
+            margin: 0 0 10px 0;
+            font-size: 1.1em;
+        }
+
+        .tip {
+            background: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%);
+            border: 1px solid #27ae60;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .tip::before {
+            content: '💡';
+            position: absolute;
+            top: -10px;
+            left: 15px;
+            background: #27ae60;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 50%;
+            font-size: 1.2em;
+        }
+
+        .tip h4 {
+            color: #229954;
+            margin: 0 0 10px 0;
+            font-size: 1.1em;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            transform: scale(1);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: scale(1.05);
+        }
+
+        .feature-card h4 {
+            font-size: 1.3em;
+            margin-bottom: 15px;
+        }
+
+        .feature-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .progress-bar {
+            background: #ecf0f1;
+            height: 8px;
+            border-radius: 4px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 4px;
+            animation: progress 2s ease-in-out;
+        }
+
+        @keyframes progress {
+            from { width: 0%; }
+            to { width: 100%; }
+        }
+
+        .footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 30px;
+            margin-top: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .section {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Linux环境下YOLOv5配置完整指南</h1>
+            <p>从零开始搭建深度学习目标检测环境</p>
+        </div>
+
+        <div class="content">
+            <div class="intro">
+                <h2>🚀 什么是YOLOv5？</h2>
+                <p>YOLOv5（You Only Look Once version 5）是当前最流行的实时目标检测算法之一。它能够在图像中快速准确地识别和定位多个物体，广泛应用于安防监控、自动驾驶、工业检测等领域。本指南将带你在Linux环境下从零开始配置YOLOv5开发环境。</p>
+                
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <span class="feature-icon">⚡</span>
+                        <h4>高性能</h4>
+                        <p>实时检测，速度快</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="feature-icon">🎯</span>
+                        <h4>高精度</h4>
+                        <p>准确识别多种目标</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="feature-icon">🔧</span>
+                        <h4>易使用</h4>
+                        <p>简单易上手的API</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3><span class="step-number">1</span>安装Anaconda/Miniconda</h3>
+                <p>首先我们需要安装Python包管理工具。Miniconda是轻量级的选择，包含了conda包管理器和Python。</p>
+                
+                <div class="code-block">
+                    <code># 下载Miniconda安装包
+<br>wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+<br><br>
+# 运行安装程序
+<br>bash Miniconda3-latest-Linux-x86_64.sh
+<br><br>
+# 重新加载bash配置
+<br>source ~/.bashrc</code>
+                </div>
+
+                <div class="tip">
+                    <h4>小贴士</h4>
+                    <p>如果下载速度慢，可以使用国内镜像源，如清华大学镜像：https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3><span class="step-number">2</span>创建专用虚拟环境</h3>
+                <p>为了避免包冲突，我们创建一个专门用于YOLOv5的Python虚拟环境。</p>
+                
+                <div class="code-block">
+                    <code># 创建名为yolov5的Python 3.8环境
+<br>conda create -n yolov5 python=3.8 -y
+<br><br>
+# 激活环境
+<br>conda activate yolov5</code>
+                </div>
+
+                <div class="warning">
+                    <h4>注意事项</h4>
+                    <p>建议使用Python 3.8版本，因为它与YOLOv5的兼容性最好。Python版本过高或过低可能会导致依赖包安装失败。</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3><span class="step-number">3</span>下载YOLOv5源码</h3>
+                <p>从GitHub克隆官方YOLOv5仓库到本地。</p>
+                
+                <div class="code-block">
+                    <code># 克隆YOLOv5仓库
+<br>git clone https://github.com/ultralytics/yolov5.git
+<br><br>
+# 进入项目目录
+<br>cd yolov5</code>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3><span class="step-number">4</span>安装PyTorch深度学习框架</h3>
+                <p>PyTorch是YOLOv5的核心依赖。根据你的硬件配置选择合适的版本：</p>
+
+                <h4>🖥️ 如果有NVIDIA GPU（推荐）：</h4>
+                <div class="code-block">
+                    <code># 首先检查CUDA版本
+<br>nvidia-smi
+<br><br>
+# 安装支持CUDA 11.8的PyTorch
+<br>conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia
+<br><br>
+# 或安装支持CUDA 12.1的PyTorch
+<br>conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia</code>
+                </div>
+
+                <h4>💻 如果只有CPU：</h4>
+                <div class="code-block">
+                    <code># 安装CPU版本的PyTorch
+<br>conda install pytorch torchvision torchaudio cpuonly -c pytorch</code>
+                </div>
+
+                <div class="tip">
+                    <h4>性能提示</h4>
+                    <p>GPU版本的训练速度比CPU快10-100倍！如果你计划训练自己的模型，强烈建议使用支持CUDA的GPU。</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3><span class="step-number">5</span>安装YOLOv5依赖包</h3>
+                <p>安装YOLOv5运行所需的所有Python包。</p>
+                
+                <div class="code-block">
+                    <code># 方法1：一键安装所有依赖（推荐）
+<br>pip install -r requirements.txt
+<br><br>
+# 方法2：手动安装主要依赖
+<br>pip install opencv-python pillow pyyaml requests scipy tqdm tensorboard seaborn pandas</code>
+                </div>
+
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 75%;"></div>
+                </div>
+                <p><small>安装进度：75% 完成</small></p>
+            </div>
+
+            <div class="section">
+                <h3><span class="step-number">6</span>验证安装</h3>
+                <p>运行测试命令确保一切正常工作。</p>
+                
+                <div class="code-block">
+                    <code># 使用预训练模型测试目标检测
+<br>python detect.py --weights yolov5s.pt --source data/images/
+<br><br>
+# 验证PyTorch GPU支持
+<br>python -c "import torch; print('CUDA available:', torch.cuda.is_available())"
+<br><br>
+# 检查YOLOv5版本
+<br>python -c "import yolov5; print(yolov5.__version__)"</code>
+                </div>
+
+                <div class="tip">
+                    <h4>成功标志</h4>
+                    <p>如果看到检测结果保存在runs/detect/文件夹中，并且CUDA显示为True（GPU版本），说明安装成功！</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3><span class="step-number">7</span>常见问题解决</h3>
+                
+                <h4>🔧 OpenCV相关问题：</h4>
+                <div class="code-block">
+                    <code># 解决OpenCV冲突
+<br>pip uninstall opencv-python opencv-python-headless -y
+<br>pip install opencv-python-headless</code>
+                </div>
+
+                <h4>🔧 权限问题：</h4>
+                <div class="code-block">
+                    <code># 添加执行权限
+<br>chmod +x detect.py train.py val.py</code>
+                </div>
+
+                <h4>🔧 内存不足问题：</h4>
+                <div class="code-block">
+                    <code># 使用较小的batch size
+<br>python train.py --batch-size 8  # 默认是16</code>
+                </div>
+
+                <div class="warning">
+                    <h4>常见错误</h4>
+                    <p>如果遇到"ModuleNotFoundError"错误，通常是因为忘记激活yolov5环境。请确保每次使用前都运行<code>conda activate yolov5</code>。</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3><span class="step-number">8</span>环境管理与维护</h3>
+                <p>掌握这些命令，让你的开发环境管理更轻松。</p>
+                
+                <div class="code-block">
+                    <code># 激活YOLOv5环境
+<br>conda activate yolov5
+<br><br>
+# 退出当前环境
+<br>conda deactivate
+<br><br>
+# 查看已安装的包
+<br>conda list
+<br><br>
+# 导出环境配置（方便在其他机器上复现）
+<br>conda env export > yolov5_env.yml
+<br><br>
+# 从配置文件创建环境
+<br>conda env create -f yolov5_env.yml
+<br><br>
+# 删除环境（如果不再需要）
+<br>conda env remove -n yolov5</code>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3><span class="step-number">9</span>下一步：开始使用YOLOv5</h3>
+                <p>环境配置完成后，你可以开始探索YOLOv5的强大功能：</p>
+                
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <span class="feature-icon">📷</span>
+                        <h4>图像检测</h4>
+                        <p>检测图片中的物体</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="feature-icon">🎥</span>
+                        <h4>视频检测</h4>
+                        <p>实时视频流检测</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="feature-icon">🏋️</span>
+                        <h4>模型训练</h4>
+                        <p>训练自定义数据集</p>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <code># 检测单张图片
+<br>python detect.py --weights yolov5s.pt --source path/to/image.jpg
+<br><br>
+# 检测视频
+<br>python detect.py --weights yolov5s.pt --source path/to/video.mp4
+<br><br>
+# 使用摄像头实时检测
+<br>python detect.py --weights yolov5s.pt --source 0
+<br><br>
+# 训练自定义数据集
+<br>python train.py --data custom_dataset.yaml --weights yolov5s.pt --epochs 100</code>
+                </div>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 100%;"></div>
+            </div>
+            <p><strong>🎉 恭喜！YOLOv5环境配置完成！</strong></p>
+        </div>
+
+        <div class="footer">
+            <p>📚 更多YOLOv5教程和技巧，请关注相关技术社区和官方文档</p>
+            <p>💡 遇到问题？查看GitHub Issues或加入开发者社群获取帮助</p>
+        </div>
+    </div>
+
+    <script>
+        // 添加一些交互效果
+        document.addEventListener('DOMContentLoaded', function() {
+            // 为代码块添加复制功能
+            const codeBlocks = document.querySelectorAll('.code-block');
+            codeBlocks.forEach(block => {
+                block.addEventListener('click', function() {
+                    const code = this.querySelector('code').textContent;
+                    navigator.clipboard.writeText(code).then(function() {
+                        // 简单的提示效果
+                        const original = block.style.transform;
+                        block.style.transform = 'scale(0.98)';
+                        setTimeout(() => {
+                            block.style.transform = original;
+                        }, 150);
+                    });
+                });
+            });
+
+            // 添加滚动动画
+            const sections = document.querySelectorAll('.section');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            });
+
+            sections.forEach(section => {
+                section.style.opacity = '0';
+                section.style.transform = 'translateY(20px)';
+                section.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(section);
+            });
+        });
+    </script>
+</body>
+</html>

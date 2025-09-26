@@ -1111,7 +1111,6 @@
                         <a href="basic/vision_tech_intro.html">🧠 视觉感知思维范式</a>
                         <a href="basic/stereo_vision_coordinates.html">📐 立体视觉坐标系</a>
                         <a href="basic/Epipolar_Geometry.html">🔍 对极几何</a>
-                        <a href="basic/ai_cpp_deploy_guide.html">🚀 AI推理与C++部署</a>
                     </div>
                 </li>
                 <li class="dropdown"><a href="#calibration">📷 标定技术 <span class="dropdown-arrow">▼</span></a>
@@ -1187,7 +1186,12 @@
                     </div>
                 </li>
                 <li><a href="#demo">互动演示</a></li>
-                <li><a href="#applications">应用领域</a></li>
+                <li class="dropdown"><a href="#applications">🤖 AI训练部署 <span class="dropdown-arrow">▼</span></a>
+                    <div class="dropdown-content">
+                        <a href="ai/yolov5_setup_guide.html">🎯 YOLOv5配置指南</a>
+                        <a href="ai/ai_cpp_deploy_guide.html">🚀 AI推理与C++部署</a>
+                    </div>
+                </li>
             </ul>
 
             <!-- 移动端菜单 -->
@@ -1211,7 +1215,6 @@
                             <a href="basic/vision_tech_intro.html">🧠 视觉感知思维范式</a>
                             <a href="basic/stereo_vision_coordinates.html">📐 立体视觉坐标系</a>
                             <a href="basic/Epipolar_Geometry.html">🔍 对极几何</a>
-                            <a href="basic/ai_cpp_deploy_guide.html">🚀 AI推理与C++部署</a>
                         </div>
                     </li>
                     
@@ -1298,7 +1301,13 @@
                     </li>
                     
                     <li><a href="#demo">互动演示</a></li>
-                    <li><a href="#applications">应用领域</a></li>
+                    <li>
+                        <a href="#applications">🤖 AI训练部署</a>
+                        <div class="mobile-submenu">
+                            <a href="ai/yolov5_setup_guide.html">🎯 YOLOv5配置指南</a>
+                            <a href="ai/ai_cpp_deploy_guide.html">🚀 AI推理与C++部署</a>
+                        </div>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -1374,7 +1383,7 @@
                     <h3>AI推理与C++部署</h3>
                     <p>深入解析AI模型的C++推理部署技术，涵盖主流推理框架对比、训练与推理一致性保证、性能优化策略等关键技术要点。</p>
                     <div style="margin-top: 1rem; text-align: center;">
-                        <a href="basic/ai_cpp_deploy_guide.html" style="color: #667eea; text-decoration: none; font-size: 0.9rem; font-weight: bold;">
+                        <a href="ai/ai_cpp_deploy_guide.html" style="color: #667eea; text-decoration: none; font-size: 0.9rem; font-weight: bold;">
                             🚀 探索AI C++部署技术 →
                         </a>
                     </div>
@@ -2005,46 +2014,42 @@
         </section>
 
         <section id="applications" class="section">
-            <h2 class="section-title">应用领域</h2>
+            <h2 class="section-title">AI训练部署</h2>
             <div class="cards-grid">
                 <div class="card fade-in">
-                    <div class="card-icon">🚗</div>
-                    <h3>自动驾驶</h3>
-                    <p>3D相机为自动驾驶汽车提供精确的环境感知能力，识别道路、车辆、行人和障碍物，确保安全驾驶。现代自动驾驶系统普遍采用多种3D传感器融合的方案。</p>
+                    <div class="card-icon">🎯</div>
+                    <h3>YOLOv5目标检测</h3>
+                    <p>YOLOv5是当前最流行的实时目标检测算法，能够在图像中快速准确地识别和定位多个物体。广泛应用于安防监控、自动驾驶、工业检测等领域，具有高性能、高精度、易使用的特点。</p>
+                    <div style="margin-top: 1rem; text-align: center;">
+                        <a href="ai/yolov5_setup_guide.html" style="color: #667eea; text-decoration: none; font-size: 0.9rem; font-weight: bold;">
+                            🚀 Linux环境配置指南 →
+                        </a>
+                    </div>
                 </div>
                 <div class="card fade-in">
-                    <div class="card-icon">🤖</div>
-                    <h3>机器人视觉</h3>
-                    <p>工业机器人和服务机器人利用3D视觉进行物体识别、抓取和导航。从精密装配到家庭服务，3D相机让机器人拥有了"空间智慧"。</p>
-                </div>
-                <div class="card fade-in">
-                    <div class="card-icon">🏥</div>
-                    <h3>医疗影像</h3>
-                    <p>3D成像技术在医疗领域应用广泛，包括CT、MRI重建、手术导航、康复评估等。帮助医生更准确地诊断和治疗疾病。</p>
-                </div>
-                <div class="card fade-in">
-                    <div class="card-icon">🎮</div>
-                    <h3>娱乐与AR</h3>
-                    <p>虚拟现实、增强现实和游戏产业大量使用3D相机技术，为用户创造沉浸式体验。从体感游戏到虚拟试衣，应用场景不断扩展。</p>
-                </div>
-                <div class="card fade-in">
-                    <div class="card-icon">🏭</div>
-                    <h3>工业检测</h3>
-                    <p>制造业使用3D相机进行质量控制、尺寸测量和缺陷检测。相比传统2D检测，3D视觉能提供更全面、更精确的检测结果。</p>
-                </div>                <div class="card fade-in">
-                    <div class="card-icon">🏗️</div>
-                    <h3>建筑测绘</h3>
-                    <p>3D激光扫描技术在建筑、考古和地理测绘中发挥重要作用，能够快速创建精确的三维模型，提高测量效率和精度。</p>
+                    <div class="card-icon">🧠</div>
+                    <h3>深度学习框架</h3>
+                    <p>PyTorch、TensorFlow等深度学习框架为AI模型训练提供强大支持。通过GPU加速训练，实现高效的模型优化和参数调整，是现代AI开发的核心工具。</p>
                 </div>
                 <div class="card fade-in">
                     <div class="card-icon">⚡</div>
-                    <h3>异构系统加速</h3>
-                    <p>异构计算系统结合CPU、GPU、FPGA等多种处理器，为3D视觉处理提供专用硬件加速，实现毫秒级的实时图像处理和立体匹配算法，显著提升系统性能。</p>
-                    <div style="margin-top: 1rem; text-align: center;">
-                        <a href="heterogeneous_system/heterogeneous_hardware_guide.html" style="color: #667eea; text-decoration: none; font-size: 0.9rem; font-weight: bold;">
-                            ⚡ 了解异构系统技术 →
-                        </a>
-                    </div>
+                    <h3>模型优化部署</h3>
+                    <p>通过模型剪枝、量化、蒸馏等技术优化AI模型，使用TensorRT、ONNX等工具进行推理加速，实现边缘设备上的实时AI推理，满足产业化部署需求。</p>
+                </div>
+                <div class="card fade-in">
+                    <div class="card-icon">🔧</div>
+                    <h3>环境配置管理</h3>
+                    <p>使用Anaconda、Docker等工具管理AI开发环境，配置CUDA、cuDNN等深度学习依赖库，建立标准化的开发和部署流程，确保环境一致性。</p>
+                </div>
+                <div class="card fade-in">
+                    <div class="card-icon">📊</div>
+                    <h3>数据处理与增强</h3>
+                    <p>数据预处理、数据增强是AI训练的关键步骤。通过图像变换、噪声添加、几何变换等技术扩充训练数据，提高模型的泛化能力和鲁棒性。</p>
+                </div>
+                <div class="card fade-in">
+                    <div class="card-icon">🚀</div>
+                    <h3>分布式训练</h3>
+                    <p>利用多GPU、多节点进行大规模模型训练，通过数据并行、模型并行等策略提升训练效率，适用于大型深度学习模型的工业级训练需求。</p>
                 </div>
             </div>
         </section>        <section id="calibration" class="section">
@@ -2268,7 +2273,7 @@
                     <ul style="list-style: none; padding: 0;">
                         <li><a href="basic/stereo_vision_coordinates.html" style="color: #ccc; text-decoration: none; display: block; padding: 0.25rem 0;">📐 立体视觉坐标系</a></li>
                         <li><a href="basic/Epipolar_Geometry.html" style="color: #ccc; text-decoration: none; display: block; padding: 0.25rem 0;">🔍 对极几何</a></li>
-                        <li><a href="basic/ai_cpp_deploy_guide.html" style="color: #ccc; text-decoration: none; display: block; padding: 0.25rem 0;">🚀 AI推理与C++部署</a></li>
+                        <li><a href="ai/ai_cpp_deploy_guide.html" style="color: #ccc; text-decoration: none; display: block; padding: 0.25rem 0;">🚀 AI推理与C++部署</a></li>
                         <li><a href="basic/light_wave_vs.html" style="color: #ccc; text-decoration: none; display: block; padding: 0.25rem 0;">🌈 常见光源指标对比</a></li>
                     </ul>
                 </div>
