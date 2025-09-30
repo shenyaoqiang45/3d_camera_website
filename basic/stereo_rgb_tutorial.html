@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>双目单色相机重建 + RGB贴图 科普教程</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 40px;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .section {
+            margin-bottom: 50px;
+            animation: fadeIn 0.6s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        h2 {
+            color: #667eea;
+            font-size: 2em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        h3 {
+            color: #764ba2;
+            font-size: 1.5em;
+            margin: 25px 0 15px 0;
+        }
+        
+        .card {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .formula-box {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1em;
+            overflow-x: auto;
+        }
+        
+        .highlight {
+            background: #ffd93d;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+        
+        .flow-diagram {
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            padding: 30px;
+            margin: 30px 0;
+            text-align: center;
+        }
+        
+        .flow-step {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 25px;
+            margin: 10px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        
+        .arrow {
+            display: inline-block;
+            color: #667eea;
+            font-size: 2em;
+            margin: 0 10px;
+        }
+        
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .icon-box {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            border-radius: 10px;
+            transition: transform 0.3s ease;
+        }
+        
+        .icon-box:hover {
+            transform: scale(1.05);
+        }
+        
+        .icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+        
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        
+        .success-box {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        
+        .code-inline {
+            background: #e9ecef;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #d63384;
+        }
+        
+        ul, ol {
+            margin: 15px 0 15px 30px;
+        }
+        
+        li {
+            margin: 10px 0;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        .interactive-demo {
+            background: #f0f4f8;
+            padding: 30px;
+            border-radius: 10px;
+            margin: 30px 0;
+            text-align: center;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        footer {
+            background: #2d3748;
+            color: white;
+            text-align: center;
+            padding: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+            
+            header h1 {
+                font-size: 1.8em;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎥 双目单色相机重建 + RGB贴图</h1>
+            <p>从原理到实践的完整科普教程</p>
+        </header>
+        
+        <div class="content">
+            
+            <!-- 第一部分：系统概述 -->
+            <div class="section">
+                <h2>📷 一、系统架构概述</h2>
+                
+                <div class="grid-2">
+                    <div class="icon-box">
+                        <div class="icon">👁️👁️</div>
+                        <h3>双目单色相机</h3>
+                        <p>用于立体匹配<br>获取深度信息</p>
+                    </div>
+                    <div class="icon-box">
+                        <div class="icon">🎨</div>
+                        <h3>RGB彩色相机</h3>
+                        <p>用于纹理采集<br>提供颜色信息</p>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>💡 为什么这样设计？</h3>
+                    <ul>
+                        <li><strong>双目mono：</strong>单色传感器对比度高、噪声低，立体匹配更准确</li>
+                        <li><strong>RGB单独：</strong>彩色相机分辨率高、色彩准确，纹理质量好</li>
+                        <li><strong>分工合作：</strong>各司其职，既有精确深度又有真实色彩</li>
+                    </ul>
+                </div>
+                
+                <div class="flow-diagram">
+                    <h3>完整工作流程</h3>
+                    <div style="margin-top: 20px;">
+                        <div class="flow-step">双目采图</div>
+                        <span class="arrow">→</span>
+                        <div class="flow-step">立体匹配</div>
+                        <span class="arrow">→</span>
+                        <div class="flow-step">3D重建</div>
+                        <br><br>
+                        <span class="arrow" style="transform: rotate(90deg); display: block; margin: 10px auto;">↓</span>
+                        <br>
+                        <div class="flow-step">坐标转换</div>
+                        <span class="arrow">→</span>
+                        <div class="flow-step">畸变投影</div>
+                        <span class="arrow">→</span>
+                        <div class="flow-step">RGB贴图</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 第二部分：坐标系转换 -->
+            <div class="section">
+                <h2>🔄 二、坐标系转换详解</h2>
+                
+                <h3>2.1 坐标系关系链</h3>
+                <div class="formula-box">
+世界坐标系 (标定板)
+    ↓
+原始左相机坐标系 ←─[R_rgb, T_rgb]─ RGB相机坐标系
+    ↓                                    ↑
+[R_rect 极线矫正]                        |
+    ↓                                    |
+矫正后左相机坐标系                        |
+    ↓                                    |
+【点云在这里】────────需要转换───────────┘
+                </div>
+                
+                <div class="card">
+                    <h3>🎯 核心问题</h3>
+                    <p>点云在<span class="highlight">矫正后左相机坐标系</span>，但RGB相机的标定外参是相对<span class="highlight">原始左相机</span>的。</p>
+                    <p style="margin-top: 10px;">我们需要建立从<span class="code-inline">矫正后坐标系</span>到<span class="code-inline">RGB坐标系</span>的桥梁。</p>
+                </div>
+                
+                <h3>2.2 什么是极线矫正？</h3>
+                <div class="card">
+                    <p><strong>物理含义：</strong>把两个相机的图像平面"对齐"到同一平面，使对应点在同一行</p>
+                    <p><strong>数学表达：</strong>对图像进行重映射，等效于相机旋转了角度 R_rect</p>
+                    <p><strong>结果：</strong>立体匹配只需沿水平方向搜索，速度快10倍以上</p>
+                </div>
+                
+                <div class="warning-box">
+                    <strong>⚠️ 关键理解：</strong>
+                    <p>极线矫正是<strong>虚拟旋转</strong>，相机物理位置没变，但数学上等效于坐标系旋转了 R_rect。</p>
+                </div>
+                
+                <h3>2.3 转换推导过程</h3>
+                
+                <div class="card">
+                    <h4>第一步：理解矫正变换</h4>
+                    <div class="formula-box">
+stereoRectify() 返回 R1 (左相机矫正旋转矩阵)
+
+含义：P_rect = R1 × P_orig
+
+其中：
+  P_orig: 点在原始左相机坐标系
+  P_rect: 点在矫正后左相机坐标系
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h4>第二步：逆矫正（关键）</h4>
+                    <div class="formula-box">
+我们的点云在矫正后，要转回原始坐标系：
+
+P_orig = R1^T × P_rect
+
+为什么是转置？
+  → R1 是旋转矩阵（正交矩阵）
+  → 正交矩阵的逆 = 转置
+  → 物理意义：相机"反转"回去
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h4>第三步：应用RGB外参</h4>
+                    <div class="formula-box">
+标定得到的外参(R_rgb, T_rgb)描述：
+RGB相机相对原始左相机的位姿
+
+转换公式：
+P_rgb = R_rgb × P_orig + T_rgb
+                    </div>
+                </div>
+                
+                <div class="success-box">
+                    <h4>✅ 第四步：合并变换（最终公式）</h4>
+                    <div class="formula-box">
+代入消去中间变量 P_orig：
+
+P_rgb = R_rgb × (R1^T × P_rect) + T_rgb
+      = (R_rgb × R1^T) × P_rect + T_rgb
+
+<strong>最终变换矩阵：</strong>
+R_final = R_rgb @ R1.T
+T_final = T_rgb
+                    </div>
+                </div>
+                
+                <div class="interactive-demo">
+                    <h3>🔢 矩阵维度验证</h3>
+                    <table>
+                        <tr>
+                            <th>变量</th>
+                            <th>维度</th>
+                            <th>说明</th>
+                        </tr>
+                        <tr>
+                            <td>P_rect</td>
+                            <td>(N, 3)</td>
+                            <td>N个3D点</td>
+                        </tr>
+                        <tr>
+                            <td>R1</td>
+                            <td>(3, 3)</td>
+                            <td>矫正旋转</td>
+                        </tr>
+                        <tr>
+                            <td>R_rgb</td>
+                            <td>(3, 3)</td>
+                            <td>RGB外参旋转</td>
+                        </tr>
+                        <tr>
+                            <td>T_rgb</td>
+                            <td>(3, 1)</td>
+                            <td>RGB外参平移</td>
+                        </tr>
+                        <tr style="background: #d4edda;">
+                            <td>R_final</td>
+                            <td>(3, 3)</td>
+                            <td>R_rgb @ R1.T ✓</td>
+                        </tr>
+                        <tr style="background: #d4edda;">
+                            <td>P_rgb</td>
+                            <td>(N, 3)</td>
+                            <td>转换后点云 ✓</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- 第三部分：畸变投影 -->
+            <div class="section">
+                <h2>🎯 三、考虑畸变的重投影</h2>
+                
+                <h3>3.1 完整投影流程</h3>
+                <div class="flow-diagram">
+                    <div class="flow-step">3D点<br>(RGB坐标系)</div>
+                    <span class="arrow">→</span>
+                    <div class="flow-step">归一化坐标<br>(x, y)</div>
+                    <span class="arrow">→</span>
+                    <div class="flow-step">应用畸变<br>(x', y')</div>
+                    <span class="arrow">→</span>
+                    <div class="flow-step">像素坐标<br>(u, v)</div>
+                </div>
+                
+                <h3>3.2 为什么要考虑畸变？</h3>
+                <div class="grid-2">
+                    <div class="card">
+                        <h4>理想情况（无畸变）</h4>
+                        <ul>
+                            <li>直线投影仍是直线</li>
+                            <li>网格保持规整</li>
+                            <li>只在理论中存在</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h4>实际情况（有畸变）</h4>
+                        <ul>
+                            <li>广角镜头：桶形畸变</li>
+                            <li>长焦镜头：枕形畸变</li>
+                            <li>制造误差：切向畸变</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="warning-box">
+                    <strong>⚠️ 不考虑畸变的后果：</strong>
+                    <ul>
+                        <li>图像边缘：投影误差可达 <span class="highlight">10-50像素</span></li>
+                        <li>贴图错位：纹理严重扭曲变形</li>
+                        <li>3D重建：几何精度大幅下降</li>
+                    </ul>
+                </div>
+                
+                <h3>3.3 详细投影步骤</h3>
+                
+                <div class="card">
+                    <h4>步骤1️⃣：3D到归一化平面</h4>
+                    <div class="formula-box">
+给定点 P_rgb = [X, Y, Z] 在RGB相机坐标系
+
+归一化（透视除法）：
+x_norm = X / Z
+y_norm = Y / Z
+
+<span style="color: #ffd93d;">→ 这是理想针孔模型的坐标（无畸变）</span>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h4>步骤2️⃣：应用畸变模型</h4>
+                    <p><strong>Brown-Conrady畸变模型（OpenCV标准）：</strong></p>
+                    
+                    <div class="formula-box">
+<strong>径向畸变（桶形/枕形）：</strong>
+r² = x_norm² + y_norm²
+radial = 1 + k1·r² + k2·r⁴ + k3·r⁶
+
+<strong>切向畸变（透镜制造误差）：</strong>
+dx = 2·p1·x_norm·y_norm + p2·(r² + 2·x_norm²)
+dy = p1·(r² + 2·y_norm²) + 2·p2·x_norm·y_norm
+
+<strong>合并畸变：</strong>
+x_dist = x_norm · radial + dx
+y_dist = y_norm · radial + dy
+                    </div>
+                    
+                    <table style="margin-top: 20px;">
+                        <tr>
+                            <th>畸变系数</th>
+                            <th>物理含义</th>
+                            <th>典型值范围</th>
+                        </tr>
+                        <tr>
+                            <td>k1</td>
+                            <td>2阶径向畸变</td>
+                            <td>-0.5 ~ 0.5</td>
+                        </tr>
+                        <tr>
+                            <td>k2</td>
+                            <td>4阶径向畸变</td>
+                            <td>-0.1 ~ 0.1</td>
+                        </tr>
+                        <tr>
+                            <td>k3</td>
+                            <td>6阶径向畸变</td>
+                            <td>-0.05 ~ 0.05</td>
+                        </tr>
+                        <tr>
+                            <td>p1, p2</td>
+                            <td>切向畸变</td>
+                            <td>-0.01 ~ 0.01</td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <div class="card">
+                    <h4>步骤3️⃣：归一化到像素</h4>
+                    <div class="formula-box">
+使用RGB相机内参矩阵：
+
+K_rgb = [fx   0  cx]
+        [ 0  fy  cy]
+        [ 0   0   1]
+
+像素坐标计算：
+u = fx · x_dist + cx
+v = fy · y_dist + cy
+
+其中：
+  fx, fy: 焦距（像素单位）
+  cx, cy: 主点坐标（光轴与图像平面交点）
+                    </div>
+                </div>
+                
+                <div class="success-box">
+                    <h4>✅ 完整重投影公式总结</h4>
+                    <div class="formula-box">
+<strong>输入：</strong>点云 P_rect (N×3) 在矫正后左相机坐标系
+
+<strong>输出：</strong>像素坐标 (u, v)
+
+<strong>完整流程：</strong>
+
+1️⃣ 坐标转换：
+   P_rgb = (R_rgb @ R1.T) @ P_rect.T + T_rgb
+   → [X, Y, Z] 在RGB相机坐标系
+
+2️⃣ 归一化：
+   x = X / Z
+   y = Y / Z
+
+3️⃣ 畸变：
+   r² = x² + y²
+   radial = 1 + k1·r² + k2·r⁴ + k3·r⁶
+   x' = x·radial + 2p1·xy + p2(r²+2x²)
+   y' = y·radial + p1(r²+2y²) + 2p2·xy
+
+4️⃣ 像素化：
+   u = fx·x' + cx
+   v = fy·y' + cy
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 第四部分：完整工作流程 -->
+            <div class="section">
+                <h2>⚙️ 四、完整工作流程</h2>
+                
+                <h3>4.1 离线准备阶段（一次性）</h3>
+                
+                <div class="card">
+                    <h4>步骤1：标定双目系统</h4>
+                    <ul>
+                        <li>拍摄20-30对棋盘格图像</li>
+                        <li>获得：内参 K_left, K_right, 畸变 dist_left, dist_right</li>
+                        <li>获得：外参 R_stereo, T_stereo（右相机相对左相机）</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <h4>步骤2：标定RGB相机</h4>
+                    <ul>
+                        <li>单独拍摄20-30张棋盘格</li>
+                        <li>获得：内参 K_rgb, 畸变 dist_rgb</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <h4>步骤3：联合标定（关键！）</h4>
+                    <ul>
+                        <li>三个相机<span class="highlight">同时</span>拍摄同一棋盘格</li>
+                        <li>拍摄15-25组不同姿态</li>
+                        <li>获得：R_rgb, T_rgb（RGB相对原始左相机）</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <h4>步骤4：计算矫正参数</h4>
+                    <ul>
+                        <li>运行 stereoRectify 函数</li>
+                        <li>获得：R1, R2（矫正旋转）, P1, P2（新投影矩阵）, Q（重投影矩阵）</li>
+                        <li><strong>⚠️ 一定要保存 R1！后续转换必需</strong></li>
+                    </ul>
+                </div>
+                
+                <div class="success-box">
+                    <h4>步骤5：预计算变换矩阵（优化性能）</h4>
+                    <div class="formula-box">
+R_rect2rgb = R_rgb @ R1.T
+T_rect2rgb = T_rgb
+
+<span style="color: #28a745;">→ 保存这两个矩阵，运行时直接使用，避免重复计算</span>
+                    </div>
+                </div>
+                
+                <h3>4.2 在线运行阶段（实时）</h3>
+                
+                <div class="flow-diagram">
+                    <h4>实时处理流程</h4>
+                    <div style="margin-top: 20px; text-align: left;">
+                        <div class="card">
+                            <strong>输入：</strong>双目mono图像对 + RGB彩色图像（同步采集）
+                        </div>
+                        
+                        <div class="card">
+                            <strong>步骤1：双目矫正</strong>
+                            <p>使用预计算的映射表快速重映射</p>
+                        </div>
+                        
+                        <div class="card">
+                            <strong>步骤2：立体匹配</strong>
+                            <p>计算视差图（SGBM/BM算法）</p>
+                        </div>
+                        
+                        <div class="card">
+                            <strong>步骤3：视差转点云</strong>
+                            <p>使用Q矩阵重投影到3D（矫正后左相机坐标系）</p>
+                        </div>
+                        
+                        <div class="card">
+                            <strong>步骤4：坐标转换</strong>
+                            <p>应用 R_rect2rgb 和 T_rect2rgb</p>
+                        </div>
+                        
+                        <div class="card">
+                            <strong>步骤5：带畸变的投影</strong>
+                            <p>归一化 → 畸变 → 像素化</p>
+                        </div>
+                        
+                        <div class="card">
+                            <strong>步骤6：提取颜色</strong>
+                            <p>有效性检查 + 双线性插值</p>
+                        </div>
+                        
+                        <div class="card" style="background: #d4edda; border-color: #28a745;">
+                            <strong>输出：</strong>带RGB颜色的高质量点云
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 第五部分：关键技术细节 -->
+            <div class="section">
+                <h2>🔧 五、关键技术细节</h2>
+                
+                <h3>5.1 有效性检查</h3>
+                <div class="card">
+                    <p>投影点必须同时满足以下条件：</p>
+                    <div class="formula-box">
+1. 深度检查：Z_rgb > 0
+   → 点在RGB相机前方
+
+2. 边界检查：
+   0 ≤ u < image_width
+   0 ≤ v < image_height
+   → 投影在图像内
+
+3. 深度合理性（可选）：
+   Z_min < Z_rgb < Z_max
+   → 过滤异常噪声点
+
+4. 视差有效性：
+   disparity > min_disparity
+   → 立体匹配成功的点
+                    </div>
+                </div>
+                
+                <h3>5.2 时间同步</h3>
+                <div class="warning-box">
+                    <strong>⚠️ 关键问题：</strong>
+                    <p>三个相机采集时刻不一致会导致动态场景中点云和纹理错位</p>
+                    
