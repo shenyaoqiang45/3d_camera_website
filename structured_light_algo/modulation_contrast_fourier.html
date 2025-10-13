@@ -86,6 +86,10 @@
             font-size: 1.1em;
             text-align: center;
             box-shadow: 0 5px 15px rgba(240, 147, 251, 0.3);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            line-height: 1.5;
         }
 
         .step-box {
@@ -145,6 +149,15 @@
             background: #ff4444;
             top: 0;
         }
+
+        .phase-marker-0 { left: 0%; }
+        .phase-marker-1 { left: 12.5%; }
+        .phase-marker-2 { left: 25%; }
+        .phase-marker-3 { left: 37.5%; }
+        .phase-marker-4 { left: 50%; }
+        .phase-marker-5 { left: 62.5%; }
+        .phase-marker-6 { left: 75%; }
+        .phase-marker-7 { left: 87.5%; }
 
         .interactive-demo {
             background: white;
@@ -234,7 +247,10 @@
             padding: 20px;
             border-radius: 8px;
             margin: 15px 0;
-            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            line-height: 1.6;
         }
 
         .comparison-table {
@@ -295,6 +311,19 @@
             .phase-grid {
                 grid-template-columns: 1fr;
             }
+
+            .formula-box {
+                font-size: 0.9em;
+                padding: 15px;
+                text-align: left;
+            }
+
+            .matrix-display {
+                font-size: 0.8em;
+                padding: 15px;
+                overflow-x: auto;
+                white-space: pre;
+            }
         }
     </style>
 </head>
@@ -326,56 +355,56 @@
                 <div class="phase-item">
                     <h4>第1步</h4>
                     <div class="phase-visualization">
-                        <div class="phase-marker" style="left: 0%;"></div>
+                        <div class="phase-marker phase-marker-0"></div>
                     </div>
                     <p>δ₁ = 0°</p>
                 </div>
                 <div class="phase-item">
                     <h4>第2步</h4>
                     <div class="phase-visualization">
-                        <div class="phase-marker" style="left: 12.5%;"></div>
+                        <div class="phase-marker phase-marker-1"></div>
                     </div>
                     <p>δ₂ = 45° = π/4</p>
                 </div>
                 <div class="phase-item">
                     <h4>第3步</h4>
                     <div class="phase-visualization">
-                        <div class="phase-marker" style="left: 25%;"></div>
+                        <div class="phase-marker phase-marker-2"></div>
                     </div>
                     <p>δ₃ = 90° = π/2</p>
                 </div>
                 <div class="phase-item">
                     <h4>第4步</h4>
                     <div class="phase-visualization">
-                        <div class="phase-marker" style="left: 37.5%;"></div>
+                        <div class="phase-marker phase-marker-3"></div>
                     </div>
                     <p>δ₄ = 135° = 3π/4</p>
                 </div>
                 <div class="phase-item">
                     <h4>第5步</h4>
                     <div class="phase-visualization">
-                        <div class="phase-marker" style="left: 50%;"></div>
+                        <div class="phase-marker phase-marker-4"></div>
                     </div>
                     <p>δ₅ = 180° = π</p>
                 </div>
                 <div class="phase-item">
                     <h4>第6步</h4>
                     <div class="phase-visualization">
-                        <div class="phase-marker" style="left: 62.5%;"></div>
+                        <div class="phase-marker phase-marker-5"></div>
                     </div>
                     <p>δ₆ = 225° = 5π/4</p>
                 </div>
                 <div class="phase-item">
                     <h4>第7步</h4>
                     <div class="phase-visualization">
-                        <div class="phase-marker" style="left: 75%;"></div>
+                        <div class="phase-marker phase-marker-6"></div>
                     </div>
                     <p>δ₇ = 270° = 3π/2</p>
                 </div>
                 <div class="phase-item">
                     <h4>第8步</h4>
                     <div class="phase-visualization">
-                        <div class="phase-marker" style="left: 87.5%;"></div>
+                        <div class="phase-marker phase-marker-7"></div>
                     </div>
                     <p>δ₈ = 315° = 7π/4</p>
                 </div>
