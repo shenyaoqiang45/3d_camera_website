@@ -139,7 +139,10 @@
             margin: 15px 0;
             font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
             font-size: 0.9em;
-            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            line-height: 1.5;
             position: relative;
         }
 
@@ -245,6 +248,15 @@
             margin-bottom: 10px;
         }
 
+        .step-list {
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+
+        .summary-text {
+            margin-top: 15px;
+        }
+
         @media (max-width: 768px) {
             .header h1 {
                 font-size: 2.2em;
@@ -262,6 +274,13 @@
             .step-number {
                 margin-right: 0;
                 margin-bottom: 15px;
+            }
+
+            .code-block {
+                font-size: 0.8em;
+                padding: 15px;
+                overflow-x: auto;
+                white-space: pre;
             }
         }
     </style>
@@ -307,19 +326,19 @@
 
             <div class="code-block">
 double stereoCalibrate(
-    InputArrayOfArrays objectPoints,     // 世界坐标系中的3D点
-    InputArrayOfArrays imagePoints1,     // 相机中的2D点
-    InputArrayOfArrays imagePoints2,     // 投影仪中的2D点
-    InputOutputArray cameraMatrix1,      // 相机内参矩阵
-    InputOutputArray distCoeffs1,        // 相机畸变系数
-    InputOutputArray cameraMatrix2,      // 投影仪内参矩阵
-    InputOutputArray distCoeffs2,        // 投影仪畸变系数
-    Size imageSize,                      // 图像尺寸
-    OutputArray R,                       // 旋转矩阵
-    OutputArray T,                       // 平移向量
-    OutputArray E,                       // 本质矩阵
-    OutputArray F,                       // 基础矩阵
-    int flags = CALIB_FIX_INTRINSIC
+    InputArrayOfArrays objectPoints,        // 世界坐标系中的3D点
+    InputArrayOfArrays imagePoints1,        // 相机中的2D点
+    InputArrayOfArrays imagePoints2,        // 投影仪中的2D点
+    InputOutputArray cameraMatrix1,         // 相机内参矩阵
+    InputOutputArray distCoeffs1,           // 相机畸变系数
+    InputOutputArray cameraMatrix2,         // 投影仪内参矩阵
+    InputOutputArray distCoeffs2,           // 投影仪畸变系数
+    Size imageSize,                         // 图像尺寸
+    OutputArray R,                          // 旋转矩阵
+    OutputArray T,                          // 平移向量
+    OutputArray E,                          // 本质矩阵
+    OutputArray F,                          // 基础矩阵
+    int flags = CALIB_FIX_INTRINSIC         // 标定标志
 );
             </div>
 
@@ -358,8 +377,15 @@ std::vector&lt;std::vector&lt;cv::Point3f&gt;&gt; objectPoints;
 std::vector&lt;std::vector&lt;cv::Point2f&gt;&gt; imagePoints;
 cv::Mat cameraMatrix, distCoeffs;
 
-cv::calibrateCamera(objectPoints, imagePoints, imageSize, 
-                   cameraMatrix, distCoeffs, rvecs, tvecs);
+cv::calibrateCamera(
+    objectPoints,        // 世界坐标系3D点
+    imagePoints,         // 图像2D点
+    imageSize,           // 图像尺寸
+    cameraMatrix,        // 输出：相机内参矩阵
+    distCoeffs,          // 输出：畸变系数
+    rvecs,               // 输出：旋转向量
+    tvecs                // 输出：平移向量
+);
                         </div>
                     </div>
                 </div>
@@ -369,7 +395,7 @@ cv::calibrateCamera(objectPoints, imagePoints, imageSize,
                     <div class="step-content">
                         <h4>投影仪标定数据获取</h4>
                         <p>这是最有趣的步骤！投影仪不能直接"看到"标定板，需要通过巧妙的方法：</p>
-                        <ul style="margin-left: 20px; margin-top: 10px;">
+                        <ul class="step-list">
                             <li>投射编码图案（如格雷码、相移条纹）到标定板</li>
                             <li>用相机拍摄含有投影图案的标定板</li>
                             <li>通过图案解码确定对应关系</li>
@@ -390,12 +416,19 @@ std::vector&lt;std::vector&lt;cv::Point2f&gt;&gt; projectorPoints;
 
 // 执行立体标定
 double rms = cv::stereoCalibrate(
-    objectPoints,           // 3D世界坐标
-    imagePoints,            // 相机2D坐标  
-    projectorPoints,        // 投影仪2D坐标
-    cameraMatrix, distCoeffs,    // 相机参数
-    projectorMatrix, projectorDistCoeffs,  // 投影仪参数
-    imageSize, R, T, E, F, cv::CALIB_FIX_INTRINSIC
+    objectPoints,                           // 3D世界坐标
+    imagePoints,                            // 相机2D坐标  
+    projectorPoints,                        // 投影仪2D坐标
+    cameraMatrix,                           // 相机内参矩阵
+    distCoeffs,                             // 相机畸变系数
+    projectorMatrix,                        // 投影仪内参矩阵 
+    projectorDistCoeffs,                    // 投影仪畸变系数
+    imageSize,                              // 图像尺寸
+    R,                                      // 旋转矩阵（输出）
+    T,                                      // 平移向量（输出）
+    E,                                      // 本质矩阵（输出）
+    F,                                      // 基础矩阵（输出）
+    cv::CALIB_FIX_INTRINSIC                 // 标定标志
 );
                         </div>
                     </div>
@@ -469,7 +502,7 @@ double rms = cv::stereoCalibrate(
             <h2>🎓 总结</h2>
             <p>投影仪-相机系统标定是现代三维视觉技术的基石。虽然技术细节复杂，但核心思想很简单：<strong>让相机和投影仪像人的双眼一样协调工作，共同感知三维世界</strong>。</p>
             
-            <p style="margin-top: 15px;">随着技术的发展，这种标定方法已广泛应用于工业检测、医学成像、文物保护、影视制作等领域，为我们打开了一扇通向三维数字世界的大门。</p>
+            <p class="summary-text">随着技术的发展，这种标定方法已广泛应用于工业检测、医学成像、文物保护、影视制作等领域，为我们打开了一扇通向三维数字世界的大门。</p>
         </div>
     </div>
 </body>
