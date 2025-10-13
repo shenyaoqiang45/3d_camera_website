@@ -96,7 +96,10 @@
             margin: 20px 0;
             font-family: 'Courier New', monospace;
             font-size: 1.1em;
-            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            line-height: 1.6;
         }
         
         .highlight {
@@ -194,6 +197,41 @@
             border-collapse: collapse;
             margin: 20px 0;
         }
+
+        .top-margin {
+            margin-top: 20px;
+        }
+
+        .small-top-margin {
+            margin-top: 10px;
+        }
+
+        .arrow-down {
+            transform: rotate(90deg);
+            display: block;
+            margin: 10px auto;
+        }
+
+        .yellow-highlight {
+            color: #ffd93d;
+        }
+
+        .green-highlight {
+            color: #28a745;
+        }
+
+        .green-row {
+            background: #d4edda;
+        }
+
+        .success-card {
+            background: #d4edda;
+            border-color: #28a745;
+        }
+
+        .text-left {
+            text-align: left;
+        }
         
         th, td {
             border: 1px solid #ddd;
@@ -253,6 +291,13 @@
             .content {
                 padding: 20px;
             }
+
+            .formula-box {
+                font-size: 0.9em;
+                padding: 15px;
+                overflow-x: auto;
+                white-space: pre;
+            }
         }
     </style>
 </head>
@@ -293,14 +338,14 @@
                 
                 <div class="flow-diagram">
                     <h3>完整工作流程</h3>
-                    <div style="margin-top: 20px;">
+                    <div class="top-margin">
                         <div class="flow-step">双目采图</div>
                         <span class="arrow">→</span>
                         <div class="flow-step">立体匹配</div>
                         <span class="arrow">→</span>
                         <div class="flow-step">3D重建</div>
                         <br><br>
-                        <span class="arrow" style="transform: rotate(90deg); display: block; margin: 10px auto;">↓</span>
+                        <span class="arrow arrow-down">↓</span>
                         <br>
                         <div class="flow-step">坐标转换</div>
                         <span class="arrow">→</span>
@@ -331,7 +376,7 @@
                 <div class="card">
                     <h3>🎯 核心问题</h3>
                     <p>点云在<span class="highlight">矫正后左相机坐标系</span>，但RGB相机的标定外参是相对<span class="highlight">原始左相机</span>的。</p>
-                    <p style="margin-top: 10px;">我们需要建立从<span class="code-inline">矫正后坐标系</span>到<span class="code-inline">RGB坐标系</span>的桥梁。</p>
+                    <p class="small-top-margin">我们需要建立从<span class="code-inline">矫正后坐标系</span>到<span class="code-inline">RGB坐标系</span>的桥梁。</p>
                 </div>
                 
                 <h3>2.2 什么是极线矫正？</h3>
@@ -428,12 +473,12 @@ T_final = T_rgb
                             <td>(3, 1)</td>
                             <td>RGB外参平移</td>
                         </tr>
-                        <tr style="background: #d4edda;">
+                        <tr class="green-row">
                             <td>R_final</td>
                             <td>(3, 3)</td>
                             <td>R_rgb @ R1.T ✓</td>
                         </tr>
-                        <tr style="background: #d4edda;">
+                        <tr class="green-row">
                             <td>P_rgb</td>
                             <td>(N, 3)</td>
                             <td>转换后点云 ✓</td>
@@ -497,7 +542,7 @@ T_final = T_rgb
 x_norm = X / Z
 y_norm = Y / Z
 
-<span style="color: #ffd93d;">→ 这是理想针孔模型的坐标（无畸变）</span>
+<span class="yellow-highlight">→ 这是理想针孔模型的坐标（无畸变）</span>
                     </div>
                 </div>
                 
@@ -519,7 +564,7 @@ x_dist = x_norm · radial + dx
 y_dist = y_norm · radial + dy
                     </div>
                     
-                    <table style="margin-top: 20px;">
+                    <table class="top-margin">
                         <tr>
                             <th>畸变系数</th>
                             <th>物理含义</th>
@@ -644,7 +689,7 @@ v = fy · y_dist + cy
 R_rect2rgb = R_rgb @ R1.T
 T_rect2rgb = T_rgb
 
-<span style="color: #28a745;">→ 保存这两个矩阵，运行时直接使用，避免重复计算</span>
+<span class="green-highlight">→ 保存这两个矩阵，运行时直接使用，避免重复计算</span>
                     </div>
                 </div>
                 
@@ -652,7 +697,7 @@ T_rect2rgb = T_rgb
                 
                 <div class="flow-diagram">
                     <h4>实时处理流程</h4>
-                    <div style="margin-top: 20px; text-align: left;">
+                    <div class="top-margin text-left">
                         <div class="card">
                             <strong>输入：</strong>双目mono图像对 + RGB彩色图像（同步采集）
                         </div>
@@ -687,7 +732,7 @@ T_rect2rgb = T_rgb
                             <p>有效性检查 + 双线性插值</p>
                         </div>
                         
-                        <div class="card" style="background: #d4edda; border-color: #28a745;">
+                        <div class="card success-card">
                             <strong>输出：</strong>带RGB颜色的高质量点云
                         </div>
                     </div>
