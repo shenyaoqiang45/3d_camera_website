@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<title>散斑结构光 vs 多频结构光 vs 相移+格雷码 方案对比</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;line-height:1.55;margin:2rem;max-width:1080px;color:#222;background:#fff;}
+h1{margin-top:0;font-size:1.9rem;}
+summary{cursor:pointer;font-weight:600;}
+.table-wrapper{overflow-x:auto;margin:1.2rem 0;}
+table{border-collapse:collapse;width:100%;font-size:0.92rem;}
+th,td{border:1px solid #ccc;padding:0.55rem 0.6rem;text-align:left;vertical-align:top;}
+th{background:#f5f7fa;}
+tr:nth-child(even){background:#fafafa;}
+mark{background:#ffe69b;padding:0 0.2em;border-radius:3px;}
+.small{font-size:0.75rem;color:#666;}
+.code{font-family:Consolas,monospace;background:#f6f8fa;padding:0.15rem 0.35rem;border-radius:4px;}
+.notice{background:#eef9ff;border-left:4px solid #32a3dc;padding:0.8rem 1rem;margin:1.2rem 0;border-radius:4px;}
+.badge{display:inline-block;background:#405bcf;color:#fff;padding:0 0.45em;border-radius:4px;font-size:0.65rem;letter-spacing:0.5px;vertical-align:baseline;margin-left:0.3em;}
+ul{margin:0.4rem 0 0.9rem 1.2rem;}
+footer{margin-top:2.5rem;font-size:0.7rem;color:#777;}
+</style>
+</head>
+<body>
+<h1>三种结构光方案对比：散斑结构光 / 多频结构光 / 相移 + 格雷码</h1>
+<p>本文对比三类常见主动光投影三维重建方案，从 <strong>精度</strong>、<strong>工作距离</strong>、<strong>采集图片张数</strong> 以及优缺点与适用场景进行总结。数值为 <em>典型工业或消费级实现的经验范围</em>，具体性能取决于 <mark>投影器亮度/分辨率</mark>、<mark>相机噪声</mark>、<mark>标定质量</mark>、<mark>表面反射率</mark> 与 <mark>环境光</mark> 等因素。</p>
+<div class="notice"><strong>说明：</strong> 精度这里统一指 <em>深度方向（Z）的典型绝对误差或百分比误差</em>。范围给出“消费级”与“工业可优化”两档。工作距离为有效三维测量距离，不含极限边界。采集图片张数为完成一次 3D 重建所需的 <em>有效投影/拍摄帧数</em>，不含额外空白/曝光调节帧。</div>
+
+<div class="table-wrapper">
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>原理概述</th>
+<th>典型精度 (Z方向)</th>
+<th>典型工作距离范围</th>
+<th>单次重建所需图片张数</th>
+<th>优点</th>
+<th>缺点 / 挑战</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>散斑结构光<br><span class="badge">Speckle</span></td>
+<td>投影静态随机或伪随机散斑图案；相机采集单帧，与标定参考图案做相关匹配或深度学习反演获得视差，三角测量出深度。</td>
+<td>
+消费级：≈ 0.5% ~ 1.5% 距离<br>工业优化：≈ 0.2% ~ 0.8% 距离<br>举例：工作距 1 m 时误差 ~2–10 mm
+</td>
+<td>~0.2 m – 1.5 m（常见 IR 方案）<br>远距受散斑对比度与散射限制</td>
+<td>1 帧 (单快照)</td>
+<td>速度快；对运动物体友好；实现成本低；单相机+投影即可；抗少量环境光（使用窄带 IR + 滤镜）</td>
+<td>精度受限于图案分辨率与匹配噪声；随机纹理在高反射/低纹理物体上易失效；深度边缘易模糊；对强环境光敏感</td>
+<td>消费级 3D 摄像头、人脸识别、手势、低成本体积测量</td>
+</tr>
+<tr>
+<td>多频结构光<br><span class="badge">Multi-Frequency</span></td>
+<td>投影多组不同空间频率的正弦条纹，每组用少量相移图案获取包裹相位并做跨频率解包，得到高分辨率绝对相位，再三角测量。</td>
+<td>消费级：≈ 0.2% ~ 0.8% 距离<br>工业优化：≈ 0.05% ~ 0.3% 距离<br>举例：工作距 1 m 时误差 ~0.5–3 mm</td>
+<td>~0.3 m – 3 m （依据投影光学，室内常见）<br>可通过选择频率兼顾视场与精度</td>
+<td>典型：3 频率 × 3 相移 = 9 帧<br>高鲁棒：3 频率 × 4 相移 = 12 帧<br>可加 1–2 校验帧</td>
+<td>比单频更稳定的相位解包；帧数仍相对可控；精度高于散斑；对表面纹理依赖低</td>
+<td>仍需多帧，难用于高速运动；频率选择不当易出现相位噪声或包裹错误；受环境光闪烁影响</td>
+<td>中速在线检测、装配定位、尺寸测量、面形检测</td>
+</tr>
+<tr>
+<td>相移 + 格雷码<br><span class="badge">Phase-Shift + Gray</span></td>
+<td>投影若干相移正弦条纹获取高精度包裹相位，再投影水平/垂直方向格雷码（或二进制）编码，直接求绝对相位/坐标，实现高分辨率匹配。</td>
+<td>消费级：≈ 0.1% ~ 0.5% 距离<br>工业优化：≈ 0.02% ~ 0.1% 距离<br>举例：工作距 1 m 时误差 ~0.2–1 mm 或更低</td>
+<td>~0.3 m – 5 m（依据投影亮度与镜头焦距）<br>高精度段通常在较近距离</td>
+<td>格雷码：log2(宽度)+log2(高度) ≈ 22 帧 (以 1920×1080 为例)<br>相移：3–5 帧<br>总计：25–30+ 帧 (可压缩优化)</td>
+<td>精度最高；绝对编码减少相位跳变风险；对表面低纹理/重复纹理鲁棒；可达亚毫米级</td>
+<td>帧数多不适合运动物体；采集时间长；对稳定光照、系统标定要求高；需较高投影亮度</td>
+<td>高精度三维测量、逆向工程、形貌检测、文化遗产数字化、实验室超精细扫描</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<h2>相移 + 1D 128级格雷码特例说明</h2>
+<p>若技术路线中仅采用 <strong>单维（例如水平方向）128级格雷码</strong>（即 2<sup>7</sup>=128，对应 7 位格雷码），则格雷码部分帧数可从双维编码的 ~22 帧降至 <strong>7 帧</strong>（为了抗噪可再加 1 反码或校验帧，合计 7–8 帧）。配合 <strong>3–5 帧相移</strong>，总帧数约 <strong>10–13 帧</strong>，显著低于标准双维格雷+相移的 25–30 帧：</p>
+<ul>
+<li><strong>帧数公式（单维）：</strong> F = log<sub>2</sub>(N) + P，其中 N=128，log<sub>2</sub>(128)=7；P 为相移帧数 (3–5)。</li>
+<li><strong>适用场景：</strong> 仅需沿一个轴获得绝对坐标的扫描（如转台逐步旋转获取另一维、线结构光扫描、或垂直方向用相位连续性与几何约束恢复）。</li>
+<li><strong>优点：</strong> 大幅减少编码帧，提升采集速度；仍保留绝对定位能力（单轴）。</li>
+<li><strong>局限：</strong> 另一维度的绝对性缺失，易出现条纹索引歧义；对遮挡/复杂曲面时二维唯一性减弱；精度在非编码轴受相位梯度与噪声影响更大。</li>
+<li><strong>补救策略：</strong> (1) 利用多频相位帮助绝对化；(2) 运行时自适应插入少量纵向格雷码帧；(3) 借助物体先验（旋转步进、机械限位）或 IMU 位姿。</li>
+</ul>
+<p class="small">单维格雷码方案是一种帧数-精度折中：牺牲二维绝对编码以获取近似多频结构光级别的帧数，同时保持相移的细腻相位分辨率。适合中高速、对完整绝对二维索引要求不高的场景。</p>
+
+<h2>对比总结</h2>
+<ul>
+<li><strong>精度层级：</strong> 相移+格雷码 ≥ 多频结构光 > 散斑结构光。</li>
+<li><strong>动态能力：</strong> 散斑结构光最好（单帧），多频次之，相移+格雷码最差（多帧）。</li>
+<li><strong>实现复杂度：</strong> 散斑最低，多频中等，相移+格雷码最高（投影序列与解码流程复杂）。</li>
+<li><strong>环境光鲁棒性：</strong> 高亮窄带投影 + 滤光条件下，多频与相移格雷整体略优于散斑在强光下的对比度衰减。</li>
+<li><strong>可扩展性：</strong> 相移+格雷码与多频可通过增加模式/频率进一步提高精度；散斑提升空间有限，多依赖更高分辨率投影与更好匹配算法。</li>
+</ul>
+
+<h2>图片张数与时间权衡</h2>
+<p>在快速扫描需要 <strong>< 50 ms</strong> 的场景，散斑结构光更合适；在中等速度（<strong>~0.5 s</strong>）且需毫米级的场景，多频结构光可平衡帧数与精度；若允许数秒采集并追求亚毫米级或复杂面形完整性，相移+格雷码是首选。</p>
+
+<h2>选型建议（简表）</h2>
+<div class="table-wrapper">
+<table>
+<thead><tr><th>需求条件</th><th>推荐方案</th><th>理由</th></tr></thead>
+<tbody>
+<tr><td>高速+人体/手势交互</td><td>散斑结构光</td><td>单帧获取，延迟低</td></tr>
+<tr><td>中速在线尺寸检测 (≈毫米级)</td><td>多频结构光</td><td>较少帧数下获取稳定绝对相位</td></tr>
+<tr><td>亚毫米精度或复杂曲面</td><td>相移+格雷码</td><td>绝对编码+高分辨率相位</td></tr>
+<tr><td>低成本硬件</td><td>散斑结构光</td><td>只需简单投影器与算法</td></tr>
+<tr><td>可接受中等帧数但不想太多</td><td>多频结构光</td><td>9–12 帧即可达较高精度</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>进一步优化方向</h2>
+<ul>
+<li><strong>散斑结构光：</strong> 使用学习型匹配网络、联合 TOF/深度补偿。</li>
+<li><strong>多频结构光：</strong> 自适应频率选择，低频稳定相位包裹 + 高频局部细化。</li>
+<li><strong>相移+格雷码：</strong> 压缩编码（混合码 / Hadamard / 时空复用）降低帧数；高速投影器 (DLP/LD-MEMS) & CMOS 全局快门。</li>
+</ul>
+
+<h2>假设与免责声明</h2>
+<p class="small">数值区间基于公开文献、工业经验与常见商用产品规格的综合概括，不构成严格性能保证；实际结果需依据具体硬件、标定流程与表面材质验证。</p>
+
+<footer>最后更新：2025-11-14 | 作者：对比汇总 | 若需添加更多方案（如单频相移、编码纹理、TOF+结构光融合），可在本页继续扩展。</footer>
+</body>
+</html>
