@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>盛相科技 (Megaphase 3D) 产品调研报告</title>
+    <style>
+        :root {
+            --primary-color: #0056b3;
+            --secondary-color: #f8f9fa;
+            --text-color: #333;
+            --border-color: #dee2e6;
+            --header-bg: #e9ecef;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1, h2, h3 {
+            color: var(--primary-color);
+            margin-top: 1.5em;
+        }
+        h1 {
+            text-align: center;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+        h2 {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 5px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.9em;
+        }
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: var(--header-bg);
+            font-weight: 600;
+        }
+        tr:nth-child(even) {
+            background-color: var(--secondary-color);
+        }
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        .tag-tech { background-color: #e3f2fd; color: #0d47a1; }
+        .tag-app { background-color: #e8f5e9; color: #1b5e20; }
+        .highlight-box {
+            background-color: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .nav-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+        .nav-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="nav-link">← 返回首页</a>
+        
+        <h1>盛相科技 (Megaphase 3D) 产品调研报告</h1>
+        
+        <div class="highlight-box">
+            <strong>调研总结：</strong> 盛相科技（Megaphase）以“Sizector®”品牌为核心，主打<strong>硬件计算成像</strong>技术。其产品线覆盖了从标准结构光到光度立体、相位偏折以及多投影融合的高端工业3D检测需求。核心优势在于将复杂的3D重建算法固化在相机硬件中，实现高帧率、高精度和“零”CPU占用的3D成像。
+        </div>
+
+        <h2>1. 产品体系分类 (MECE分析)</h2>
+        <p>根据成像技术原理与应用场景，盛相科技的产品矩阵可以完全穷尽地分类如下：</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>系列名称</th>
+                    <th>架构类型</th>
+                    <th>投射/光源单元</th>
+                    <th>核心技术原理</th>
+                    <th>典型应用场景</th>
+                    <th>关键特性</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>HDC-DS</strong></td>
+                    <td><span class="tag tag-tech">单目</span></td>
+                    <td>多光谱分区LED光源</td>
+                    <td>光度立体 (Photometric Stereo)</td>
+                    <td>漫反射/高反物体表面缺陷</td>
+                    <td>2.5D数据，检测微小划痕、凹坑</td>
+                </tr>
+                <tr>
+                    <td><strong>HDC-DM</strong></td>
+                    <td><span class="tag tag-tech">单目</span></td>
+                    <td>可编程屏幕 (LCD/OLED)</td>
+                    <td>相位偏折 (Phase Deflection)</td>
+                    <td>镜面/高光物体检测</td>
+                    <td>解决镜面成像难题，检测玻璃、晶圆</td>
+                </tr>
+                <tr>
+                    <td><strong>HDC-DH</strong></td>
+                    <td><span class="tag tag-tech">单目</span></td>
+                    <td>LED光源 + 屏幕</td>
+                    <td>光度立体 + 相位偏折</td>
+                    <td>混合场景</td>
+                    <td>全能型，适应性最强</td>
+                </tr>
+                <tr>
+                    <td><strong>SX 系列</strong></td>
+                    <td><span class="tag tag-tech">单目</span></td>
+                    <td>多DLP投影 (1/2/4个)</td>
+                    <td>多投影结构光融合</td>
+                    <td>复杂几何形状、深孔、台阶</td>
+                    <td>消除阴影盲区，硬件级点云融合</td>
+                </tr>
+                <tr>
+                    <td><strong>S 系列</strong></td>
+                    <td><span class="tag tag-tech">单目</span></td>
+                    <td>DLP投影仪</td>
+                    <td>移相法结构光 (Phase Shift)</td>
+                    <td><strong>S162:</strong> 超高精度/大视野<br><strong>S028:</strong> 高速在线检测</td>
+                    <td><strong>S162:</strong> 1620万像素<br><strong>S028:</strong> 20.3 FPS</td>
+                </tr>
+                <tr>
+                    <td><strong>M 系列</strong></td>
+                    <td><span class="tag tag-tech">单目</span></td>
+                    <td>DLP投影仪</td>
+                    <td>移相法结构光 (小型化)</td>
+                    <td>3C电子、半导体、狭小空间</td>
+                    <td>极致紧凑体积，510万像素</td>
+                </tr>
+                <tr>
+                    <td><strong>HD 系列</strong></td>
+                    <td><span class="tag tag-tech">单目</span></td>
+                    <td>DLP投影仪</td>
+                    <td>结构光 (经典款)</td>
+                    <td>常规工业定位与测量</td>
+                    <td>320万像素，成熟稳定</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>2. 详细产品解析</h2>
+
+        <h3>2.1 HDC 系列 - 混合数据相机 (旗舰创新)</h3>
+        <p>HDC系列是盛相针对传统3D相机难以处理的“高反”、“镜面”以及“微小缺陷”场景推出的解决方案。它不仅仅是3D相机，更是计算成像设备。</p>
+        <ul>
+            <li><strong>DS子系列 (Diffuse/Stereo):</strong> 采用<strong>单目相机 + 多光谱分区LED光源</strong>。利用光度立体技术，通过不同角度打光，提取物体表面的微小起伏（2.5D数据）。适合检测划痕、凹坑。</li>
+            <li><strong>DM子系列 (Deflectometry/Mirror):</strong> 采用<strong>单目相机 + 可编程屏幕(LCD/OLED)</strong>。利用相位偏折术（条纹反射），专门针对镜面、玻璃、晶圆等高光表面。</li>
+            <li><strong>DH子系列 (Hybrid):</strong> 结合了上述两种模式（LED光源+屏幕），适应性最强。</li>
+        </ul>
+        <p><strong>规格亮点：</strong> 分辨率覆盖 8.1MP, 16.2MP, 20MP。</p>
+
+        <h3>2.2 SX 系列 - 多投影3D相机 (解决遮挡)</h3>
+        <p>传统单投影3D相机在拍摄复杂物体时容易产生阴影（盲区）。SX系列采用<strong>单目相机 + 多DLP投影仪</strong>架构解决此问题。</p>
+        <ul>
+            <li><strong>SS:</strong> 单投影 (Standard)</li>
+            <li><strong>ST:</strong> 双投影 (Twin) - 左右互补，大幅减少阴影。</li>
+            <li><strong>SQ:</strong> 四投影 (Quad) - 全方位覆盖，几乎无死角。</li>
+        </ul>
+        <p><strong>技术优势：</strong> 所有投影的点云融合都在相机内部FPGA/ASIC完成，输出直接是完整的点云，不消耗上位机资源。</p>
+
+        <h3>2.3 S162 & S028 系列 - 性能标杆</h3>
+        <p>这是盛相的主力通用型3D相机系列，采用经典的<strong>单目相机 + DLP投影仪</strong>架构，分别代表了“分辨率”和“速度”的极致。</p>
+        <ul>
+            <li><strong>S162系列:</strong> 
+                <ul>
+                    <li>分辨率：<strong>1620万像素 (5328 x 3040)</strong> - 业内顶尖水平。</li>
+                    <li>应用：大视野下的高精度检测，如手机中框、大尺寸PCB。</li>
+                    <li>帧率：全像素下4.0 FPS。</li>
+                </ul>
+            </li>
+            <li><strong>S028系列:</strong>
+                <ul>
+                    <li>速度：<strong>20.3 FPS</strong> (全周期)。</li>
+                    <li>分辨率：280万像素。</li>
+                    <li>应用：高速流水线，甚至可以作为“视频级”3D相机使用。</li>
+                    <li>精度：Z轴重复精度可达微米级。</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>2.4 M 系列 - 紧凑型</h3>
+        <p>专为空间受限场景设计，体积小巧但性能不妥协。</p>
+        <ul>
+            <li>分辨率：510万像素 (2472 x 2064)。</li>
+            <li>设计：侧重于3C电子制造设备内部集成。</li>
+        </ul>
+
+        <h2>3. 核心技术竞争力分析</h2>
+        
+        <div class="highlight-box">
+            <h3>Sizector® 硬件计算成像技术</h3>
+            <p>盛相科技的核心护城河在于其<strong>硬件计算</strong>能力。与普通3D相机“拍摄-传输-PC计算”的模式不同，Sizector相机在内部完成结构光解码、相位展开、点云重建甚至多投影融合。</p>
+            <ul>
+                <li><strong>零CPU占用：</strong> 上位机直接获取3D数据，无需昂贵的GPU/CPU进行后处理。</li>
+                <li><strong>超快速度：</strong> 硬件流水线处理，延迟极低。</li>
+                <li><strong>2D/3D 完美对齐：</strong> 由于是同一传感器成像，2D纹理图与3D深度图天然像素级对齐，无需标定。</li>
+            </ul>
+        </div>
+
+        <h2>4. 总结与选型建议</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>需求场景</th>
+                    <th>推荐系列</th>
+                    <th>理由</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>镜面、玻璃、晶圆检测</strong></td>
+                    <td><span class="tag tag-tech">HDC-DM</span></td>
+                    <td>相位偏折术是解决镜面3D成像的最佳方案。</td>
+                </tr>
+                <tr>
+                    <td><strong>微小划痕、压伤 (漫反射)</strong></td>
+                    <td><span class="tag tag-tech">HDC-DS</span></td>
+                    <td>光度立体技术对微小表面形变极度敏感。</td>
+                </tr>
+                <tr>
+                    <td><strong>深孔、复杂台阶、引脚检测</strong></td>
+                    <td><span class="tag tag-tech">SX (ST/SQ)</span></td>
+                    <td>多投影融合有效消除阴影盲区。</td>
+                </tr>
+                <tr>
+                    <td><strong>超高精度、大视野测量</strong></td>
+                    <td><span class="tag tag-tech">S162</span></td>
+                    <td>1620万像素提供极高的横向分辨率。</td>
+                </tr>
+                <tr>
+                    <td><strong>高速在线检测 (如SMT)</strong></td>
+                    <td><span class="tag tag-tech">S028</span></td>
+                    <td>20FPS的高帧率满足节拍要求。</td>
+                </tr>
+                <tr>
+                    <td><strong>设备内部集成 (空间小)</strong></td>
+                    <td><span class="tag tag-tech">M系列</span></td>
+                    <td>体积优势。</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div style="margin-top: 40px; font-size: 0.8em; color: #666; border-top: 1px solid #eee; padding-top: 20px;">
+            <p>数据来源：盛相科技官网 (Megaphase 3D) | 调研时间：2024年</p>
+        </div>
+    </div>
+</body>
+</html>
