@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SMART目标：解决3D扫描数据修复难题</title>
+  <style>
+    body{font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; line-height:1.6; color:#222; padding:24px; max-width:980px; margin:0 auto;}
+    h1,h2,h3{color:#0b4b6f}
+    h1{font-size:28px; margin-bottom:6px}
+    p.lead{color:#444; font-size: 1.1em;}
+    section{background:#fbfbfb;border:1px solid #eee;padding:18px;border-radius:10px;margin:18px 0}
+    table{width:100%;border-collapse:collapse;margin-top:12px}
+    th,td{padding:10px;border:1px solid #e6e6e6;text-align:left}
+    th{background:#f2f9fc}
+    ul{margin:8px 0 8px 18px}
+    .tag{display:inline-block;background:#e8f4fb;color:#0b66a3;padding:4px 8px;border-radius:999px;font-size:12px;margin-right:6px}
+    .smart-letter { font-weight: bold; color: #2c3e50; font-size: 1.2em; margin-right: 8px; }
+    .smart-row { margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px dashed #ddd; }
+    .smart-row:last-child { border-bottom: none; }
+    .highlight { color: #e74c3c; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>SMART目标制定：AI驱动的自动化扫描修复</h1>
+    <p class="lead">针对消费级3D扫描到3D打印流程中最大的痛点——<strong>原始数据的破洞与非流形错误</strong>，采用SMART原则制定改进目标。核心聚焦于<strong>全自动化、AI智能补全与极高的打印成功率</strong>，旨在彻底消除用户的手工修复环节。</p>
+  </header>
+
+  <section>
+    <h2>目标背景</h2>
+    <p>目前，从扫描仪获取的点云数据到可打印的网格模型之间，存在巨大的“人工修复鸿沟”。用户平均需要花费数十分钟在 MeshLab 或 Blender 中手动补洞。我们的核心任务是利用<strong>AI技术实现100%的自动化修复</strong>，确保小白用户也能“一键打印”。</p>
+  </section>
+
+  <section>
+    <h2>SMART 目标分解</h2>
+
+    <div class="smart-row">
+        <span class="smart-letter">S - Specific (具体的)</span>
+        <p>开发一套<strong>“AI驱动的全自动网格修复管线”</strong>，集成于扫描软件后端，专注于高精度Mesh输出。该管线需具备以下核心能力：</p>
+        <ul>
+            <li><strong>高精度重建：</strong> 基于神经符号距离场（Neural SDF/NeuS/Neuralangelo），确保输出Mesh在几何细节和物理精度上达到工程级标准（误差<0.5mm）。</li>
+            <li><strong>智能闭合与流形保证：</strong> 自动识别并修复所有孔洞、非流形边，输出100%闭合、可切片的网格。<strong>特别强调补洞精度</strong>：采用基于曲率连续性的自适应细分补洞算法，确保补洞区域与原始几何的自然过渡，避免"平坦化"效应。</li>
+            <li><strong>语义补全与结构合理性：</strong> 集成语义补全（Semantic Inpainting）AI，自动推断缺失结构（如空心裤腿、复杂器官），补全结果合理且自然。</li>
+            <li><strong>噪声抑制与特征保留：</strong> 自动区分噪点与真实细节，平滑表面同时保留锐利边缘和关键几何特征。</li>
+            <li><strong>特征感知修复：</strong> 集成边缘检测和特征线保持技术，在补洞过程中确保锐利边缘和角点的准确保留。</li>
+            <li><strong>云端推理与移动端采集协同：</strong> 支持手机端数据采集，云端高性能AI推理，保证处理速度与精度。</li>
+            <li><strong>标准化输出：</strong> 直接生成可被主流切片软件（Cura/PrusaSlicer）识别的 STL/OBJ，确保无报错、可直接打印。</li>
+        </ul>
+    </div>
+
+    <div class="smart-row">
+        <span class="smart-letter">M - Measurable (可衡量的)</span>
+        <p>通过以下量化指标评估成功：</p>
+        <ul>
+            <li><strong>打印成功率 (核心指标):</strong> 在测试的100个典型消费级扫描样本中，切片软件的<strong>一次性通过率</strong>达到 <span class="highlight">98%</span> 以上。</li>
+            <li><strong>自动化程度:</strong> 用户干预次数为 <span class="highlight">0次</span>。从扫描结束到获得可打印文件，全程无弹窗、无报错。</li>
+            <li><strong>处理速度:</strong> 100万面片的模型修复时间控制在 <span class="highlight">60秒</span> 以内（利用 GPU 加速）。</li>
+        </ul>
+    </div>
+
+    <div class="smart-row">
+        <span class="smart-letter">A - Achievable (可实现的)</span>
+        <p>技术路径具备可行性，采用“AI原生 (AI-First)”的终极策略：</p>
+        <ul>
+            <li><strong>核心引擎:</strong> 彻底摒弃传统几何算法，全面转向 <strong>Neural SDF (神经符号距离场)</strong>。利用其天然的连续性和闭合性，从数学底层解决“破洞”和“非流形”问题。</li>
+            <li><strong>语义增强:</strong> 集成 <strong>Semantic Inpainting</strong> 网络，实现对缺失结构的智能“脑补”（如自动生成空心裤腿），而非简单的几何封堵。</li>
+            <li><strong>云端协同:</strong> 考虑到 AI 模型算力需求，采用“手机端采集 + 云端推理”的混合架构，确保在任何设备上都能获得极致的重建质量。</li>
+        </ul>
+    </div>
+
+    <div class="smart-row">
+        <span class="smart-letter">R - Relevant (相关的)</span>
+        <p>该目标直接解决“扫描-打印”工作流中的<strong>最大瓶颈</strong>（Where: 后处理阶段）。</p>
+        <ul>
+            <li>消除“非闭合”导致的打印失败，直接提升用户满意度。</li>
+            <li>降低技术门槛，使非专业用户（小白）也能完成从扫描到打印的闭环，扩大市场受众。</li>
+            <li><strong>移动端适配 (Mobile First):</strong> 针对手机端算力优化，使自动化 Pipeline 能在 iOS/Android 设备上本地运行，无需上传云端，保护用户隐私并支持离线使用。</li>
+        </ul>
+    </div>
+
+    <div class="smart-row">
+        <span class="smart-letter">T - Time-bound (有时限的)</span>
+        <p>项目分阶段执行，坚持<strong>精度优先</strong>原则：</p>
+        <ul>
+            <li><strong>T+1个月：</strong>完成主流修复算法（Poisson, Advancing Front, Ball Pivoting）的基准测试与选型。</li>
+            <li><strong>T+3个月：</strong>开发出基于 Python/C++ 的自动化处理脚本原型（MVP），实现“输入点云 -> 输出闭合Mesh”。</li>
+            <li><strong>T+6个月：</strong>完成移动端移植（Metal/Vulkan加速），在 iPhone 15 Pro 上实现 < 2分钟的处理速度，且精度损失 < 1%。</li>
+            <li><strong>T+9个月：</strong>发布正式版 App，集成完整 AI 修复管线。</li>
+        </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>预期成果 (Deliverables)</h2>
+    <ul>
+        <li>✅ <strong>自动化修复插件/模块：</strong>无需用户干预即可输出水密模型。</li>
+        <li>✅ <strong>技术白皮书：</strong>记录不同修复策略对打印成功率的影响对比。</li>
+        <li>✅ <strong>测试数据集：</strong>包含从“极差”到“良好”的各类原始扫描数据及其对应的完美修复结果。</li>
+    </ul>
+  </section>
+
+    <!-- 回到首页按钮 -->
+    <div style="position: fixed; bottom: 30px; right: 30px; z-index: 1000;">
+        <a href="../index.html" 
+           style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; 
+                  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                  color: white; text-decoration: none; border-radius: 50px; 
+                  font-weight: 600; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); 
+                  transition: all 0.3s ease; font-size: 14px;">
+            <span style="font-size: 16px;">🏠</span>
+            回到首页
+        </a>
+    </div>
+    
+    <style>
+        /* 回到首页按钮悬停效果 */
+        div[style*="position: fixed"] a:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            div[style*="position: fixed"] {
+                bottom: 20px !important;
+                right: 20px !important;
+            }
+            
+            div[style*="position: fixed"] a {
+                padding: 10px 16px !important;
+                font-size: 12px !important;
+            }
+        }
+    </style>
+</body>
+</html>
