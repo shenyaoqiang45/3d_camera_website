@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>DeepSDF — 5W2H 概览</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;max-width:900px;margin:32px auto;color:#111}
+    header{border-bottom:1px solid #eee;padding-bottom:12px;margin-bottom:20px}
+    h1{font-size:1.6rem;margin:0}
+    section{margin:18px 0}
+    h2{font-size:1rem;margin:8px 0;color:#0b5}
+    p{margin:6px 0 12px 0;line-height:1.45}
+    .kw{font-weight:700}
+    ul{margin:6px 0 12px 0;padding-left:1.1rem}
+    footer{margin-top:28px;padding-top:12px;border-top:1px dashed #eee;color:#555;font-size:.9rem}
+    .note{background:#f8f9fa;border-left:4px solid #dde;padding:8px 12px;margin:8px 0}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>DeepSDF — 5W2H 概览</h1>
+    <p>使用 5W2H 框架的简明摘要（谁 / 什么 / 何时 / 哪里 / 为什么 / 怎么做 / 花费多少）。</p>
+  </header>
+
+  <section>
+    <h2>谁</h2>
+    <p>DeepSDF 的核心工作由 Park 等人于 2019 年提出，随后有许多在隐式神经表示领域的后续贡献者。该方法常被用于从事三维重建、形状表示和生成建模的研究人员与工程师。</p>
+  </section>
+
+  <section>
+    <h2>什么</h2>
+    <p>DeepSDF 是一种方法，用神经网络学习将三维形状表示为连续的有符号距离函数（SDF）。与使用网格或体素不同，网络 f(theta) 将一个三维点 (x, y, z) 与一个形状潜在码一起映射为该点的有符号距离值。</p>
+    <ul>
+      <li><span class="kw">表示形式：</span>神经隐式的 SDF（连续场）。</li>
+      <li><span class="kw">输入：</span>三维点坐标 + 形状的潜在向量（latent code）。</li>
+      <li><span class="kw">输出：</span>到最近表面的有符号距离（点在内部为负，外部为正）。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>何时</h2>
+    <p>DeepSDF 于 2019 年提出，对隐式神经表示领域产生了重要影响。此后出现了许多后续工作（如占据网络、NeRF、SIREN 等），丰富了隐式表示的方法库。</p>
+  </section>
+
+  <section>
+    <h2>哪里</h2>
+    <p>DeepSDF 常用于研究原型、重建流程、仿真、CAD 模型生成，并作为基于学习的形状推断系统的组件。它通常在常见的深度学习框架（如 PyTorch、TensorFlow）中实现，并在训练阶段使用 GPU。</p>
+  </section>
+
+  <section>
+    <h2>为什么</h2>
+    <p>使用 DeepSDF 的理由：</p>
+    <ul>
+      <li>紧凑且连续的表示，能够表示任意精度的表面细节。</li>
+      <li>通过潜在空间支持形状插值与平滑先验。</li>
+      <li>可通过对学习到的 SDF 网格应用 marching cubes 容易地转换为网格。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>怎么做</h2>
+    <p>高层流程：</p>
+    <ol>
+      <li>收集形状模型（例如完整的 watertight 网格），并在空间中采样点及其对应的 SDF 值。</li>
+      <li>训练一个神经网络，输入为每个形状的潜在码 z 与空间点 x，输出预测 SDF(x; z)。</li>
+      <li>推理时，可针对部分观测通过优化潜在码 z，或使用训练好的编码器/先验直接回归/采样 z 进行生成。</li>
+      <li>在预测的 SDF 网格上使用等值面提取（如 marching cubes）来还原表面网格。</li>
+    </ol>
+
+    <p class="note"><span class="kw">实现建议：</span>可使用位置编码或 SIREN 激活来表示更高频率的细节；对潜在码进行正则化；在表面附近做平衡采样以稳定训练过程。</p>
+  </section>
+
+  <section>
+    <h2>花费多少</h2>
+    <p>资源与开销考虑：</p>
+    <ul>
+      <li><span class="kw">计算：</span>在 ShapeNet 规模的数据上训练一个中等规模的 DeepSDF 通常需要一块或多块 GPU（例如 RTX 2080/3080），训练时间从数小时到数天不等，取决于模型大小与每个形状的采样点数。</li>
+      <li><span class="kw">存储：</span>模型体积通常从几 MB 到几十 MB 不等；数据集和采样的 SDF 缓存可能达到数 GB。</li>
+      <li><span class="kw">时间：</span>对单个形状进行潜在码优化的推理可能需要几分钟；使用摊销编码器（amortized encoder）可以将推理时间降低到毫秒到秒级。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>快速资源</h2>
+    <ul>
+      <li><span class="kw">论文：</span>“DeepSDF: Learning Continuous Signed Distance Functions for Shape Representation” — Park 等人，2019。</li>
+      <li><span class="kw">代码：</span>GitHub 上有多个 PyTorch 实现（可搜索 “DeepSDF PyTorch”）。</li>
+      <li><span class="kw">数据集：</span>ShapeNet、ModelNet 以及其他整理好的 watertight 网格集合。</li>
+    </ul>
+  </section>
+
+  <footer>
+    <strong>文件：</strong> <code>ai3d/deep_sdf_5w2h.html</code> — 简要的 5W2H DeepSDF 概览，便于快速入门或文档使用。想要扩展为带图示、代码片段或引用的版本吗？回复说明你的偏好。
+  </footer>
+</body>
+</html>

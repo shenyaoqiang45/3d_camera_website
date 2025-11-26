@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>点云扩散（Diffusion Point Cloud）— 5W2H 概览</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;max-width:900px;margin:32px auto;color:#111}
+    header{border-bottom:1px solid #eee;padding-bottom:12px;margin-bottom:20px}
+    h1{font-size:1.6rem;margin:0}
+    section{margin:18px 0}
+    h2{font-size:1rem;margin:8px 0;color:#0b5}
+    p{margin:6px 0 12px 0;line-height:1.45}
+    .kw{font-weight:700}
+    ul{margin:6px 0 12px 0;padding-left:1.1rem}
+    ol{margin:6px 0 12px 0;padding-left:1.1rem}
+    footer{margin-top:28px;padding-top:12px;border-top:1px dashed #eee;color:#555;font-size:.9rem}
+    .note{background:#f8f9fa;border-left:4px solid #dde;padding:8px 12px;margin:8px 0}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>点云扩散（Diffusion Point Cloud）— 5W2H 概览</h1>
+    <p>使用 5W2H（谁/什么/何时/哪里/为什么/怎么做/花费多少）对基于扩散的点云生成与处理方法做简明说明。</p>
+  </header>
+
+  <section>
+    <h2>谁</h2>
+    <p>点云扩散方法由研究深度生成模型与分数基/扩散模型的团队推动，典型应用者为计算机视觉、计算机图形与机器人领域的研究者与工程师。近年来有多支学术与工业团队（包括使用扩散模型生成三维数据的开源项目与企业）推动了该方向的进展。</p>
+  </section>
+
+  <section>
+    <h2>什么</h2>
+    <p>点云扩散指的是将扩散（或分数匹配）生成建模方法应用于三维点云数据的技术。核心思想是通过逐步去噪/逆扩散过程，从噪声分布生成符合数据分布的点集，进而实现点云的生成、补全、上采样或条件化重建。</p>
+    <ul>
+      <li><span class="kw">数据形式：</span>无序点集合（点云），通常带有位置坐标，可选地携带法向量、颜色或强度等附加特征。</li>
+      <li><span class="kw">模型类型：</span>基于扩散/去噪的生成模型（Denoising Diffusion Probabilistic Models / Score-based Models）针对点云结构做改进。</li>
+      <li><span class="kw">任务：</span>点云生成、局部/全局补全、去噪、上采样、条件生成（例如基于图像或语义条件）。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>何时</h2>
+    <p>扩散模型在图像领域自 2020 年左右快速发展后，研究者从 2021 年起将其推广到三维数据（包括点云与体素）。在 2022—2024 年间出现了多种将扩散应用于点云的工作与开源实现，近年该方向持续活跃。</p>
+  </section>
+
+  <section>
+    <h2>哪里</h2>
+    <p>点云扩散方法用于以下场景：</p>
+    <ul>
+      <li>三维形状生成与合成（例如用于数据增强或创作）。</li>
+      <li>基于部分观测的形状补全（如从稀疏扫描或掩码推断完整形状）。</li>
+      <li>点云上采样与去噪，改善扫描质量。</li>
+      <li>仿真与感知模块（例如生成 LIDAR 点云用于自动驾驶仿真）。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>为什么</h2>
+    <p>选择扩散模型来处理点云的优势：</p>
+    <ul>
+      <li>概率性好：天然给出样本多样性与不确定性度量。</li>
+      <li>生成质量高：在图像领域证明能生成高保真样本，迁移到点云后也能得到细节丰富的点集。</li>
+      <li>易于条件化：可以自然地在生成过程中加入条件信息（如图像、语义、局部掩码）。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>怎么做</h2>
+    <p>高层流程与关键点：</p>
+    <ol>
+      <li>数据准备：收集并标准化点云，决定是否使用固定点数（如 N 点）或可变点数表示。</li>
+      <li>前向噪声过程：为数据设计噪声调度（例如加性高斯噪声）将点云逐步扰动到近似噪声分布。</li>
+      <li>训练去噪器/分数网络：学习在不同噪声时间步下去噪或估计数据分布的梯度（score）。网络架构需考虑点云无序性，常用 PointNet/PointNet++、DGCNN、Graph Transformer、或基于变换器的点云模块。</li>
+      <li>采样/逆扩散：从噪声开始按逆扩散步骤逐步去噪，输出最终点云；可通过条件输入引导生成特定样式或与观测一致的形状。</li>
+      <li>后处理：若需网格可用 Poisson 重建、曲面重建或先将点云转为体素/隐式场后做等值面提取。</li>
+    </ol>
+
+    <p class="note"><span class="kw">实现要点：</span>1) 对无序点集使用对称聚合或基于图的方法；2) 在训练时使用 Chamfer Distance 或 Earth Mover's Distance (EMD) 作为重建度量；3) 在表面附近做更多采样可以提高细节；4) 若处理带属性点（法线/颜色），模型需同时预测这些通道。</p>
+  </section>
+
+  <section>
+    <h2>花费多少</h2>
+    <p>资源与时间方面的估算：</p>
+    <ul>
+      <li><span class="kw">计算：</span>训练扩散点云模型往往比同规模的 GAN/VAEs 更耗时（因多步去噪训练与采样），典型需要 1 块或多块 GPU，训练时间从数天到数周不等，取决于数据量、点数与网络规模。</li>
+      <li><span class="kw">存储：</span>模型权重通常为几十 MB 到几百 MB；若缓存训练时的 SDF/点云采样数据，可能需要 GB 级别存储。</li>
+      <li><span class="kw">采样耗时：</span>标准逐步逆扩散采样需多次网络前向（几十到几百步），单个样本从毫秒级到秒级甚至更长；可用快速采样策略（如 DDIM、采样步数裁剪）与知识蒸馏减少成本。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>快速资源</h2>
+    <ul>
+      <li><span class="kw">关键技术词：</span>去噪扩散概率模型（DDPM）、分数匹配（Score Matching）、DDIM、Chamfer distance、EMD、PointNet、DGCNN。</li>
+      <li><span class="kw">应用案例：</span>基于扩散的点云生成/补全（学术论文与开源实现可在 GitHub 与 arXiv 搜索“point cloud diffusion”“3D diffusion models”）。</li>
+      <li><span class="kw">实践建议：</span>从小模型与低点数（例如 1024 点）开始试验，使用现有点云网络模块做骨架，再逐步扩展到更高点数与条件任务。</li>
+    </ul>
+  </section>
+
+  <footer>
+    <strong>文件：</strong> <code>ai3d/diffusion_point_cloud_5w2h.html</code> — 中文 5W2H 概览。需要我为此页添加示意图、示例代码（如 PyTorch 的训练/采样伪代码），或插入具体论文与实现链接吗？请说明优先项。
+  </footer>
+</body>
+</html>
