@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenCL 数据传输：Write/Copy/Map 详解</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+            line-height: 1.7;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 2.2em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+        
+        .content {
+            padding: 40px 30px;
+        }
+        
+        h2 {
+            color: #667eea;
+            font-size: 1.6em;
+            margin: 35px 0 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        h3 {
+            color: #764ba2;
+            font-size: 1.3em;
+            margin: 25px 0 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        h3::before {
+            content: "▸";
+            margin-right: 10px;
+            color: #667eea;
+        }
+        
+        .function-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 20px 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .function-card h3 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+        
+        .function-card h3::before {
+            content: "📌";
+            margin-right: 10px;
+        }
+        
+        pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-family: 'Consolas', 'Monaco', monospace;
+            line-height: 1.5;
+            font-size: 0.9em;
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            font-size: 0.95em;
+        }
+        
+        .comparison-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 10px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+        
+        .comparison-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .comparison-table tr:hover {
+            background: #f5f5f5;
+        }
+        
+        .comparison-table tr:nth-child(even) {
+            background: #fafafa;
+        }
+        
+        .highlight {
+            background: #fff3cd;
+            padding: 15px 20px;
+            border-left: 4px solid #ffc107;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .tip {
+            background: #d1ecf1;
+            padding: 15px 20px;
+            border-left: 4px solid #17a2b8;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .success {
+            background: #d4edda;
+            padding: 15px 20px;
+            border-left: 4px solid #28a745;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .danger {
+            background: #f8d7da;
+            padding: 15px 20px;
+            border-left: 4px solid #dc3545;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .info {
+            background: #e7f3ff;
+            padding: 15px 20px;
+            border-left: 4px solid #2196F3;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9em;
+            color: #e83e8c;
+        }
+        
+        .diagram {
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .arrow {
+            font-size: 2em;
+            color: #667eea;
+            margin: 10px 0;
+        }
+        
+        .box {
+            display: inline-block;
+            padding: 15px 25px;
+            margin: 10px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+        
+        .host-box {
+            background: #ffeaa7;
+            border: 2px solid #fdcb6e;
+        }
+        
+        .device-box {
+            background: #74b9ff;
+            border: 2px solid #0984e3;
+        }
+        
+        .map-box {
+            background: #a29bfe;
+            border: 2px solid #6c5ce7;
+        }
+        
+        .performance-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+        
+        .badge-fast {
+            background: #28a745;
+            color: white;
+        }
+        
+        .badge-medium {
+            background: #ffc107;
+            color: #333;
+        }
+        
+        .badge-slow {
+            background: #dc3545;
+            color: white;
+        }
+        
+        ul {
+            margin-left: 25px;
+            margin-top: 10px;
+        }
+        
+        li {
+            margin: 8px 0;
+        }
+        
+        footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .three-way-diagram {
+            display: flex;
+            justify-content: space-around;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        
+        .method-box {
+            flex: 1;
+            min-width: 280px;
+            margin: 10px;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .method-write {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+        }
+        
+        .method-copy {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            color: white;
+        }
+        
+        .method-map {
+            background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%);
+            color: white;
+        }
+        
+        .method-box h4 {
+            margin-top: 0;
+            font-size: 1.3em;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>OpenCL 数据传输三剑客</h1>
+            <p>Write / Copy / Map 完全对比指南</p>
+        </header>
+        
+        <div class="content">
+            <section>
+                <h2>📋 函数签名</h2>
+                
+                <div class="function-card">
+                    <h3>clEnqueueWriteBuffer - 主机到设备写入</h3>
+<pre>cl_int clEnqueueWriteBuffer(
+    cl_command_queue command_queue,
+    cl_mem buffer,              // 目标设备缓冲区
+    cl_bool blocking_write,     // 是否阻塞等待
+    size_t offset,              // 写入偏移量
+    size_t size,                // 写入字节数
+    const void *ptr,            // 源主机内存指针
+    cl_uint num_events_in_wait_list,
+    const cl_event *event_wait_list,
+    cl_event *event
+)</pre>
+                </div>
+
+                <div class="function-card">
+                    <h3>clEnqueueCopyBuffer - 设备到设备拷贝</h3>
+<pre>cl_int clEnqueueCopyBuffer(
+    cl_command_queue command_queue,
+    cl_mem src_buffer,          // 源设备缓冲区
+    cl_mem dst_buffer,          // 目标设备缓冲区
+    size_t src_offset,          // 源偏移量
+    size_t dst_offset,          // 目标偏移量
+    size_t size,                // 拷贝字节数
+    cl_uint num_events_in_wait_list,
+    const cl_event *event_wait_list,
+    cl_event *event
+)</pre>
+                </div>
+
+                <div class="function-card">
+                    <h3>clEnqueueMapBuffer - 映射设备内存到主机地址空间</h3>
+<pre>void* clEnqueueMapBuffer(
+    cl_command_queue command_queue,
+    cl_mem buffer,              // 要映射的设备缓冲区
+    cl_bool blocking_map,       // 是否阻塞等待
+    cl_map_flags map_flags,     // 映射标志 (READ/WRITE/WRITE_INVALIDATE)
+    size_t offset,              // 映射偏移量
+    size_t size,                // 映射字节数
+    cl_uint num_events_in_wait_list,
+    const cl_event *event_wait_list,
+    cl_event *event,
+    cl_int *errcode_ret         // 返回错误码
+)
+// 返回：指向映射内存的主机指针
+
+// 配对使用：
+cl_int clEnqueueUnmapMemObject(
+    cl_command_queue command_queue,
+    cl_mem memobj,
+    void *mapped_ptr,           // MapBuffer 返回的指针
+    cl_uint num_events_in_wait_list,
+    const cl_event *event_wait_list,
+    cl_event *event
+)</pre>
+                </div>
+            </section>
+
+            <section>
+                <h2>🔄 三者核心对比</h2>
+                
+                <div class="diagram">
+                    <h3 style="color: #667eea; margin-bottom: 25px;">数据流向示意图</h3>
+                    
+                    <div style="margin: 30px 0;">
+                        <div style="font-weight: bold; margin-bottom: 15px; color: #d63031;">① WriteBuffer - 显式拷贝</div>
+                        <div class="box host-box">主机内存</div>
+                        <div class="arrow">→ 拷贝 →</div>
+                        <div class="box device-box">设备缓冲区</div>
+                        <div style="margin-top: 10px; color: #666; font-size: 0.9em;">
+                            PCIe 总线传输 (~16 GB/s)
+                        </div>
+                    </div>
+                    
+                    <div style="margin: 30px 0; padding-top: 20px; border-top: 2px dashed #ddd;">
+                        <div style="font-weight: bold; margin-bottom: 15px; color: #0984e3;">② CopyBuffer - 设备内拷贝</div>
+                        <div class="box device-box">设备缓冲区 A</div>
+                        <div class="arrow">→ 快速拷贝 →</div>
+                        <div class="box device-box">设备缓冲区 B</div>
+                        <div style="margin-top: 10px; color: #666; font-size: 0.9em;">
+                            设备内存总线 (~500-900 GB/s)
+                        </div>
+                    </div>
+
+                    <div style="margin: 30px 0; padding-top: 20px; border-top: 2px dashed #ddd;">
+                        <div style="font-weight: bold; margin-bottom: 15px; color: #6c5ce7;">③ MapBuffer - 地址映射</div>
+                        <div class="box device-box">设备缓冲区</div>
+                        <div class="arrow">⇄ 映射 ⇄</div>
+                        <div class="box map-box">主机地址空间</div>
+                        <div style="margin-top: 10px; color: #666; font-size: 0.9em;">
+                            零拷贝访问（理想情况）或延迟传输
+                        </div>
+                    </div>
+                </div>
+
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 18%;">特性</th>
+                            <th style="width: 27%;">WriteBuffer</th>
+                            <th style="width: 27%;">CopyBuffer</th>
+                            <th style="width: 28%;">MapBuffer</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>数据源</strong></td>
+                            <td>主机内存</td>
+                            <td>设备缓冲区</td>
+                            <td>设备缓冲区</td>
+                        </tr>
+                        <tr>
+                            <td><strong>数据目标</strong></td>
+                            <td>设备缓冲区</td>
+                            <td>设备缓冲区</td>
+                            <td>主机地址空间</td>
+                        </tr>
+                        <tr>
+                            <td><strong>传输方式</strong></td>
+                            <td>显式拷贝</td>
+                            <td>显式拷贝</td>
+                            <td>映射（可能零拷贝）</td>
+                        </tr>
+                        <tr>
+                            <td><strong>传输路径</strong></td>
+                            <td>CPU → PCIe → GPU</td>
+                            <td>GPU 内部总线</td>
+                            <td>视硬件而定</td>
+                        </tr>
+                        <tr>
+                            <td><strong>性能</strong></td>
+                            <td><span class="performance-badge badge-slow">慢</span> ~16 GB/s</td>
+                            <td><span class="performance-badge badge-fast">快</span> ~500 GB/s</td>
+                            <td><span class="performance-badge badge-medium">视情况</span> 零拷贝最优</td>
+                        </tr>
+                        <tr>
+                            <td><strong>使用方式</strong></td>
+                            <td>一次性调用</td>
+                            <td>一次性调用</td>
+                            <td>Map + 访问 + Unmap</td>
+                        </tr>
+                        <tr>
+                            <td><strong>主机访问</strong></td>
+                            <td>需要主机内存</td>
+                            <td>不涉及主机</td>
+                            <td>直接通过指针</td>
+                        </tr>
+                        <tr>
+                            <td><strong>灵活性</strong></td>
+                            <td>简单直接</td>
+                            <td>简单直接</td>
+                            <td>可随机访问</td>
+                        </tr>
+                        <tr>
+                            <td><strong>典型延迟</strong></td>
+                            <td>显式同步</td>
+                            <td>异步最快</td>
+                            <td>Map/Unmap 有开销</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h2>🗺️ MapBuffer 深度解析</h2>
+                
+                <div class="info">
+                    <strong>核心概念：</strong> MapBuffer 不是简单的数据拷贝，而是将设备内存<strong>映射到主机地址空间</strong>，让你可以通过主机指针直接访问设备内存。
+                </div>
+
+                <h3>映射标志 (map_flags)</h3>
+                <div class="function-card" style="background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);">
+<pre style="background: white; color: #333;">CL_MAP_READ              // 只读映射
+CL_MAP_WRITE             // 读写映射
+CL_MAP_WRITE_INVALIDATE  // 写映射，丢弃原内容（性能优化）</pre>
+                </div>
+
+                <h3>工作原理</h3>
+<pre>// 1. 映射阶段
+float* host_ptr = (float*)clEnqueueMapBuffer(
+    queue, device_buffer, CL_TRUE,
+    CL_MAP_READ | CL_MAP_WRITE,  // 可读写
+    0, size, 0, NULL, NULL, &err
+);
+// 此时可能发生数据传输（取决于硬件和缓冲区创建标志）
+
+// 2. 访问阶段：像访问普通内存一样
+for (int i = 0; i < N; i++) {
+    host_ptr[i] = host_ptr[i] * 2.0f;  // 直接读写
+}
+
+// 3. 解除映射：数据同步回设备
+clEnqueueUnmapMemObject(queue, device_buffer, host_ptr, 0, NULL, NULL);
+// 此时可能发生数据传输（如果在 Map 时没传输）
+</pre>
+
+                <h3>性能特性</h3>
+                <div class="highlight">
+                    <strong>关键性能因素：</strong>
+                    <ul>
+                        <li><strong>零拷贝场景</strong>：使用 <code>CL_MEM_ALLOC_HOST_PTR</code> 或 <code>CL_MEM_USE_HOST_PTR</code> 创建的缓冲区，Map 可能实现零拷贝</li>
+                        <li><strong>延迟传输</strong>：数据传输可能在 Map 时、Unmap 时，或访问时发生</li>
+                        <li><strong>Map 开销</strong>：Map/Unmap 本身有固定开销（~几微秒）</li>
+                        <li><strong>适合频繁访问</strong>：如果需要多次读写，Map 一次比多次 Read/Write 高效</li>
+                    </ul>
+                </div>
+
+                <h3>CL_MAP_WRITE_INVALIDATE 优化</h3>
+<pre>// ❌ 普通写映射：需要先读取原内容
+float* ptr = clEnqueueMapBuffer(queue, buffer, CL_TRUE,
+                                 CL_MAP_WRITE, ...);
+
+// ✅ INVALIDATE：告诉驱动不需要原内容，跳过读取
+float* ptr = clEnqueueMapBuffer(queue, buffer, CL_TRUE,
+                                 CL_MAP_WRITE_INVALIDATE, ...);
+// 适用于：完全覆盖写入，不关心原数据</pre>
+
+                <div class="tip">
+                    <strong>💡 何时使用 WRITE_INVALIDATE：</strong>
+                    <ul>
+                        <li>完全重写缓冲区内容，不需要读取原数据</li>
+                        <li>初始化新数据</li>
+                        <li>可显著提升性能，避免不必要的数据传输</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section>
+                <h2>💡 使用场景对比</h2>
+                
+                <div class="three-way-diagram">
+                    <div class="method-box method-write">
+                        <h4>📤 WriteBuffer</h4>
+                        <strong>适用场景：</strong>
+                        <ul>
+                            <li>初始化输入数据</li>
+                            <li>一次性数据传输</li>
+                            <li>数据在主机内存中准备好</li>
+                            <li>简单直接的场景</li>
+                        </ul>
+                        <br>
+                        <strong>优点：</strong>
+                        <ul>
+                            <li>使用简单</li>
+                            <li>语义清晰</li>
+                        </ul>
+                        <br>
+                        <strong>缺点：</strong>
+                        <ul>
+                            <li>PCIe 带宽限制</li>
+                            <li>需要主机内存</li>
+                        </ul>
+                    </div>
+
+                    <div class="method-box method-copy">
+                        <h4>🔄 CopyBuffer</h4>
+                        <strong>适用场景：</strong>
+                        <ul>
+                            <li>Kernel pipeline 传递</li>
+                            <li>设备内数据备份</li>
+                            <li>双缓冲交换</li>
+                            <li>数据重组</li>
+                        </ul>
+                        <br>
+                        <strong>优点：</strong>
+                        <ul>
+                            <li>极快（设备内部）</li>
+                            <li>不占用 PCIe</li>
+                        </ul>
+                        <br>
+                        <strong>缺点：</strong>
+                        <ul>
+                            <li>仅限设备间</li>
+                            <li>需要额外内存</li>
+                        </ul>
+                    </div>
+
+                    <div class="method-box method-map">
+                        <h4>🗺️ MapBuffer</h4>
+                        <strong>适用场景：</strong>
+                        <ul>
+                            <li>需要随机访问</li>
+                            <li>部分更新数据</li>
+                            <li>频繁读写操作</li>
+                            <li>零拷贝优化</li>
+                        </ul>
+                        <br>
+                        <strong>优点：</strong>
+                        <ul>
+                            <li>可能零拷贝</li>
+                            <li>灵活访问</li>
+                        </ul>
+                        <br>
+                        <strong>缺点：</strong>
+                        <ul>
+                            <li>Map/Unmap 开销</li>
+                            <li>实现复杂</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h2>⚡ 性能对比实测</h2>
+                
+                <h3>场景 1：传输 1 GB 数据到设备</h3>
+<pre>// WriteBuffer
+float data[256*1024*1024];
+clEnqueueWriteBuffer(queue, buffer, CL_TRUE, 0, size, data, ...);
+// 耗时：~60ms (PCIe 3.0 x16)
+
+// MapBuffer (CL_MEM_ALLOC_HOST_PTR)
+float* ptr = clEnqueueMapBuffer(queue, buffer, CL_TRUE, 
+                                 CL_MAP_WRITE_INVALIDATE, ...);
+memcpy(ptr, data, size);
+clEnqueueUnmapMemObject(queue, buffer, ptr, ...);
+// 耗时：~40ms (优化的内存访问)
+
+// MapBuffer (零拷贝，理想情况)
+float* ptr = clEnqueueMapBuffer(queue, buffer, CL_TRUE, 
+                                 CL_MAP_WRITE, ...);
+// 直接操作 ptr，无需 memcpy
+clEnqueueUnmapMemObject(queue, buffer, ptr, ...);
+// 耗时：~几微秒 (Map/Unmap 开销)</pre>
+
+                <h3>场景 2：更新缓冲区的小部分数据</h3>
+<pre>// WriteBuffer：即使只更新 1%，也要传输全部
+clEnqueueWriteBuffer(queue, buffer, CL_TRUE, 0, full_size, data, ...);
+// 耗时：~60ms
+
+// MapBuffer：只传输需要的部分
+float* ptr = clEnqueueMapBuffer(queue, buffer, CL_TRUE, 
+                                 CL_MAP_WRITE, 
+                                 offset, partial_size, ...);
+// 修改 ptr[0...partial_size]
+clEnqueueUnmapMemObject(queue, buffer, ptr, ...);
+// 耗时：~1ms (仅传输 1%)</pre>
+
+                <h3>场景 3：Kernel Pipeline</h3>
+<pre>// ❌ 通过主机中转（低效）
+clEnqueueReadBuffer(queue, buffer1, CL_TRUE, 0, size, host_mem, ...);   // 60ms
+clEnqueueWriteBuffer(queue, buffer2, CL_TRUE, 0, size, host_mem, ...);  // 60ms
+// 总计：120ms
+
+// ✅ 设备内拷贝（高效）
+clEnqueueCopyBuffer(queue, buffer1, buffer2, 0, 0, size, ...);          // 2ms
+// 总计：2ms (快 60 倍！)</pre>
+
+                <div class="success">
+                    <strong>✅ 性能最佳实践：</strong>
+                    <ul>
+                        <li><strong>大量一次性传输</strong>：WriteBuffer</li>
+                        <li><strong>设备间传递</strong>：CopyBuffer（最快）</li>
+                        <li><strong>部分更新/随机访问</strong>：MapBuffer</li>
+                        <li><strong>频繁读写同一缓冲区</strong>：MapBuffer（Map 一次，多次操作）</li>
+                        <li><strong>零拷贝场景</strong>：MapBuffer + CL_MEM_ALLOC_HOST_PTR</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section>
+                <h2>📝 完整代码示例</h2>
+                
+                <h3>示例 1：WriteBuffer - 初始化数据</h3>
+<pre>float input_data[1024];
+prepare_data(input_data);
+
+cl_mem buffer = clCreateBuffer(ctx, CL_MEM_READ_ONLY, 
+                                sizeof(input_data), NULL, &err);
+
+// 简单直接
+clEnqueueWriteBuffer(queue, buffer, CL_TRUE, 
+                     0, sizeof(input_data), input_data,
+                     0, NULL, NULL);</pre>
+
+                <h3>示例 2：CopyBuffer - Kernel Pipeline</h3>
+<pre>cl_mem buffer1 = clCreateBuffer(ctx, CL_MEM_READ_WRITE, size, NULL, &err);
+cl_mem buffer2 = clCreateBuffer(ctx, CL_MEM_READ_WRITE, size, NULL, &err);
+
+// Kernel1 输出到 buffer1
+clSetKernelArg(kernel1, 1, sizeof(cl_mem), &buffer1);
+clEnqueueNDRangeKernel(queue, kernel1, ...);
+
+// 设备内快速传递
+clEnqueueCopyBuffer(queue, buffer1, buffer2, 0, 0, size, 0, NULL, NULL);
+
+// Kernel2 从 buffer2 读取
+clSetKernelArg(kernel2, 0, sizeof(cl_mem), &buffer2);
+clEnqueueNDRangeKernel(queue, kernel2, ...);</pre>
+
+                <h3>示例 3：MapBuffer - 部分更新</h3>
+<pre>// 创建主机可访问的缓冲区
+cl_mem
