@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>2D 扩散模型发展时间线</title>
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#7c3aed;--muted:#9aa4b2;--paper:#0f1724}
+    html,body{height:100%;margin:0;font-family:Inter, "Segoe UI", Roboto, "Helvetica Neue", Arial;background:linear-gradient(180deg,#071020 0%, #0b1630 100%);color:#e6eef6}
+    .wrap{max-width:960px;margin:36px auto;padding:28px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0.06));border-radius:12px;box-shadow:0 8px 30px rgba(2,6,23,0.7)}
+    header{display:flex;align-items:center;gap:16px}
+    header h1{margin:0;font-size:22px}
+    header p{margin:0;color:var(--muted);font-size:13px}
+    .timeline{margin-top:22px;position:relative;padding-left:28px}
+    .timeline::before{content:"";position:absolute;left:16px;top:0;bottom:0;width:4px;background:linear-gradient(180deg,var(--accent),transparent);border-radius:4px;opacity:0.9}
+    .item{position:relative;padding:18px 18px 18px 46px;margin-bottom:18px;background:rgba(255,255,255,0.02);border-radius:8px;border:1px solid rgba(255,255,255,0.02)}
+    .item .dot{position:absolute;left:4px;top:18px;width:24px;height:24px;border-radius:8px;background:linear-gradient(180deg,var(--accent),#5b21b6);display:flex;align-items:center;justify-content:center;font-weight:700;color:white;box-shadow:0 6px 18px rgba(124,58,237,0.18)}
+    .item h3{margin:0 0 6px 0;font-size:16px}
+    .item time{display:block;color:var(--muted);font-size:13px;margin-bottom:8px}
+    .item p{margin:0;color:#d6e6f6;line-height:1.45}
+    .legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:18px}
+    .btn{display:inline-block;margin-left:auto;padding:8px 12px;border-radius:8px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.04);cursor:pointer;color:var(--muted);font-size:13px}
+    .controls{display:flex;align-items:center;gap:12px;margin-top:12px}
+    footer{margin-top:22px;color:var(--muted);font-size:13px}
+    @media (max-width:600px){.wrap{margin:18px;padding:18px}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>2D 扩散模型（图像生成）发展时间线</h1>
+        <p>从早期理论到近年主流模型的关键里程碑——便于阅读与快速查阅的单页 HTML 时间线</p>
+      </div>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+        <button class="btn" onclick="toggleCompact()">切换紧凑视图</button>
+        <button class="btn" onclick="downloadHTML()">下载 HTML</button>
+      </div>
+    </header>
+
+    <section class="timeline" id="timeline">
+
+      <article class="item">
+        <div class="dot">2015</div>
+        <h3>早期理论与方法论雏形</h3>
+        <time>约 2015</time>
+        <p>一些研究把扩散与能量/热力学概念引入生成建模（例如 nonequilibrium thermodynamics 的思想），奠定了后续扩散概率模型的理论基础。</p>
+      </article>
+
+      <article class="item">
+        <div class="dot">2017–2019</div>
+        <h3>GAN 与 VAE 主导时代</h3>
+        <time>2017—2019</time>
+        <p>在此阶段，GAN（生成对抗网络）与 VAE（变分自编码器）仍然是图像生成领域的主流，扩散模型尚处于概念与早期实验阶段。</p>
+      </article>
+
+      <article class="item">
+        <div class="dot">2020</div>
+        <h3>关键突破：DDPM（Denoising Diffusion Probabilistic Models）</h3>
+        <time>2020 年 6 月</time>
+        <p>Jonathan Ho 等人提出 DDPM，通过正向加噪与反向去噪的概率框架证明扩散模型在图像生成上可达到与 GAN 可比甚至更优的质量，成为现代扩散方法的起点。</p>
+      </article>
+
+      <article class="item">
+        <div class="dot">2020–2021</div>
+        <h3>采样与效率改进（DDIM 等）</h3>
+        <time>2020 下半年 — 2021</time>
+        <p>围绕采样速度和采样质量，出现了 DDIM 等方法，显著减少采样步骤，提高可用性与体验。</p>
+      </article>
+
+      <article class="item">
+        <div class="dot">2021</div>
+        <h3>条件扩散与文本引导的萌芽</h3>
+        <time>2021</time>
+        <p>将自然语言提示（prompt）与条件扩散结合，开始探索 text-to-image 的可行性，为下一步的爆发做准备。</p>
+      </article>
+
+      <article class="item">
+        <div class="dot">2022</div>
+        <h3>爆发年：Stable Diffusion 与 DALL·E 2 等</h3>
+        <time>2022</time>
+        <p>Stable Diffusion（潜在空间扩散）开源，使高质量图像生成大众化；OpenAI 的 DALL·E 2 等多模态方案也推动了大规模商用与创作浪潮。</p>
+      </article>
+
+      <article class="item">
+        <div class="dot">2023</div>
+        <h3>生态扩展与效率提升</h3>
+        <time>2023</time>
+        <p>更多变种、加速技术、多模态融合方法涌现，扩散模型成为生成式 AI 的主流技术，应用从科研扩散到创作、设计与商业服务。</p>
+      </article>
+
+      <article class="item">
+        <div class="dot">2024–2025</div>
+        <h3>成熟与多样化阶段</h3>
+        <time>2024—2025</time>
+        <p>持续优化采样速度、可控性、多样性与小样本/条件生成能力；扩散技术与其它生成范式（如隐空间建模、神经渲染等）逐步融合。</p>
+      </article>
+
+    </section>
+
+    <div class="controls">
+      <div class="legend">
+        <span style="color:var(--muted)">注：时间点为代表性年份/阶段，条目为简要说明；可在代码中扩展条目或添加外部链接。</span>
+      </div>
+    </div>
+
+    <footer>
+      <div>生成器：按用户要求制作的单页时间线（可直接保存为 HTML 文件或嵌入文档）。</div>
+    </footer>
+  </div>
+
+  <script>
+    let compact=false;
+    function toggleCompact(){
+      compact=!compact;
+      document.querySelectorAll('.item').forEach(it=>{
+        it.style.padding = compact? '10px 12px 10px 46px' : '18px 18px 18px 46px';
+        it.querySelector('.dot').style.top = compact? '12px' : '18px';
+      });
+    }
+
+    function downloadHTML(){
+      const html = '<!doctype html>\n' + document.documentElement.outerHTML;
+      const blob = new Blob([html], {type: 'text/html'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = '2D-扩散模型发展时间线.html';
+      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PrusaSlicer 5W2H 介绍</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            padding: 30px 0;
+        }
+        
+        header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        .card-icon {
+            font-size: 2.5em;
+            margin-right: 15px;
+        }
+        
+        .card-title {
+            flex: 1;
+        }
+        
+        .card-title h2 {
+            color: #667eea;
+            font-size: 1.8em;
+            margin-bottom: 5px;
+        }
+        
+        .card-title .subtitle {
+            color: #888;
+            font-size: 0.9em;
+        }
+        
+        .card-content {
+            color: #333;
+            line-height: 1.8;
+        }
+        
+        .card-content ul {
+            list-style: none;
+            margin-top: 15px;
+        }
+        
+        .card-content li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+        
+        .card-content li:before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        .feature-box {
+            background: #f8f9ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 5px;
+        }
+        
+        .highlight {
+            background: linear-gradient(120deg, #ffd89b 0%, #19547b 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .highlight h2 {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+        
+        .features-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .feature-item {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            padding: 20px;
+            opacity: 0.9;
+        }
+        
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2em;
+            }
+            
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🖨️ PrusaSlicer</h1>
+            <p>专业开源3D打印切片软件 - 5W2H全面解析</p>
+        </header>
+        
+        <div class="cards-grid">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">❓</div>
+                    <div class="card-title">
+                        <h2>What</h2>
+                        <div class="subtitle">它是什么</div>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <p>PrusaSlicer是由捷克3D打印机制造商Prusa Research开发的<strong>免费开源切片软件</strong>，基于Slic3r项目深度优化。</p>
+                    <div class="feature-box">
+                        <strong>核心功能：</strong>
+                        <ul>
+                            <li>将3D模型转换为G-code打印指令</li>
+                            <li>支持FDM和SLA两种打印技术</li>
+                            <li>提供200+预配置打印机配置文件</li>
+                            <li>内置强大的模型修复和编辑工具</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">🎯</div>
+                    <div class="card-title">
+                        <h2>Why</h2>
+                        <div class="subtitle">为什么选择它</div>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <p>PrusaSlicer在功能性、易用性和专业性之间取得了完美平衡：</p>
+                    <ul>
+                        <li><strong>功能强大</strong>：高级参数控制超过500项</li>
+                        <li><strong>更新迅速</strong>：每月更新，快速支持新技术</li>
+                        <li><strong>开源免费</strong>：完全免费，社区驱动开发</li>
+                        <li><strong>智能优化</strong>：自动变层高、智能支撑生成</li>
+                        <li><strong>兼容性强</strong>：支持主流品牌打印机</li>
+                        <li><strong>社区活跃</strong>：丰富的教程和技术支持</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">👥</div>
+                    <div class="card-title">
+                        <h2>Who</h2>
+                        <div class="subtitle">谁在使用</div>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <p>适合从入门到专业的各类用户：</p>
+                    <ul>
+                        <li><strong>初学者</strong>：简易模式快速上手</li>
+                        <li><strong>进阶玩家</strong>：高级模式深度定制</li>
+                        <li><strong>专业用户</strong>：专家模式精细控制</li>
+                        <li><strong>Prusa机主</strong>：原生完美支持</li>
+                        <li><strong>其他品牌用户</strong>：通用配置文件支持</li>
+                        <li><strong>教育机构</strong>：教学演示功能完善</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">⏰</div>
+                    <div class="card-title">
+                        <h2>When</h2>
+                        <div class="subtitle">何时使用</div>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <p>在3D打印工作流的关键节点：</p>
+                    <ul>
+                        <li>模型设计完成后，打印前的必要准备</li>
+                        <li>需要调整打印质量和速度时</li>
+                        <li>遇到复杂模型需要添加支撑时</li>
+                        <li>切换不同材料或打印机时</li>
+                        <li>需要优化耗材使用和打印时间时</li>
+                        <li>进行批量打印排版布局时</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">📍</div>
+                    <div class="card-title">
+                        <h2>Where</h2>
+                        <div class="subtitle">在哪里使用</div>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <p><strong>运行平台：</strong></p>
+                    <ul>
+                        <li>Windows 10/11</li>
+                        <li>macOS 10.15+</li>
+                        <li>Linux（多发行版支持）</li>
+                    </ul>
+                    <div class="feature-box">
+                        <strong>应用场景：</strong>
+                        <ul>
+                            <li>个人工作室/家庭</li>
+                            <li>创客空间/实验室</li>
+                            <li>教育机构</li>
+                            <li>小型制造企业</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">⚙️</div>
+                    <div class="card-title">
+                        <h2>How</h2>
+                        <div class="subtitle">如何使用</div>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <p><strong>基本工作流程：</strong></p>
+                    <ul>
+                        <li><strong>1. 导入模型</strong> - 支持STL/OBJ/3MF等格式</li>
+                        <li><strong>2. 选择打印机</strong> - 从预设或自定义配置</li>
+                        <li><strong>3. 设置参数</strong> - 层高/填充/速度/温度等</li>
+                        <li><strong>4. 添加支撑</strong> - 自动或手动绘制</li>
+                        <li><strong>5. 切片预览</strong> - 查看逐层效果</li>
+                        <li><strong>6. 导出G-code</strong> - 保存到SD卡或直接发送</li>
+                    </ul>
+                    <div class="feature-box">
+                        <strong>三种模式：</strong><br>
+                        简易 → 高级 → 专家（逐步解锁更多参数）
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">💰</div>
+                    <div class="card-title">
+                        <h2>How much</h2>
+                        <div class="subtitle">成本投入</div>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <p><strong>软件成本：完全免费！</strong></p>
+                    <ul>
+                        <li>无需购买许可证</li>
+                        <li>无功能限制</li>
+                        <li>终身免费更新</li>
+                    </ul>
+                    <div class="feature-box">
+                        <strong>学习成本：</strong>
+                        <ul>
+                            <li>入门：2-3小时掌握基础操作</li>
+                            <li>进阶：1-2周熟悉高级功能</li>
+                            <li>精通：1-2个月实践经验积累</li>
+                        </ul>
+                    </div>
+                    <p style="margin-top: 15px;"><strong>硬件要求：</strong><br>
+                    普通配置电脑即可（建议8GB内存，复杂模型需16GB）</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="highlight">
+            <h2>✨ 核心特色功能</h2>
+            <div class="features-list">
+                <div class="feature-item">
+                    <strong>🔄 自适应层高</strong><br>
+                    智能调整层厚度
+                </div>
+                <div class="feature-item">
+                    <strong>🎨 多色打印</strong><br>
+                    MMU支持，换色控制
+                </div>
+                <div class="feature-item">
+                    <strong>📐 模型修复</strong><br>
+                    自动修复破损模型
+                </div>
+                <div class="feature-item">
+                    <strong>🧩 组合打印</strong><br>
+                    多模型智能排版
+                </div>
+                <div class="feature-item">
+                    <strong>📊 详细预览</strong><br>
+                    时间/材料精确估算
+                </div>
+                <div class="feature-item">
+                    <strong>🔌 直连打印</strong><br>
+                    通过USB/网络发送
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>🌐 官网：<strong>www.prusa3d.com/prusaslicer</strong></p>
+            <p style="margin-top: 10px;">适合所有热爱3D打印的创造者 | 持续更新中</p>
+        </footer>
+    </div>
+</body>
+</html>

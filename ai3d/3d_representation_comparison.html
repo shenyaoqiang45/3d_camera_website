@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D表示方法对比</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #111827 0%, #1f2937 50%, #111827 100%);
+            color: #e5e7eb;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 80rem;
+            margin: 0 auto;
+        }
+
+        .header {
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 1.875rem;
+            font-weight: bold;
+            color: #ffffff;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: #9ca3af;
+        }
+
+        .table-wrapper {
+            background: rgba(31, 41, 55, 0.5);
+            backdrop-filter: blur(10px);
+            border-radius: 0.75rem;
+            overflow: hidden;
+            border: 1px solid #374151;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        .table-scroll {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead tr {
+            border-bottom: 1px solid #374151;
+        }
+
+        th {
+            text-align: left;
+            padding: 1rem;
+            color: #06b6d4;
+            font-weight: 600;
+            background-color: rgba(15, 23, 42, 0.2);
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(55, 65, 81, 0.5);
+        }
+
+        tbody tr {
+            transition: background-color 0.2s;
+        }
+
+        tbody tr:hover {
+            background-color: rgba(55, 65, 81, 0.3);
+        }
+
+        .method-name {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .method-zh {
+            color: #9ca3af;
+            font-size: 0.875rem;
+        }
+
+        .stars {
+            display: flex;
+            gap: 0.125rem;
+        }
+
+        .star {
+            width: 1rem;
+            height: 1rem;
+            display: inline-block;
+        }
+
+        .star.filled {
+            color: #facc15;
+        }
+
+        .star.empty {
+            color: #4b5563;
+        }
+
+        .usage-text {
+            color: #d1d5db;
+            font-size: 0.875rem;
+        }
+
+        .legend {
+            margin-top: 1.5rem;
+            background-color: rgba(31, 41, 55, 0.3);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            border: 1px solid #374151;
+        }
+
+        .legend h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 0.75rem;
+        }
+
+        .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .legend-item {
+            font-size: 0.875rem;
+            color: #d1d5db;
+        }
+
+        .legend-bullet {
+            color: #06b6d4;
+            margin-right: 0.25rem;
+        }
+
+        .suggestions {
+            margin-top: 1.5rem;
+            background: linear-gradient(to right, rgba(0, 139, 201, 0.2), rgba(37, 99, 235, 0.2));
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        .suggestions h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #06b6d4;
+            margin-bottom: 0.75rem;
+        }
+
+        .suggestion-item {
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            color: #d1d5db;
+        }
+
+        .suggestion-label {
+            font-weight: 600;
+            margin-right: 0.25rem;
+        }
+
+        .sdf-label {
+            color: #22c55e;
+        }
+
+        .nerf-label {
+            color: #3b82f6;
+        }
+
+        .gaussian-label {
+            color: #a855f7;
+        }
+
+        .occupancy-label {
+            color: #f97316;
+        }
+
+        .hot-badge {
+            color: #facc15;
+            margin-left: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌐 表格对比总结</h1>
+            <p>可微分隐式3D表示方法综合对比</p>
+        </div>
+
+        <div class="table-wrapper">
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>类型</th>
+                            <th>几何精确度</th>
+                            <th>渲染效果</th>
+                            <th>推理速度</th>
+                            <th>动态场景</th>
+                            <th>典型用途</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- SDF -->
+                        <tr>
+                            <td>
+                                <div class="method-name">SDF</div>
+                                <div class="method-zh">符号距离场</div>
+                            </td>
+                            <td>
+                                <div class="stars">
+                                    <span class="star filled">★</span>
+                                    <span class="star filled">★</span>
+                                    <span class="star filled">★</span>
+                                    <span class="star filled">★</span>
+                                    <span class="star filled">★</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="stars">
+                                    <span class="star filled">★</span>
+                                    <span class="star filled">★</span>
+                                    <span class="star empty">☆</span>
+                                    <span class="star empty">☆</span>
+                                    <span class="star empty">☆</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="stars">
+                                    <span class="star filled">★</span>
+                                    <span class="star filled">★</span>
+                                    <span class="star empty">☆</span>
+                                    <span class="star empty">☆</span>
+                                    <span class="star empty">☆</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="stars">
+                                    <span class="star filled">★</span>
+                                    <span class="star filled">★</span>
+                                    <span class="star empty">☆</span>
+                                    <span class="star empty">☆</span>
+                                    <span class="star empty">☆</span>
+                                </div>
+                            </td>
+                            <td class="usage-text">表面重建 / CAD</td>
+                        </tr>
+
+                        <!-- Occupancy -->
+                        <tr>
+                            <td>
+                                <div class="method-name">Occupancy</div>
+                                <div class="method-zh">占用网络</div>
+                            </td>
+                            <td>
+                                <div class="stars">
+                                    <span class="star filled">★</span>
+                                    <span class="star filled">★</span>
+                                    <span class="star filled">★</span>
+                                    <span class="star filled">★</span>
+                                    <span class="star empty">☆</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="stars">
+                                    <span class="star filled">★</span>
+                                    <span class="star filled">★</span>
+                                    <span class="star empty">☆</span>
+                                    <span class="star empty">☆</span>
+                                    <span class="star empty">☆</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="stars">
+                                    <span class="star filled">★</span>
+                                    <span class="star filled">★</span>
+                                    <span class="star empty">☆</span>
+                                    <span class="star empty">☆</span>
+                                    <span class="star empty">☆</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="stars">
+                                    <span class="star filled">★</span>
+                                    <span class="star empty">☆</span>
+                                    <span class="star empty">☆</span>
+                                    <span class="star empty">☆</span>
+                                    <span class="star empty">☆</span>
+                                </div>
+                            </td>
+                            <td class="usage-text">Shape建模</td>
+                        </tr>
+
+                        <!-- NeRF -->
+                        <tr>
+                            <td>
+                                <div class="method-name">NeRF</div>
+                                <div class="method-zh">神经辐射场</div>
+                            </td>
+                            <td>
+                                <div class="stars">
+                                    <span class="star filled">★</span>
+                                    <span class="star filled">★</span>
+                                    <span class="star empty">☆</span>
+                                    <span class="star empty">☆</span>
+                                    <span class="star empty">☆</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="stars">
+                                    <span class="star filled">★</span>
+                                    <span class="star filled">★</span>
+                                    <span class="star filled">★</span>
+                                    <span class="star filled">★</span>
+                                    <span class="star filled">★</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="stars">
+                                    <span class="star filled">★</span>
+                                    <span class="star filled">★</span>
+                                    <span class="star filled">★</span>
+                                    <span class="star filled">★</span>
+                                    <span class="star filled">★</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="stars">
+                                    <span class="star filled">★</span>
+                                    <span class="star filled">★</span>
+                                    <span class="star empty">☆</span>
+                                    <span class="star empty">☆</span>
+                                    <span class="star empty">☆</span>
+                                </div>
+                            </td>
+                            <td class="usage-text">新视角合成 / 真实场景</td>
+                        </tr>
+
+                        <!-- Gaussian Splatting -->
+                        <tr>
+                            <td>
+                                <div class="method-name">Gaussian Splatting</div>
+                                <div class="method-zh">3D高斯点</div>
+                            </td>
+                            <td>
+                                <div class="stars">
+                                    <span class="star filled">★</span>
+                                    <span class="star filled">★</span>
+                                    <span class="star filled">★</span>
+                                    <span class="star empty">☆</span>
+                                    <span class="star empty">☆</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="stars">
+                                    <span class="star filled">★</span>
+                                    <span class="star filled">★</span>
+                                    <span class="star filled">★</span>
+                                    <span class="star filled">★</span>
+                                    <span class="star empty">☆</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="stars">
+                                    <span class="star filled">★</span>
+                                    <span class="star filled">★</span>
+                                    <span class="star filled">★</span>
+                                    <span class="star filled">★</span>
+                                    <span class="star empty">☆</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="stars">
+                                    <span class="star filled">★</span>
+                                    <span class="star filled">★</span>
+                                    <span class="star filled">★</span>
+                                    <span class="star empty">☆</span>
+                                    <span class="star empty">☆</span>
+                                </div>
+                            </td>
+                            <td class="usage-text">实时渲染、VR、游戏引擎</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="legend">
+            <h3>📊 评分说明</h3>
+            <div class="legend-grid">
+                <div class="legend-item">
+                    <span class="legend-bullet">•</span> 几何精确度：表面细节和拓扑结构的准确性
+                </div>
+                <div class="legend-item">
+                    <span class="legend-bullet">•</span> 渲染效果：视觉质量和光照表现
+                </div>
+                <div class="legend-item">
+                    <span class="legend-bullet">•</span> 推理速度：渲染和查询的实时性
+                </div>
+                <div class="legend-item">
+                    <span class="legend-bullet">•</span> 动态场景：处理运动和变形的能力
+                </div>
+            </div>
+        </div>
+
+        <div class="suggestions">
+            <h3>💡 选择建议</h3>
+            <div class="suggestion-item">
+                <span class="suggestion-label sdf-label">SDF</span>
+                → 需要精确表面网格（3D打印、CAD建模）
+            </div>
+            <div class="suggestion-item">
+                <span class="suggestion-label nerf-label">NeRF</span>
+                → 照片级渲染质量优先，训练数据充足
+            </div>
+            <div class="suggestion-item">
+                <span class="suggestion-label gaussian-label">3D Gaussian Splatting</span>
+                → 实时性要求高（VR/AR、游戏）<span class="hot-badge">⭐ 当前最热门</span>
+            </div>
+            <div class="suggestion-item">
+                <span class="suggestion-label occupancy-label">Occupancy</span>
+                → 封闭形状建模，内外判断
+            </div>
+        </div>
+    </div>
+</body>
+</html>
