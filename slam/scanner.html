@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>工业级 Open3D + TSDF 扫描重建流程</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    if (typeof mermaid !== 'undefined') {
+      mermaid.initialize({ startOnLoad: true });
+    }
+  });
+</script>
+<style>
+  body { font-family: Arial, sans-serif; margin: 20px; }
+  h1 { color: #333; }
+  table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+  th, td { border: 1px solid #aaa; padding: 8px; text-align: left; }
+  th { background-color: #f2f2f2; }
+  pre { background-color: #f9f9f9; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body>
+
+<h1>工业级 Open3D + TSDF 扫描重建流程</h1>
+
+
+<h2>流程说明</h2>
+<table>
+<tr><th>步骤</th><th>关键操作 / 方法</th><th>输入 / 输出类型</th></tr>
+<tr>
+<td>1. 多视角采集</td>
+<td>扫描仪或深度相机采集数据</td>
+<td>输入：RGB-D Image / PointCloud</td>
+</tr>
+<tr>
+<td>2. 预处理</td>
+<td>降噪、降采样、法向量估计</td>
+<td>输入：原始点云<br>输出：降噪/降采样点云 + 法向量</td>
+</tr>
+<tr>
+<td>3. 相邻帧配准</td>
+<td>FGR 粗配准 → ICP 精配准</td>
+<td>输出：每帧全局位姿</td>
+</tr>
+<tr>
+<td>4. 跟踪丢失检测 + 重定位</td>
+<td>检测 ICP 失败，FGR/外部传感器兜底</td>
+<td>输出：修正位姿，保证 TSDF 融合连续性</td>
+</tr>
+<tr>
+<td>5. TSDF 融合</td>
+<td>TSDFVolume.integrate() 多帧累积</td>
+<td>输出：完整 TSDF 体素网格</td>
+</tr>
+<tr>
+<td>6. 回环检测</td>
+<td>Place Recognition → FGR 几何验证</td>
+<td>输出：回环边，作为位姿图约束</td>
+</tr>
+<tr>
+<td>7. 位姿图优化</td>
+<td>Pose Graph Optimization 消除累计误差</td>
+<td>输出：优化后的全局位姿</td>
+</tr>
+<tr>
+<td>8. 输出</td>
+<td>extract_triangle_mesh() / extract_point_cloud()</td>
+<td>输出：闭合 Mesh 或融合点云</td>
+</tr>
+</table>
+
+<h2>工程提示</h2>
+<ul>
+<li>Voxel Size：1–5 mm，控制精度和计算量</li>
+<li>SDF Trunc：3–5 倍 voxel size</li>
+<li>增量式配准要求相邻帧重叠 ≥ 30–50%</li>
+<li>回环检测建议周期性对历史帧进行 FGR + ICP</li>
+<li>位姿图优化定期执行保证大场景精度</li>
+</ul>
+
+</body>
+</html>
